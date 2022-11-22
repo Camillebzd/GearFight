@@ -1,0 +1,10 @@
+node_modules
+
+.env
+
+nft_key_pinata.txt
+
+secrets.json
+
+artifacts
+cache

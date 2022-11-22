@@ -1,0 +1,13 @@
+{
+    "attributes" : [ {
+        "trait_type" : "Faction",
+        "value" : "Angel"
+    }, {
+        "trait_type" : "Type",
+        "value" : "Light"
+    }
+    ],
+    "description" : "The light continue to proctect the world.",
+    "image" : "https://gateway.pinata.cloud/ipfs/QmfWpcDv3mpur3815GhQd9ihEu46SdMidmQVW8QiCvMTY6",
+    "name" : "Vacylisse"
+}
