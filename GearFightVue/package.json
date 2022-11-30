@@ -1,0 +1,24 @@
+{
+  "name": "gearfightvue",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@alch/alchemy-web3": "^1.4.7",
+    "@kyvg/vue3-notification": "^2.7.0",
+    "bootstrap": "^5.2.3",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "mdb-vue-ui-kit": "^3.1.1",
+    "vue": "^3.2.41",
+    "vue-router": "^4.1.6",
+    "web3": "^1.8.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^3.1.2",
+    "vite": "^3.1.8"
+  }
+}

@@ -1,7 +1,7 @@
 // scripts/index.js
 async function main () {
     // Our code will go here
-    const address = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // change after deployement
+    const address = '0xB941C6D03569d2f31AcB84C5b930319Cd8CB0226'; // change after deployement
     const GF = await ethers.getContractFactory('GearFactory_v2');
     const gearF = await GF.attach(address);
     const myContract = '0xfa3737f6bce5c27e88359c5a44dae7f844b1814d';
