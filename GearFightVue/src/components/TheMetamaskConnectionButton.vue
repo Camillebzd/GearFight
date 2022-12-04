@@ -12,6 +12,7 @@ export default {
   components: {
     MDBBtn
   },
+  emits: ['updateAccountAddress'],
   data() {
     return {
       isConnected: false,
@@ -38,6 +39,7 @@ export default {
             title: "Connected",
             text: "MetaMask is connected! Here is your address: " + addressArray[0],
           });
+          this.$emit('updateAccountAddress', addressArray[0]);
         } catch (err) {
           this.$notify({
             type: "error",
@@ -53,6 +55,14 @@ export default {
           });
       }
     },
+  },
+  async created() {
+    const accounts = await ethereum.request({method: 'eth_accounts'});       
+    if (accounts.length) {
+      this.accountAddress = accounts[0];
+      this.isConnected = true;
+      this.$emit('updateAccountAddress', accounts[0]);
+    }
   }
 };
 </script>

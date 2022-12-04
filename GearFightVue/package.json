@@ -9,7 +9,9 @@
   "dependencies": {
     "@alch/alchemy-web3": "^1.4.7",
     "@kyvg/vue3-notification": "^2.7.0",
+    "alchemy-sdk": "^2.2.3",
     "bootstrap": "^5.2.3",
+    "buffer": "^6.0.3",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "mdb-vue-ui-kit": "^3.1.1",
