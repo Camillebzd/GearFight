@@ -4,14 +4,15 @@ import Home from '@/views/Home.vue'
 const routes = [
   {path: '/', name: 'Home', component: Home},
   {path: '/personnalarmory', name: 'PersonnalArmory', component: ()=>import('@/views/PersonnalArmory.vue')},
+  {path: '/market', name: 'Market', component: ()=>import('@/views/Market.vue')},
   {path: '/about', name: 'About', component: ()=>import('@/views/About.vue')},
   {
     path: '/gear/:id/:slug',
     name: 'gear.show', 
     component: ()=>import('@/views/GearShow.vue'),
-    props: route=>({...route.params, id: parseInt(route.params.id)}),
+    // props: route=>({...route.params, id: parseInt(route.params.id)}),
     beforeEnter(to, from) {
-      const maxTokenId = 3; //number of token minted to get dynamicaly
+      const maxTokenId = 30; //number of token minted to get dynamicaly
       if (parseInt(to.params.id) > maxTokenId)
         return {
           name: 'NotFound',

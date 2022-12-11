@@ -1,28 +1,19 @@
 <template>
-  <div class="home">
-    <h1>Personnal Armory</h1>
-    <div v-if="accountAddress.length"> <!-- Change to print a loader during the retreave of nft -->
-      <div v-if="gears.length">
-        <MDBRow>
-          <MDBCol sm="3" v-for="gear in gears" :key="gear.tokenId">
-            <!-- <GearCard :gear="getGearInfo(gears[1].rawMetadata)" :gearId="gears[1].tokenId"/> -->
-            <GearCard  
-              :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
-            />
-          </MDBCol>
-        </MDBRow>
-      </div>
-      <div v-else>
-        <p>We couldn't find any weapon on your MetaMask account:</p>
-        <ol>
-          <li>Wait cause it may take some time.</li>
-          <li>Check you have NFTs on your MetaMask account.</li>
-          <li>Check your first MetaMask account is the one with the nft. (We will handle multiple accounts soon)</li>
-        </ol>
-      </div>
+  <div>
+    <h1>Market</h1>
+    <div v-if="gears.length">
+      <MDBRow>
+        <MDBCol sm="3" v-for="gear in gears" :key="gear.tokenId">
+          <!-- <GearCard :gear="getGearInfo(gears[1].rawMetadata)" :gearId="gears[1].tokenId"/> -->
+          <GearCard
+            :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
+          />
+        </MDBCol>
+      </MDBRow>
     </div>
     <div v-else>
-      <p>Connecte to your metamask account to see your gears.</p>
+      <p>Oops, seems like there is nothing on the market.</p>
+      <p>This could be because the developper is working on a new collection or something went wrong...</p>
     </div>
   </div>
 </template>
@@ -45,7 +36,7 @@ export default {
     }
   },
   methods: {
-    async getUserNFTs() {
+    async getContractNFTs() {
       if (this.accountAddress == undefined || this.accountAddress.length < 1)
         return;
       const settings = {
@@ -53,13 +44,12 @@ export default {
         network: Network.ETH_GOERLI, // Replace the network needed.
       };
       const alchemy = new Alchemy(settings);
-      const tokens = await alchemy.nft.getNftsForOwner(this.accountAddress);
-      
-      for (let i = 0; i < tokens.ownedNfts.length; i++) {
-        if (tokens.ownedNfts[i].rawMetadata.attributes[0]?.trait_type == "Family") // change this by putting a key a the root of the NFT ?
-          this.gears.push(tokens.ownedNfts[i]);
+      const tokens = await alchemy.nft.getNftsForContract("0xfa3737f6bce5c27e88359c5a44dae7f844b1814d"); // externalised this value
+      console.log(tokens);
+      for (let i = 0; i < tokens.nfts.length; i++) {
+        if (tokens.nfts[i].rawMetadata.attributes[0]?.trait_type == "Family") // change this by putting a key a the root of the NFT ?
+          this.gears.push(tokens.nfts[i]);
       }
-      console.log(this.gears);
     },
     getGearInfo(gear) {
       return {
@@ -86,17 +76,13 @@ export default {
   },
   async created() {
     this.accountAddress = this.$attrs.accountAddress;
-    this.getUserNFTs();
+    this.getContractNFTs();
   },
   watch: {
     '$attrs.accountAddress': function(newVal, oldVal) {
       this.accountAddress = newVal;
-      this.getUserNFTs();
+      this.getContractNFTs();
     },
   }
 }
 </script>
-
-<style>
-
-</style>

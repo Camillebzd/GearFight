@@ -22,7 +22,7 @@ const contractAddress = '0xFA3737f6BCE5c27E88359C5a44Dae7F844B1814D'
 const myNftContract = new ethers.Contract(contractAddress, abi, signer)
 
 // Get the NFT Metadata IPFS URL
-const tokenUri = "https://gateway.pinata.cloud/ipfs/QmdUyrdXFu3uPUP4bAy77B9Br2ZCgXbi3b2BbeXQQbTHmA"
+const tokenUri = "https://gateway.pinata.cloud/ipfs/QmTBV8txNf2WJDbVpgjwFavmtmx9kQE6mixG5KoztfiMc7"
 
 // Call mintNFT function
 const mintNFT = async () => {
