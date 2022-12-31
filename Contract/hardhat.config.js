@@ -1,6 +1,9 @@
 require("dotenv").config();
 require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 // require('@nomiclabs/hardhat-truffle5');
+
 const { API_URL, PRIVATE_KEY } = process.env;
 
 module.exports = {
@@ -12,5 +15,12 @@ module.exports = {
       url: API_URL,
       accounts: [`0x${PRIVATE_KEY}`],
     },
+    mumbai: {
+      url: process.env.TESTNET_RPC,
+      accounts: [process.env.PRIVATE_KEY]
+    },
   },
+  etherscan: {
+    apiKey: process.env.POLYGONSCAN_API_KEY
+  }
 };
