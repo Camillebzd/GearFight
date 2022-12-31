@@ -1,9 +1,8 @@
 <template>
   <div>
-    <!-- <h1>Gear description: {{$route.params.id}}</h1> -->
     <div v-if="gear == null">
       <h1>Loading...</h1>
-      <p>We are loading the gear, if this take to much time it may be because a problem happen.</p>
+      <p>We are loading the gear, if this take to much time it may be because a problem has happend.</p>
     </div>
     <div v-else>
       <h1>{{getGearInfo(gear.rawMetadata)?.name}}</h1>
@@ -50,7 +49,7 @@
 <script>
 import { Network, Alchemy, Wallet, Utils } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import { MDBBtn } from "mdb-vue-ui-kit";
-const PRIVATE_KEY = import.meta.env.VITE_PRIVATE_KEY;
+const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 
 export default {
   components: {
@@ -60,13 +59,18 @@ export default {
     return {
       gear: null,
       gearOwners: "Unknown", // maybe later there could be more than one owner
+      accountAddress: "",
     }
   },
   methods: {
     async transfereTest() {
+      if (this.accountAddress == undefined || this.accountAddress?.length < 1) {
+        // notification
+        return;
+      }
       console.log("start transfere");
       const settings = {
-        apiKey: "0FgSTfHIhycqhLzUnravE7m3Dt6rBfGF", // Dont let the key here in the code !!!!
+        apiKey: PRIVATE_KEY,
         network: Network.ETH_GOERLI, // Replace the network needed.
       };
       const alchemy = new Alchemy(settings);
@@ -87,10 +91,8 @@ export default {
       console.log(response);
     },
     async getNFTInfo() {
-      if (this.accountAddress == undefined || this.accountAddress?.length < 1)
-        return;
       const settings = {
-        apiKey: "0FgSTfHIhycqhLzUnravE7m3Dt6rBfGF", // Dont let the key here in the code !!!!
+        apiKey: PRIVATE_KEY,
         network: Network.ETH_GOERLI, // Replace the network needed.
       };
       const alchemy = new Alchemy(settings);

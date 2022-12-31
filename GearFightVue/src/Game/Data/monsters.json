@@ -1,0 +1,62 @@
+[
+  {
+    "id": 0,
+    "Name": "Monster test 1",
+    "Description": "Lorem Ipsum blablabla",
+    "image": "boneworm-black.png",
+    "Level": 1,
+    "Speed": 1,
+    "Life": 10,
+    "Strenght": 1
+  },
+  {
+    "id": 1,
+    "Name": "Monster test 2",
+    "Description": "Lorem Ipsum blablabla",
+    "image": "boneworm-black.png",
+    "Level": 1,
+    "Speed": 1,
+    "Life": 10,
+    "Strenght": 1
+  },
+  {
+    "id": 2,
+    "Name": "Monster test 3",
+    "Description": "Lorem Ipsum blablabla",
+    "image": "boneworm-black.png",
+    "Level": 1,
+    "Speed": 1,
+    "Life": 10,
+    "Strenght": 1
+  },
+  {
+    "id": 3,
+    "Name": "Monster test 4",
+    "Description": "Lorem Ipsum blablabla",
+    "image": "boneworm-black.png",
+    "Level": 1,
+    "Speed": 1,
+    "Life": 10,
+    "Strenght": 1
+  },
+  {
+    "id": 4,
+    "Name": "Monster test 5",
+    "Description": "Lorem Ipsum blablabla",
+    "image": "boneworm-black.png",
+    "Level": 1,
+    "Speed": 1,
+    "Life": 10,
+    "Strenght": 1
+  },
+  {
+    "id": 5,
+    "Name": "Monster test 6",
+    "Description": "Lorem Ipsum blablabla",
+    "image": "boneworm-black.png",
+    "Level": 1,
+    "Speed": 1,
+    "Life": 10,
+    "Strenght": 1
+  }
+]

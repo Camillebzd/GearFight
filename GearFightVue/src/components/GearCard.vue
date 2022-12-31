@@ -10,16 +10,6 @@
         <MDBCardText>
           Owner: {{owner}}
         </MDBCardText>
-        <!-- <MDBCardText>
-          family: {{gear.family}}<br/>
-          type: {{gear.type}}<br/>
-          level: {{gear.level}}<br/>
-          hp: {{gear.hp}}<br/>
-          dmg: {{gear.dmg}}<br/>
-          dmgType: {{gear.dmgType}}<br/>
-          speed: {{gear.speed}}<br/>
-          capacities: {{gear.capacities}}<br/>
-        </MDBCardText> -->
       </MDBCardBody>
     </RouterLink>
   </MDBCard>
@@ -38,6 +28,7 @@ import {
   MDBListGroupItem
 } from "mdb-vue-ui-kit";
 import { RouterLink } from "vue-router";
+const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 
 export default {
   components: {
@@ -63,7 +54,7 @@ export default {
   methods: {
     async getNFTOwner() {
       const settings = {
-        apiKey: "0FgSTfHIhycqhLzUnravE7m3Dt6rBfGF", // Dont let the key here in the code !!!!
+        apiKey: PRIVATE_KEY,
         network: Network.ETH_GOERLI, // Replace the network needed.
       };
       const alchemy = new Alchemy(settings);
@@ -82,5 +73,8 @@ export default {
 a {
 	text-decoration: none; /* remove underline */
 	color: inherit; /* remove blue */
+}
+a:hover {
+   color: inherit;
 }
 </style>

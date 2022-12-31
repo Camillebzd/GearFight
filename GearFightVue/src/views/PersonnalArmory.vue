@@ -31,6 +31,7 @@
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import GearCard from '@/components/GearCard.vue';
 import { MDBRow, MDBCol } from "mdb-vue-ui-kit";
+const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 
 export default {
   components: {
@@ -49,7 +50,7 @@ export default {
       if (this.accountAddress == undefined || this.accountAddress.length < 1)
         return;
       const settings = {
-        apiKey: "0FgSTfHIhycqhLzUnravE7m3Dt6rBfGF", // Dont let the key here in the code !!!!
+        apiKey: PRIVATE_KEY,
         network: Network.ETH_GOERLI, // Replace the network needed.
       };
       const alchemy = new Alchemy(settings);

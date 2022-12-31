@@ -3,6 +3,7 @@ import Home from '@/views/Home.vue'
 
 const routes = [
   {path: '/', name: 'Home', component: Home},
+  {path: '/world', name: 'World', component: ()=>import('@/views/World.vue')},
   {path: '/personnalarmory', name: 'PersonnalArmory', component: ()=>import('@/views/PersonnalArmory.vue')},
   {path: '/market', name: 'Market', component: ()=>import('@/views/Market.vue')},
   {path: '/about', name: 'About', component: ()=>import('@/views/About.vue')},
@@ -22,6 +23,23 @@ const routes = [
         }
     },
   },
+  {
+    path: '/monster/:id/:slug',
+    name: 'monster.show', 
+    component: ()=>import('@/views/MonsterShow.vue'),
+    // props: route=>({...route.params, id: parseInt(route.params.id)}),
+    beforeEnter(to, from) {
+      const maxMonsterId = 30; // monster number possible
+      if (parseInt(to.params.id) > maxMonsterId)
+        return {
+          name: 'NotFound',
+          params: {pathMatch: to.path.split('/').slice(1)},
+          query: to.query,
+          hash: to.hash
+        }
+    },
+  },
+
   {path: '/:pathMatch(.*)*', name: 'NotFound', component: ()=>import('@/views/NotFound.vue')},
 ]
 
