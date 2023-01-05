@@ -2,14 +2,16 @@
   <div>
     <h1>Market</h1>
     <div v-if="gears.length">
-      <MDBRow>
-        <MDBCol sm="3" v-for="gear in gears" :key="gear.tokenId">
+      <MDBContainer>
+        <MDBRow>
+          <MDBCol auto v-for="gear in gears" :key="gear.tokenId">
           <!-- <GearCard :gear="getGearInfo(gears[1].rawMetadata)" :gearId="gears[1].tokenId"/> -->
-          <GearCard
-            :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
-          />
-        </MDBCol>
-      </MDBRow>
+            <GearCard
+              :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
+            />
+          </MDBCol>
+        </MDBRow>
+      </MDBContainer>
     </div>
     <div v-else>
       <p>Oops, seems like there is nothing on the market.</p>
@@ -21,14 +23,16 @@
 <script>
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import GearCard from '@/components/GearCard.vue';
-import { MDBRow, MDBCol } from "mdb-vue-ui-kit";
-const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
+import { MDBRow, MDBCol, MDBContainer } from "mdb-vue-ui-kit";
+const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 
 export default {
   components: {
     GearCard,
     MDBRow,
-    MDBCol
+    MDBCol,
+    MDBContainer
   },
   data() {
     return {
@@ -39,14 +43,14 @@ export default {
   methods: {
     async getContractNFTs() {
       const settings = {
-        apiKey: PRIVATE_KEY,
-        network: Network.ETH_GOERLI, // Replace the network needed.
+          apiKey: API_KEY,
+          network: Network.MATIC_MUMBAI,
       };
       const alchemy = new Alchemy(settings);
-      const tokens = await alchemy.nft.getNftsForContract("0xfa3737f6bce5c27e88359c5a44dae7f844b1814d"); // externalised this value
+      const tokens = await alchemy.nft.getNftsForContract(CONTRACT_ADDRESS);
       console.log(tokens);
       for (let i = 0; i < tokens.nfts.length; i++) {
-        if (tokens.nfts[i].rawMetadata.attributes[0]?.trait_type == "Family") // change this by putting a key a the root of the NFT ?
+      //   if (tokens.nfts[i].rawMetadata.attributes[0]?.trait_type == "Family") // change this by putting a key a the root of the NFT ?
           this.gears.push(tokens.nfts[i]);
       }
     },

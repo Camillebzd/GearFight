@@ -1,9 +1,9 @@
 <template>
-  <TheNavigation @updateAccountAddress="updateAccountAddress"/>
+  <TheNavigation />
   <!-- Customize notification here, lib: https://github.com/kyvg/vue3-notification -->
   <notifications position="top center" :duration="5000"/> 
   <div class="container">    
-    <router-view v-slot="{Component}" :accountAddress="accountAddress">
+    <router-view v-slot="{Component}">
       <Transition name="fade" mode="out-in">
         <component :is="Component" :key="$route.path" ></component>
       </Transition>
@@ -20,13 +20,13 @@ export default{
   },
   data() {
     return {
-      accountAddress: "",
+      // accountAddress: "",
     }
   },
   methods: {
-    updateAccountAddress(accountAddress) {
-      this.accountAddress = accountAddress;
-    }
+    // updateAccountAddress(accountAddress) {
+    //   this.accountAddress = accountAddress;
+    // }
   },
 }
 </script>

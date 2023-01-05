@@ -1,11 +1,10 @@
 <template>
   <div class="home">
     <h1>Personnal Armory</h1>
-    <div v-if="accountAddress.length"> <!-- Change to print a loader during the retreave of nft -->
+    <div v-if="isConnected"> <!-- Change to print a loader during the retreave of nft -->
       <div v-if="gears.length">
         <MDBRow>
           <MDBCol sm="3" v-for="gear in gears" :key="gear.tokenId">
-            <!-- <GearCard :gear="getGearInfo(gears[1].rawMetadata)" :gearId="gears[1].tokenId"/> -->
             <GearCard  
               :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
             />
@@ -31,6 +30,8 @@
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import GearCard from '@/components/GearCard.vue';
 import { MDBRow, MDBCol } from "mdb-vue-ui-kit";
+import { mapState } from 'pinia';
+import { useUserStore } from "@/stores/UserStore.js";
 const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 
 export default {
@@ -39,22 +40,24 @@ export default {
     MDBRow,
     MDBCol
   },
+  computed: {
+    ...mapState(useUserStore, ['walletAddress', 'isConnected']),
+  },
   data() {
     return {
-      accountAddress: "",
       gears: [],
     }
   },
   methods: {
     async getUserNFTs() {
-      if (this.accountAddress == undefined || this.accountAddress.length < 1)
+      if (this.walletAddress == undefined || this.walletAddress.length < 1)
         return;
       const settings = {
         apiKey: PRIVATE_KEY,
         network: Network.ETH_GOERLI, // Replace the network needed.
       };
       const alchemy = new Alchemy(settings);
-      const tokens = await alchemy.nft.getNftsForOwner(this.accountAddress);
+      const tokens = await alchemy.nft.getNftsForOwner(this.walletAddress);
       
       for (let i = 0; i < tokens.ownedNfts.length; i++) {
         if (tokens.ownedNfts[i].rawMetadata.attributes[0]?.trait_type == "Family") // change this by putting a key a the root of the NFT ?
@@ -86,13 +89,14 @@ export default {
     }
   },
   async created() {
-    this.accountAddress = this.$attrs.accountAddress;
     this.getUserNFTs();
   },
   watch: {
-    '$attrs.accountAddress': function(newVal, oldVal) {
-      this.accountAddress = newVal;
-      this.getUserNFTs();
+    'walletAddress': function(newVal, oldVal) {
+      if (this.isConnected)
+        this.getUserNFTs();
+      else
+        this.gears = [];
     },
   }
 }

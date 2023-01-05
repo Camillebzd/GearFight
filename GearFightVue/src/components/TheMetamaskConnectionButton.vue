@@ -1,28 +1,22 @@
 <template>
   <div class="metamask-container">
-    <MDBBtn outline="primary" v-if="(isConnected === false)" v-on:click="connectToMetamask">Connect Wallet</MDBBtn>
-    <MDBBtn outline="primary" v-else v-on:click="">Connected: {{smallAccountAddress}} </MDBBtn>
+    <MDBBtn outline="primary" v-if="!isConnected" v-on:click="connectToMetamask">Connect Wallet</MDBBtn>
+    <MDBBtn outline="primary" v-else v-on:click="">Connected: {{smallAddress}} </MDBBtn>
   </div>
 </template>
 
 <script>
 import { MDBBtn } from "mdb-vue-ui-kit";
+import { mapState, mapWritableState } from 'pinia';
+import { useUserStore } from "@/stores/UserStore.js";
 
 export default {
   components: {
     MDBBtn
   },
-  emits: ['updateAccountAddress'],
-  data() {
-    return {
-      isConnected: false,
-      accountAddress: "",
-    }
-  },
   computed: {
-    smallAccountAddress() {
-      return this.accountAddress.substring(0, 6) + "..." + this.accountAddress.substring(38)
-    }
+    ...mapState(useUserStore, ['isConnected', 'smallAddress']),
+    ...mapWritableState(useUserStore, ['walletAddress']),
   },
   methods: {
     async connectToMetamask() {
@@ -32,14 +26,12 @@ export default {
           const addressArray = await window.ethereum.request({
             method: "eth_requestAccounts",
           });
-          this.accountAddress = addressArray[0];
-          this.isConnected = true;
+          this.walletAddress = addressArray[0];
           this.$notify({
             type: "success",
             title: "Connected",
             text: "MetaMask is connected! Here is your address: " + addressArray[0],
           });
-          this.$emit('updateAccountAddress', addressArray[0]);
         } catch (err) {
           this.$notify({
             type: "error",
@@ -59,10 +51,28 @@ export default {
   async created() {
     const accounts = await ethereum.request({method: 'eth_accounts'});       
     if (accounts.length) {
-      this.accountAddress = accounts[0];
-      this.isConnected = true;
-      this.$emit('updateAccountAddress', accounts[0]);
+      this.walletAddress = accounts[0];
     }
+    window.ethereum.on("accountsChanged", accounts => {
+      if (accounts.length > 0) {
+        console.log(`Account connected: ${accounts[0]}`); 
+        this.walletAddress = accounts[0];
+        this.$notify({
+          type: "success",
+          title: "Connected",
+          text: "MetaMask is connected! Here is your address: " + addressArray[0],
+        });
+      }
+      else {
+        console.log("Account disconnected");
+        this.walletAddress = "";
+        this.$notify({
+          type: "error",
+          title: "Disconnected",
+          text: "😥 Your wallet is disconnected.",
+        });
+      }
+    });
   }
 };
 </script>

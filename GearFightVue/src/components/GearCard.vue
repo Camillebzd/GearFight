@@ -1,5 +1,5 @@
 <template>
-  <MDBCard style="width: 14rem">
+  <MDBCard style="width: 14rem; margin-bottom: 1rem;">
     <RouterLink :to="{name: 'gear.show', params:{id: gearId, slug: gear.name}}">
       <MDBCardImg top :src="gear.image" alt="..."/>
       <MDBCardBody>
@@ -22,13 +22,11 @@ import {
   MDBCardBody,
   MDBCardTitle,
   MDBCardText,
-  MDBCardLink,
-  MDBCardImg,
-  MDBListGroup,
-  MDBListGroupItem
+  MDBCardImg
 } from "mdb-vue-ui-kit";
 import { RouterLink } from "vue-router";
-const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
+const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 
 export default {
   components: {
@@ -36,10 +34,7 @@ export default {
     MDBCardBody,
     MDBCardTitle,
     MDBCardText,
-    MDBCardLink,
     MDBCardImg,
-    MDBListGroup,
-    MDBListGroupItem,
     RouterLink
   },
   props: {
@@ -54,11 +49,11 @@ export default {
   methods: {
     async getNFTOwner() {
       const settings = {
-        apiKey: PRIVATE_KEY,
-        network: Network.ETH_GOERLI, // Replace the network needed.
+          apiKey: API_KEY,
+          network: Network.MATIC_MUMBAI,
       };
       const alchemy = new Alchemy(settings);
-      const owner = await alchemy.nft.getOwnersForNft("0xfa3737f6bce5c27e88359c5a44dae7f844b1814d", this.gearId); // externalised this value
+      const owner = await alchemy.nft.getOwnersForNft(CONTRACT_ADDRESS, this.gearId); // externalised this value
       this.owner = owner?.owners[0];
     }
   },

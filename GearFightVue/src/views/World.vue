@@ -19,7 +19,9 @@
 
 <script>
 import MonsterCard from "@/components/MonsterCard.vue";
-import Monsters from "@/Game/Data/monsters.json";
+// import Monsters from "@/data/monsters.json";
+import { useMonstersStore } from "@/stores/MonstersStore.js";
+import { mapState } from 'pinia';
 import { MDBRow, MDBCol, MDBContainer } from "mdb-vue-ui-kit";
 
 export default {
@@ -29,10 +31,12 @@ export default {
     MDBCol,
     MDBContainer
   },
-  data() {
-    return {
-      monsters: Monsters
-    }
+  computed: {
+    ...mapState(useMonstersStore, ['monsters', 'fill']),
+
   },
+  async created() {
+    this.fill();
+  }
 }
 </script>

@@ -1,18 +1,18 @@
 <template>
   <MDBCard style="width: 14rem; margin-bottom: 1rem;">
-    <RouterLink :to="{name: 'monster.show', params:{id: monsterId, slug: monster.Name}}">
+    <RouterLink :to="{name: 'monster.show', params:{id: monsterId, slug: monster.name}}">
       <MDBCardImg top :src="'/img/' + monster.image" alt="..." style="width: 64; height: 64;"/>
       <MDBCardBody>
-        <MDBCardTitle>{{monster.Name}}</MDBCardTitle>
+        <MDBCardTitle>{{monster.name}}</MDBCardTitle>
         <MDBCardText>
-          {{monster.Description}} <br/>
-          Level: {{ monster.Level }} <br/>
-          Life: {{ monster.Life }} <br/>
-          Strenght: {{ monster.Strenght }} <br/>
-          Speed: {{ monster.Speed }}
+          {{monster.description}} <br/>
+          Level: {{ monster.Level }}
+          <MDBBadge :badge="getBadgeColor">{{ monster.Rarity }}</MDBBadge>
         </MDBCardText>
       </MDBCardBody>
     </RouterLink>
+    <button v-on:click="counter += 1">Add 1</button>
+    <p>The button above has been clicked {{ counter }} times.</p>
   </MDBCard>
 </template>
 
@@ -24,6 +24,7 @@ import {
   MDBCardText,
   MDBCardLink,
   MDBCardImg,
+  MDBBadge 
 } from "mdb-vue-ui-kit";
 import { RouterLink } from "vue-router";
 
@@ -35,12 +36,29 @@ export default {
     MDBCardText,
     MDBCardLink,
     MDBCardImg,
-    RouterLink
+    RouterLink,
+    MDBBadge 
   },
   props: {
     monster: {type: Object, require: true},
     monsterId: {type: Number, require: true},
   },
+  data() {
+    return {
+      counter: 0
+    }
+  },
+  computed: {
+    getBadgeColor() {
+      if (this.monster.Rarity === "NORMAL")
+        return "secondary";
+      else if (this.monster.Rarity === "ELITE")
+        return "warning";
+      else
+        return "danger";
+
+    }
+  }
 };
 
 </script>

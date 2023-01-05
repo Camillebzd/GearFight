@@ -49,7 +49,8 @@
 <script>
 import { Network, Alchemy, Wallet, Utils } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import { MDBBtn } from "mdb-vue-ui-kit";
-const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
+const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 
 export default {
   components: {
@@ -92,13 +93,13 @@ export default {
     },
     async getNFTInfo() {
       const settings = {
-        apiKey: PRIVATE_KEY,
-        network: Network.ETH_GOERLI, // Replace the network needed.
+          apiKey: API_KEY,
+          network: Network.MATIC_MUMBAI,
       };
       const alchemy = new Alchemy(settings);
-      this.gear = await alchemy.nft.getNftMetadata("0xfa3737f6bce5c27e88359c5a44dae7f844b1814d", this.$route.params.id); // externalised this value
+      this.gear = await alchemy.nft.getNftMetadata(CONTRACT_ADDRESS, this.$route.params.id); // externalised this value
       console.log(this.gear);
-      this.gearOwners = await alchemy.nft.getOwnersForNft("0xfa3737f6bce5c27e88359c5a44dae7f844b1814d", this.$route.params.id);
+      this.gearOwners = await alchemy.nft.getOwnersForNft(CONTRACT_ADDRESS, this.$route.params.id);
       // console.log()
     },
     getGearInfo(gear) { // mettre dans un utils.js ?

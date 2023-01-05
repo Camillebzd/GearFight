@@ -25,7 +25,7 @@
       />
       <MDBBtn outline="primary" @click="test"> Search </MDBBtn>
     </form>
-    <TheMetamaskConnectionButton @updateAccountAddress="updateAccountAddress"/>
+    <TheMetamaskConnectionButton />
   </MDBNavbar>
 </template>
 
@@ -50,11 +50,12 @@ export default {
     MDBBtn,
     TheMetamaskConnectionButton,
   },
-  emits: ['updateAccountAddress'],
+  // emits: ['updateAccountAddress'],
   methods: {
     checkActive(toCheck) {
       return toCheck === this.$router.currentRoute.value.path;
     },
+    // to delet 
     test() {
       this.$notify({
         type: "error",
@@ -62,9 +63,9 @@ export default {
         text: "🦊 You must install Metamask, a virtual Ethereum wallet, in your browser.",
       });
     },
-    updateAccountAddress(address) {
-      this.$emit('updateAccountAddress', address);
-    }
+    // updateAccountAddress(address) {
+    //   this.$emit('updateAccountAddress', address);
+    // }
   }
 };
 </script>

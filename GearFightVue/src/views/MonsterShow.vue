@@ -13,21 +13,6 @@ export default {
   components: {
     MDBBtn,
   },
-  data() {
-    return {
-      accountAddress: ""
-    }
-  },
-  methods: {
-  },
-  async created() {
-    this.accountAddress = this.$attrs.accountAddress;
-  },
-  watch: {
-    '$attrs.accountAddress': function(newVal, oldVal) {
-      this.accountAddress = newVal;
-    },
-  }
 }
 </script>
 
