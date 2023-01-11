@@ -26,12 +26,6 @@ export default {
           const addressArray = await window.ethereum.request({
             method: "eth_requestAccounts",
           });
-          this.walletAddress = addressArray[0];
-          this.$notify({
-            type: "success",
-            title: "Connected",
-            text: "MetaMask is connected! Here is your address: " + addressArray[0],
-          });
         } catch (err) {
           this.$notify({
             type: "error",
@@ -60,7 +54,7 @@ export default {
         this.$notify({
           type: "success",
           title: "Connected",
-          text: "MetaMask is connected! Here is your address: " + addressArray[0],
+          text: "MetaMask is connected! Here is your address: " + accounts[0],
         });
       }
       else {

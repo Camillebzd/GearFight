@@ -11,8 +11,6 @@
         </MDBCardText>
       </MDBCardBody>
     </RouterLink>
-    <button v-on:click="counter += 1">Add 1</button>
-    <p>The button above has been clicked {{ counter }} times.</p>
   </MDBCard>
 </template>
 
@@ -43,11 +41,6 @@ export default {
     monster: {type: Object, require: true},
     monsterId: {type: Number, require: true},
   },
-  data() {
-    return {
-      counter: 0
-    }
-  },
   computed: {
     getBadgeColor() {
       if (this.monster.Rarity === "NORMAL")
@@ -58,7 +51,7 @@ export default {
         return "danger";
 
     }
-  }
+  },
 };
 
 </script>

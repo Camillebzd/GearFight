@@ -2,14 +2,16 @@
   <div class="home">
     <h1>Personnal Armory</h1>
     <div v-if="isConnected"> <!-- Change to print a loader during the retreave of nft -->
-      <div v-if="gears.length">
-        <MDBRow>
-          <MDBCol sm="3" v-for="gear in gears" :key="gear.tokenId">
-            <GearCard  
-              :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
-            />
-          </MDBCol>
-        </MDBRow>
+      <div v-if="ownedGears.length">
+        <MDBContainer>
+          <MDBRow>
+            <MDBCol auto v-for="gear in ownedGears" :key="gear.tokenId">
+              <GearCard  
+                :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
+              />
+            </MDBCol>
+          </MDBRow>
+        </MDBContainer>
       </div>
       <div v-else>
         <p>We couldn't find any weapon on your MetaMask account:</p>
@@ -27,21 +29,22 @@
 </template>
 
 <script>
-import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import GearCard from '@/components/GearCard.vue';
-import { MDBRow, MDBCol } from "mdb-vue-ui-kit";
+import { MDBRow, MDBCol, MDBContainer } from "mdb-vue-ui-kit";
 import { mapState } from 'pinia';
 import { useUserStore } from "@/stores/UserStore.js";
-const PRIVATE_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
+import { useGearsStore } from "@/stores/GearsStore";
 
 export default {
   components: {
     GearCard,
     MDBRow,
-    MDBCol
+    MDBCol,
+    MDBContainer
   },
   computed: {
     ...mapState(useUserStore, ['walletAddress', 'isConnected']),
+    ...mapState(useGearsStore, ['ownedGears', 'getMyGears']),
   },
   data() {
     return {
@@ -49,22 +52,6 @@ export default {
     }
   },
   methods: {
-    async getUserNFTs() {
-      if (this.walletAddress == undefined || this.walletAddress.length < 1)
-        return;
-      const settings = {
-        apiKey: PRIVATE_KEY,
-        network: Network.ETH_GOERLI, // Replace the network needed.
-      };
-      const alchemy = new Alchemy(settings);
-      const tokens = await alchemy.nft.getNftsForOwner(this.walletAddress);
-      
-      for (let i = 0; i < tokens.ownedNfts.length; i++) {
-        if (tokens.ownedNfts[i].rawMetadata.attributes[0]?.trait_type == "Family") // change this by putting a key a the root of the NFT ?
-          this.gears.push(tokens.ownedNfts[i]);
-      }
-      console.log(this.gears);
-    },
     getGearInfo(gear) {
       return {
         name: gear.name,
@@ -89,19 +76,20 @@ export default {
     }
   },
   async created() {
-    this.getUserNFTs();
+    this.getMyGears();
   },
   watch: {
-    'walletAddress': function(newVal, oldVal) {
-      if (this.isConnected)
-        this.getUserNFTs();
-      else
-        this.gears = [];
-    },
+    'this.walletAddress': function(newVal, oldVal) {
+      this.getMyGears();
+    }
   }
 }
 </script>
 
 <style>
-
+.flex-div {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
 </style>

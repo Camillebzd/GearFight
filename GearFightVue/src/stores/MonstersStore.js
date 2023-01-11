@@ -13,6 +13,7 @@ export const useMonstersStore  = defineStore('MonstersStore', {
     // API on it to get data from back
     async fill() {
       this.monsters = (await import('@/data/monsters.json')).default;
+      console.log("monsters pulled");
     },
   },
 })
