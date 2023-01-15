@@ -1,0 +1,80 @@
+[
+  {
+    "name": "Fireball",
+    "id": 0,
+    "data": {
+      "description": "A simple fireball but can burn your opponent.",
+      "image": "fireball.jpg",
+      "weigth": 10,
+      "number": 10,
+      "type": "DAMAGE",
+      "ratio": 1,
+      "ratioStat": "Attack",
+      "target": {
+        "number": "ONE",
+        "type": "ENEMY"
+      },
+      "debuff": [
+        "BURN"
+      ],
+      "buff": []
+    }
+  },
+  {
+    "name": "Basic_cut",
+    "id": 1,
+    "data": {
+      "description": "A simple hit.",
+      "image": "basic_cut.jpg",
+      "weigth": 10,
+      "number": 10,
+      "type": "DAMAGE",
+      "ratio": 1,
+      "ratioStat": "Attack",
+      "target": {
+        "number": "ONE",
+        "type": "ENEMY"
+      },
+      "debuff": [],
+      "buff": []
+    }
+  },
+  {
+    "name": "Basic_heal",
+    "id": 2,
+    "data": {
+      "description": "A simple heal.",
+      "image": "basic_heal.jpg",
+      "weigth": 10,
+      "number": 10,
+      "type": "HEAL",
+      "ratio": 1,
+      "ratioStat": "Attack",
+      "target": {
+        "number": "ONE",
+        "type": "ALLY"
+      },
+      "debuff": [],
+      "buff": []
+    }
+  },
+  {
+    "name": "Basic_poisson",
+    "id": 3,
+    "data": {
+      "description": "A simple poissonous attack.",
+      "image": "basic_poisson.jpg",
+      "weigth": 10,
+      "number": 10,
+      "type": "DEBUFF",
+      "ratio": 0,
+      "ratioStat": "Attack",
+      "target": {
+        "number": "ONE",
+        "type": "ENEMY"
+      },
+      "debuff": [ "Poisson" ],
+      "buff": []
+    }
+  }
+]

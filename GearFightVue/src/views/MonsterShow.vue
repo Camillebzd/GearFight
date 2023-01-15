@@ -2,7 +2,7 @@
   <div>
     <h1>{{monster.name}}</h1>
     <div class="flex-div">
-      <img :src="'/img/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
+      <img :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
       <div>
         <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ monster.Rarity }}</MDBBadge>
         <p>Level: {{monster.Level}}</p>
@@ -45,7 +45,7 @@
         </MDBModalBody>
         <MDBModalFooter>
           <MDBBtn color="secondary" @click="exampleModalScrollable = false"> Close </MDBBtn>
-          <MDBBtn color="primary" :disabled="gearSelected < 0" > Use this weapon </MDBBtn>
+          <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchFight" > Use this weapon </MDBBtn>
         </MDBModalFooter>
       </MDBModal>
     </div>
@@ -73,6 +73,8 @@ import { useUserStore } from "@/stores/UserStore";
 import { mapState } from 'pinia';
 import { useGearsStore } from "@/stores/GearsStore";
 import GearCardHorizontal from '@/components/GearCardHorizontal.vue';
+import { io } from "socket.io-client";
+import socket from '@/socket.js';
 
 export default {
   components: {
@@ -91,7 +93,7 @@ export default {
   computed: {
     ...mapState(useMonstersStore, ['monsters', 'fill']),
     ...mapState(useUserStore, ['isConnected']),
-    ...mapState(useGearsStore, ['ownedGears', 'getMyGears']),
+    ...mapState(useGearsStore, ['ownedGears', 'fillMyGears', 'getFightFormGear']),
     monster() {
       return this.monsters[this.$route.params.id];
     },
@@ -105,6 +107,29 @@ export default {
     }
   },
   methods: {
+    async launchFight() {
+      // loading to tell the client to wait the start of the fight ?
+      // this.socket = io("http://localhost:3222", {auth: {userId: this.gearSelected}});
+      socket.auth = {userId: this.gearSelected};
+      socket.connect();
+      socket.on("connect_error", (err) => {
+        console.log(err.message);
+      });
+      socket.on("roomCreated", data => {
+        console.log(this.gearSelected);
+        if (data.lead == this.gearSelected) { // check leader is in my team
+          //deco socket ...
+          // this.socket.disconnect();
+          this.$router.push({name: 'fight', params:{roomId: data.id, gearId: this.gearSelected}});
+        }
+      });
+      let fightData = {enemies: [], allies: []}; // all the data for the fight
+      fightData.enemies.push(this.monster);
+      // fightData.allies.push(this.ownedGears.find(gear => gear.tokenId == this.gearSelected));
+      fightData.allies.push(this.getFightFormGear(this.gearSelected));
+      fightData.leadAllies = this.gearSelected;
+      socket.emit("initFight", fightData);
+    },
     isSelected(gearId) {
       return this.gearSelected == gearId;
     },
@@ -118,7 +143,7 @@ export default {
       this.gearSelected = -1;
       this.exampleModalScrollable = true
       if (this.ownedGears.length < 1)
-        this.getMyGears();
+        this.fillMyGears();
     },
     getGearInfo(gear) {
       return {
@@ -147,12 +172,17 @@ export default {
     return {
       exampleModalScrollable: false,
       gearSelected: -1,
+      socket: {},
     }
   },
-  created() {
+  async created() {
     this.fill();
-    this.getMyGears();
-  }
+    await this.fillMyGears();
+  },
+  destroyed() {
+    socket.off("connect_error");
+    socket.off("roomCreated");
+  },
 }
 </script>
 

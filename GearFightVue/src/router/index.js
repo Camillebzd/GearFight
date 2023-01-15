@@ -29,7 +29,7 @@ const routes = [
     component: ()=>import('@/views/MonsterShow.vue'),
     // props: route=>({...route.params, id: parseInt(route.params.id)}),
     beforeEnter(to, from) {
-      const maxMonsterId = 30; // monster number possible
+      const maxMonsterId = 39; // monster number possible
       if (parseInt(to.params.id) > maxMonsterId)
         return {
           name: 'NotFound',
@@ -39,7 +39,7 @@ const routes = [
         }
     },
   },
-
+  {path: '/fight/:roomId/:gearId', name: 'fight', props: true, component: ()=>import('@/views/Fight.vue')},
   {path: '/:pathMatch(.*)*', name: 'NotFound', component: ()=>import('@/views/NotFound.vue')},
 ]
 

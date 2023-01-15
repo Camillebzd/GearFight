@@ -44,7 +44,7 @@ export default {
   },
   computed: {
     ...mapState(useUserStore, ['walletAddress', 'isConnected']),
-    ...mapState(useGearsStore, ['ownedGears', 'getMyGears']),
+    ...mapState(useGearsStore, ['ownedGears', 'fillMyGears']),
   },
   data() {
     return {
@@ -76,11 +76,11 @@ export default {
     }
   },
   async created() {
-    this.getMyGears();
+    this.fillMyGears();
   },
   watch: {
     'this.walletAddress': function(newVal, oldVal) {
-      this.getMyGears();
+      this.fillMyGears();
     }
   }
 }

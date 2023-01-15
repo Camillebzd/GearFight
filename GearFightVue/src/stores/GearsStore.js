@@ -14,8 +14,6 @@ export const useGearsStore  = defineStore('GearStore', {
     }
   },
   getters: {
-    smallAddress: (state) => {return state.walletAddress.substring(0, 6) + "..." + state.walletAddress.substring(38)},
-    isConnected: (state) => {return state.walletAddress.length > 0},
   },
   actions: {
     async getGearsForContract() {
@@ -31,7 +29,7 @@ export const useGearsStore  = defineStore('GearStore', {
       for (let i = 0; i < tokens.nfts.length; i++)
         this.gears.push(tokens.nfts[i]);
     },
-    async getMyGears() {
+    async fillMyGears() {
       let userStore = useUserStore();
       if (!userStore.isConnected) {
         console.log("You should be connected if you want to get your Gears!");
@@ -50,6 +48,35 @@ export const useGearsStore  = defineStore('GearStore', {
         if (nft.contract.address == CONTRACT_ADDRESS)
           this.ownedGears.push(nft)
       });
+    },
+    getGear(tokenId) {
+      return this.gears.find(gear => gear.tokenId === tokenId);
+    },
+    getMyGear(tokenId) {
+      return this.ownedGears.find(gear => gear.tokenId === tokenId);
+    },
+    getFightFormGear(tokenId) {
+      let tokenMetadata = this.getMyGear(tokenId).rawMetadata;
+      return {
+        name: tokenMetadata.name,
+        id: tokenId,
+        description: tokenMetadata.description,
+        image: tokenMetadata.image,
+        level: this.getGearAttributeInfo(tokenMetadata.attributes, "Level"),
+        life: this.getGearAttributeInfo(tokenMetadata.attributes, "Life"),
+        attack: this.getGearAttributeInfo(tokenMetadata.attributes, "Strength"),
+        speed: this.getGearAttributeInfo(tokenMetadata.attributes, "Speed"),
+      };
+    },
+    getGearAttributeInfo(attributes, trait_type) {
+      for (let i = 0; i < attributes.length; i++) {
+        if (attributes[i].trait_type === trait_type)
+          return attributes[i].value;
+      }
+      return "";
+    },
+    isOwned(tokenId) {
+      return this.ownedGears.findIndex(gear => gear.tokenId == tokenId) > -1;
     }
   },
 })

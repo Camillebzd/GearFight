@@ -1,7 +1,7 @@
 <template>
   <MDBCard style="width: 14rem; margin-bottom: 1rem;">
     <RouterLink :to="{name: 'monster.show', params:{id: monsterId, slug: monster.name}}">
-      <MDBCardImg top :src="'/img/' + monster.image" alt="..." style="width: 64; height: 64;"/>
+      <MDBCardImg top :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;"/>
       <MDBCardBody>
         <MDBCardTitle>{{monster.name}}</MDBCardTitle>
         <MDBCardText>
