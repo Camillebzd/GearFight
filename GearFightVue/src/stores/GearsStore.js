@@ -59,13 +59,17 @@ export const useGearsStore  = defineStore('GearStore', {
       let tokenMetadata = this.getMyGear(tokenId).rawMetadata;
       return {
         name: tokenMetadata.name,
-        id: tokenId,
+        id: parseInt(tokenId),
         description: tokenMetadata.description,
         image: tokenMetadata.image,
-        level: this.getGearAttributeInfo(tokenMetadata.attributes, "Level"),
-        life: this.getGearAttributeInfo(tokenMetadata.attributes, "Life"),
-        attack: this.getGearAttributeInfo(tokenMetadata.attributes, "Strength"),
-        speed: this.getGearAttributeInfo(tokenMetadata.attributes, "Speed"),
+        level: parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Level")),
+        life: parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Life")),
+        attack: parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Strength")),
+        speed: parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Speed")),
+        isNPC: false,
+        played: false,
+        action: {},
+        side: 'group1' // manage group on front !
       };
     },
     getGearAttributeInfo(attributes, trait_type) {

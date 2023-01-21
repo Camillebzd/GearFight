@@ -76,5 +76,24 @@
       "debuff": [ "Poisson" ],
       "buff": []
     }
+  },
+  {
+    "name": "Basic_bite",
+    "id": 4,
+    "data": {
+      "description": "A simple bite.",
+      "image": "",
+      "weigth": 10,
+      "number": 10,
+      "type": "DAMAGE",
+      "ratio": 1,
+      "ratioStat": "Attack",
+      "target": {
+        "number": "ONE",
+        "type": "ENEMY"
+      },
+      "debuff": [],
+      "buff": []
+    }
   }
 ]

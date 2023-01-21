@@ -24,7 +24,7 @@
         </div>
       </div>
       <div class="spells-container">
-        <SpellCard v-for="mySpell in mySpells" :key="mySpell.id"
+        <SpellCard v-for="mySpell in mySkills" :key="mySpell.id"
           @click="selecteSpell(mySpell.name)" 
           :spellName="mySpell.name" 
           :selected="spellSelectedName == mySpell.name ? true : false"
@@ -68,7 +68,7 @@ export default {
     return {
       socket: {},
       myGear: {},
-      mySpells: [],
+      mySkills: [],
       allies: [],
       enemies: [],
       spellSelectedName: "",
@@ -82,7 +82,8 @@ export default {
       if (this.spellSelectedName == "")
         return;
       let spellUsed = this.getSpell(this.spellSelectedName);
-      let data = {user: this.myGear, spell: spellUsed, target: target};
+      let data = {user: this.myGear, spell: spellUsed, target: target, roomId: this.roomId};
+      // console.log(data);
       socket.emit("launchSpell", data);
       this.spellSelectedName = "";
       this.targetType = "";
@@ -99,30 +100,42 @@ export default {
     await this.fillSpells();
     this.isAllowHere = true;
     // this.socket = io("http://localhost:3222", {auth: {userId: this.gearId}});
+    socket.auth = {userId: this.gearId};
+    socket.connect();
+    console.log("socket id:", socket.auth.userId);
     socket.on("connect_error", (err) => {
       console.log(err.message);
     });
     socket.on("roomData", async roomData => {
-      this.enemies = roomData.enemies;
-      let pos = roomData.allies.findIndex(gear => gear.id == this.gearId);
-      console.log(roomData.allies);
-      this.myGear = await roomData.allies.splice(pos, pos + 1)[0];
+      let room = JSON.parse(roomData)
+      this.enemies = room.group2;
+      let pos = room.group1.findIndex(gear => gear.id == this.gearId);
+      console.log(room.group1);
+      this.myGear = await room.group1.splice(pos, pos + 1)[0];
       // --- DEBUG ---
-      // this.myGear.Spells.map(spell => {this.mySpells.push(this.getSpell(spell))});
-      this.mySpells.push(this.getSpell("Fireball"));
-      this.mySpells.push(this.getSpell("Basic_cut"));
-      this.mySpells.push(this.getSpell("Basic_heal"));
-      this.mySpells.push(this.getSpell("Basic_poisson"));
+      // this.myGear.Spells.map(spell => {this.mySkills.push(this.getSpell(spell))});
+      this.mySkills.push(this.getSpell("Fireball"));
+      this.mySkills.push(this.getSpell("Basic_cut"));
+      this.mySkills.push(this.getSpell("Basic_heal"));
+      this.mySkills.push(this.getSpell("Basic_poisson"));
       // --- ---
-      this.allies = roomData.allies;
+      this.allies = room.group1;
       this.fightStarted = true;
     });
-    console.log("before emit");
+    console.log("before emit: ", this.roomId);
     socket.emit("getRoomData", this.roomId);
   },
-  destroyed() {
+  unmounted() {
     socket.off("connect_error");
     socket.off("roomData");
+    socket.disconnect();
+  },
+  destroyed() {
+    if (socket.connected) {
+      socket.off("connect_error");
+      socket.off("roomData");
+      socket.disconnect();
+    }
   },
 }
 </script>

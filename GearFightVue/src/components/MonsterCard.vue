@@ -7,7 +7,7 @@
         <MDBCardText>
           {{monster.description}} <br/>
           Level: {{ monster.Level }}
-          <MDBBadge :badge="getBadgeColor">{{ monster.Rarity }}</MDBBadge>
+          <MDBBadge :badge="getBadgeColor">{{ monster.rarity }}</MDBBadge>
         </MDBCardText>
       </MDBCardBody>
     </RouterLink>
@@ -43,9 +43,9 @@ export default {
   },
   computed: {
     getBadgeColor() {
-      if (this.monster.Rarity === "NORMAL")
+      if (this.monster.rarity === "NORMAL")
         return "secondary";
-      else if (this.monster.Rarity === "ELITE")
+      else if (this.monster.rarity === "ELITE")
         return "warning";
       else
         return "danger";

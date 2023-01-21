@@ -5,11 +5,11 @@
       <img :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
       <div>
         <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ monster.Rarity }}</MDBBadge>
-        <p>Level: {{monster.Level}}</p>
-        <p>Attack: {{monster.Attack}}</p>
-        <p>Defense: {{monster.Defense}}</p>
-        <p>Life: {{monster.Life}}</p>
-        <p>Speed: {{monster.Speed}}</p>
+        <p>Level: {{monster.level}}</p>
+        <p>Attack: {{monster.attack}}</p>
+        <p>Defense: {{monster.defense}}</p>
+        <p>Life: {{monster.life}}</p>
+        <p>Speed: {{monster.speed}}</p>
       </div>
     </div>
     <p>{{monster.description}}</p>
@@ -118,16 +118,18 @@ export default {
       socket.on("roomCreated", data => {
         console.log(this.gearSelected);
         if (data.lead == this.gearSelected) { // check leader is in my team
-          //deco socket ...
-          // this.socket.disconnect();
           this.$router.push({name: 'fight', params:{roomId: data.id, gearId: this.gearSelected}});
         }
       });
-      let fightData = {enemies: [], allies: []}; // all the data for the fight
-      fightData.enemies.push(this.monster);
+      let fightData = {group2: [], group1: []}; // all the data for the fight
+      let monster = this.monster;
+      monster.played = false; // function to create fight form JSON ?
+      monster.action = {};
+      monster.side = 'group2';
+      fightData.group2.push(monster);
       // fightData.allies.push(this.ownedGears.find(gear => gear.tokenId == this.gearSelected));
-      fightData.allies.push(this.getFightFormGear(this.gearSelected));
-      fightData.leadAllies = this.gearSelected;
+      fightData.group1.push(this.getFightFormGear(this.gearSelected));
+      fightData.roomLeader = this.gearSelected;
       socket.emit("initFight", fightData);
     },
     isSelected(gearId) {
@@ -176,12 +178,21 @@ export default {
     }
   },
   async created() {
+    console.log("created");
     this.fill();
     await this.fillMyGears();
   },
-  destroyed() {
+  unmounted() {
     socket.off("connect_error");
     socket.off("roomCreated");
+    socket.disconnect();
+  },
+  destroyed() {
+    if (socket.connected) {
+      socket.off("connect_error");
+      socket.off("roomCreated");
+      socket.disconnect();
+    }
   },
 }
 </script>
