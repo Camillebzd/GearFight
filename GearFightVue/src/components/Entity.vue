@@ -6,7 +6,7 @@
     </div>
     <div class="health-container">
       <div style="margin-right: 7px">HP: </div>
-      <progress max="100" value="100" style="background-color:green"></progress>
+      <progress :max="entity.life_base" :value="entity.life" style="background-color:green"></progress>
     </div>
   </div>
 </template>
@@ -18,6 +18,7 @@ export default {
   },
   props: {
     image: { type: String, required: true},
+    entity: { type: Object, required: true},
     isSelectable: {type: Boolean}
   },
 }

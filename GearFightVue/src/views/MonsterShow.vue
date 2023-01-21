@@ -91,7 +91,7 @@ export default {
     GearCardHorizontal
   },
   computed: {
-    ...mapState(useMonstersStore, ['monsters', 'fill']),
+    ...mapState(useMonstersStore, ['monsters', 'fill', 'getFightFormMonster']),
     ...mapState(useUserStore, ['isConnected']),
     ...mapState(useGearsStore, ['ownedGears', 'fillMyGears', 'getFightFormGear']),
     monster() {
@@ -122,11 +122,12 @@ export default {
         }
       });
       let fightData = {group2: [], group1: []}; // all the data for the fight
-      let monster = this.monster;
-      monster.played = false; // function to create fight form JSON ?
-      monster.action = {};
-      monster.side = 'group2';
-      fightData.group2.push(monster);
+      // let monster = this.monster;
+      // monster.played = false; // function to create fight form JSON ?
+      // monster.action = {};
+      // monster.side = 'group2';
+      // fightData.group2.push(monster);
+      fightData.group2.push(this.getFightFormMonster(this.$route.params.id));
       // fightData.allies.push(this.ownedGears.find(gear => gear.tokenId == this.gearSelected));
       fightData.group1.push(this.getFightFormGear(this.gearSelected));
       fightData.roomLeader = this.gearSelected;

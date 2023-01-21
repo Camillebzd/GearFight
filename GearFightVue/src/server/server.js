@@ -49,6 +49,7 @@ Socketio.on("connection", socket => {
   });
   socket.on("getRoomData", roomId => {
     console.log("Asking for room data: ", roomId);
+    socket.join(roomId);
     socket.emit("roomData", JSON.stringify(roomStore.findRoom(roomId)));
   });
   socket.on("launchSpell", action => {
@@ -62,7 +63,8 @@ Socketio.on("connection", socket => {
     // let roomData = roomStore.findRoom(action.roomId);
     // console.log(roomData.group2[0].action.user);
   });
-  // socket.on("disconnection")
+  socket.on("disconnecting", () => {
+  })
 });
 
 // -- export this
@@ -163,6 +165,7 @@ function resolveTurn(roomId) {
   actions.map(action => {
     console.log(`${action.user.id} launch ${action.spell.name} on ${action.target.id}`);
     resolveAction(room, action);
+    Socketio.to(roomId).emit("resolveAction", {action: action, room: room});
   });
   console.log(room.group1[0].life);
   room.fightSystem.turn += 1;

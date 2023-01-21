@@ -12,6 +12,7 @@
           <Entity 
             @click="targetType == 'ALLY' && launchSpell(myGear)"
             :image="myGear?.image" 
+            :entity="myGear"
             :isSelectable="targetType == 'ALLY'"
           />
         </div>
@@ -19,9 +20,13 @@
           <Entity 
             @click="targetType == 'ENEMY' && launchSpell(enemies[0])"
             :image="'/img/monsters/' + enemies[0].image"
+            :entity="enemies[0]"
             :isSelectable="targetType == 'ENEMY'"
           />
         </div>
+      </div>
+      <div class="info-chat-container">
+        <Chat :lignes="info"/>
       </div>
       <div class="spells-container">
         <SpellCard v-for="mySpell in mySkills" :key="mySpell.id"
@@ -47,6 +52,7 @@ import { mapState } from 'pinia';
 import { useGearsStore } from "@/stores/GearsStore";
 import { useSpellsStore } from "@/stores/SpellsStore";
 import Entity from "@/components/Entity.vue";
+import Chat from "@/components/Chat.vue";
 
 export default {
   components: {
@@ -54,7 +60,8 @@ export default {
     MDBCol,
     MDBContainer,
     SpellCard,
-    Entity
+    Entity,
+    Chat
   },
   props: {
     gearId: String,
@@ -75,9 +82,14 @@ export default {
       targetType: "",
       isAllowHere: false,
       fightStarted: false,
+      info: [],
+      actualTurn: 0,
     }
   },
   methods: {
+    getEntitieFromRoom(room, entitieToFind) {
+      return room[entitieToFind.side].find(entitie => entitie.id == entitieToFind.id && entitie.isNPC == entitieToFind.isNPC);
+    },
     launchSpell(target) {
       if (this.spellSelectedName == "")
         return;
@@ -122,18 +134,34 @@ export default {
       this.allies = room.group1;
       this.fightStarted = true;
     });
+    socket.on("resolveAction", async data => {
+      // console.log(data);
+      let user = this.getEntitieFromRoom(data.room, {...data.action.user}).name;
+      let target = this.getEntitieFromRoom(data.room, {...data.action.target}).name;
+      if (this.actualTurn < data.room.fightSystem.turn) {
+        this.actualTurn = data.room.fightSystem.turn;
+        this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
+      }
+      this.info.push(`- ${user} launch ${data.action.spell.name} on ${target}`);
+      // update the web with room data
+      this.myGear = this.getEntitieFromRoom(data.room, {id: this.myGear.id, isNPC: this.myGear.isNPC, side: this.myGear.side});
+      for (let i = 0; i < this.enemies.length; i++)
+        this.enemies[i] = this.getEntitieFromRoom(data.room, {id: this.enemies[i].id, isNPC: this.enemies[i].isNPC, side: this.enemies[i].side});
+    });
     console.log("before emit: ", this.roomId);
     socket.emit("getRoomData", this.roomId);
   },
   unmounted() {
     socket.off("connect_error");
     socket.off("roomData");
+    socket.off("resolveAction");
     socket.disconnect();
   },
   destroyed() {
     if (socket.connected) {
       socket.off("connect_error");
       socket.off("roomData");
+      socket.off("resolveAction");
       socket.disconnect();
     }
   },
@@ -150,17 +178,28 @@ export default {
   align-items: center;
   height: 400px;
 }
+.info-chat-container {
+  /* background-color: red; */
+  position: fixed;
+  left: 3%;
+  bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  height: 20%;
+  width: 24%;
+}
 .spells-container {
   /* background-color: red; */
   position: fixed;
-  left: 25%;
+  left: 30%;
   bottom: 10px;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: space-between;
   align-content: center;
-  min-width: 50%;
+  width: 40%;
 }
 .gear-img {
   max-width: 256px;
