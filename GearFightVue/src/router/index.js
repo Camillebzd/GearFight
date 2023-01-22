@@ -40,6 +40,7 @@ const routes = [
     },
   },
   {path: '/fight/:roomId/:gearId', name: 'fight', props: true, component: ()=>import('@/views/Fight.vue')},
+  {path: '/fight.local/:monsterId/:gearId', name: 'fight.local', props: true, component: ()=>import('@/views/FightLocal.vue')},
   {path: '/:pathMatch(.*)*', name: 'NotFound', component: ()=>import('@/views/NotFound.vue')},
 ]
 

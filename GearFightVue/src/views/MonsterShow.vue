@@ -1,56 +1,63 @@
 <template>
   <div>
-    <h1>{{monster.name}}</h1>
-    <div class="flex-div">
-      <img :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
-      <div>
-        <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ monster.Rarity }}</MDBBadge>
-        <p>Level: {{monster.level}}</p>
-        <p>Attack: {{monster.attack}}</p>
-        <p>Defense: {{monster.defense}}</p>
-        <p>Life: {{monster.life}}</p>
-        <p>Speed: {{monster.speed}}</p>
+    <div v-if="monsters.length > 0">
+      <h1>{{monster.name}}</h1>
+      <div class="flex-div">
+        <img :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
+        <div>
+          <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ monster.Rarity }}</MDBBadge>
+          <p>Level: {{monster.level}}</p>
+          <p>Attack: {{monster.attack}}</p>
+          <p>Defense: {{monster.defense}}</p>
+          <p>Life: {{monster.life}}</p>
+          <p>Speed: {{monster.speed}}</p>
+        </div>
+      </div>
+      <p>{{monster.description}}</p>
+      <div v-if="isConnected">
+        <MDBBtn
+          color="info"
+          aria-controls="exampleModalScrollableTitle"
+          @click="openModal"
+        >
+          fight
+        </MDBBtn>
+        <MDBModal
+          id="exampleModalScrollable"
+          tabindex="-1"
+          labelledby="exampleModalScrollableTitle"
+          v-model="exampleModalScrollable"
+          scrollable
+        >
+          <MDBModalHeader :close="false">
+            <MDBModalTitle id="exampleModalScrollableTitle"> Choose your Gear for the figth </MDBModalTitle>
+          </MDBModalHeader>
+          <MDBModalBody>
+            <MDBContainer v-if="ownedGears.length > 0">
+              <MDBRow>
+                <MDBCol auto v-for="gear in ownedGears" :key="gear.tokenId">
+                    <GearCardHorizontal 
+                      :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId" @click="selectGear(gear.tokenId)" style="cursor: pointer" 
+                      :class="{selectedGear: isSelected(gear.tokenId)}"
+                    />
+                </MDBCol>
+              </MDBRow>
+            </MDBContainer>
+          </MDBModalBody>
+          <MDBModalFooter>
+            <MDBBtn color="secondary" @click="exampleModalScrollable = false"> Close </MDBBtn>
+            <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchFight" > Use this weapon (serv) </MDBBtn>
+            <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchLocalFight" > (local) </MDBBtn>
+          </MDBModalFooter>
+        </MDBModal>
+      </div>
+      <div v-else>
+        <p>Connect to your account to fight this monster.</p>
       </div>
     </div>
-    <p>{{monster.description}}</p>
-    <div v-if="isConnected">
-      <MDBBtn
-        color="info"
-        aria-controls="exampleModalScrollableTitle"
-        @click="openModal"
-      >
-        fight
-      </MDBBtn>
-      <MDBModal
-        id="exampleModalScrollable"
-        tabindex="-1"
-        labelledby="exampleModalScrollableTitle"
-        v-model="exampleModalScrollable"
-        scrollable
-      >
-        <MDBModalHeader :close="false">
-          <MDBModalTitle id="exampleModalScrollableTitle"> Choose your Gear for the figth </MDBModalTitle>
-        </MDBModalHeader>
-        <MDBModalBody>
-          <MDBContainer v-if="ownedGears.length > 0">
-            <MDBRow>
-              <MDBCol auto v-for="gear in ownedGears" :key="gear.tokenId">
-                  <GearCardHorizontal 
-                    :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId" @click="selectGear(gear.tokenId)" style="cursor: pointer" 
-                    :class="{selectedGear: isSelected(gear.tokenId)}"
-                  />
-              </MDBCol>
-            </MDBRow>
-          </MDBContainer>
-        </MDBModalBody>
-        <MDBModalFooter>
-          <MDBBtn color="secondary" @click="exampleModalScrollable = false"> Close </MDBBtn>
-          <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchFight" > Use this weapon </MDBBtn>
-        </MDBModalFooter>
-      </MDBModal>
-    </div>
     <div v-else>
-      <p>Connect to your account to fight this monster.</p>
+      <h1>Impossible to find the monster</h1>
+      <p>Impossible to find the monster. This may happen if the monster doesn't exist or if the connection is really slow.</p>
     </div>
   </div>
 </template>
@@ -107,7 +114,12 @@ export default {
     }
   },
   methods: {
+    launchLocalFight() {
+      this.exampleModalScrollable = false
+      this.$router.push({name: 'fight.local', params:{monsterId: this.$route.params.id, gearId: this.gearSelected}});
+    },
     async launchFight() {
+      this.exampleModalScrollable = false;
       // loading to tell the client to wait the start of the fight ?
       // this.socket = io("http://localhost:3222", {auth: {userId: this.gearSelected}});
       socket.auth = {userId: this.gearSelected};
@@ -180,7 +192,7 @@ export default {
   },
   async created() {
     console.log("created");
-    this.fill();
+    await this.fill();
     await this.fillMyGears();
   },
   unmounted() {

@@ -2,7 +2,7 @@
   <div v-if="isAllowHere">
     <h1>Fight</h1>
     <div v-if="!fightStarted">
-      <p>The fight hasn't start wait pls.</p>
+      <p>Seems like the server didn't give any info.</p>
       <p>id of the room: {{ roomId }}</p>
       <p>your gear id: {{ gearId }}</p>
     </div>
@@ -36,6 +36,28 @@
         />
       </div>
     </div>
+    <MDBModal
+      id="showModal"
+      tabindex="-1"
+      labelledby="showModalTitle"
+      v-model="showModal"
+      scrollable
+      staticBackdrop
+    >
+      <MDBModalHeader :close="false">
+        <MDBModalTitle id="showModalTitle"> End of the fight </MDBModalTitle>
+      </MDBModalHeader>
+      <MDBModalBody>
+        <MDBContainer>
+          <p v-if="won">I won!</p>
+          <p v-else>I lost...</p>
+        </MDBContainer>
+      </MDBModalBody>
+      <MDBModalFooter>
+        <MDBBtn color="secondary" @click="goBackToWorld"> Go back to world </MDBBtn>
+        <MDBBtn color="primary" v-if="won" @click="getLevel"> Level up! </MDBBtn>
+      </MDBModalFooter>
+    </MDBModal>
   </div>
   <div v-else>
     <h1>Error</h1>
@@ -44,9 +66,18 @@
 </template>
 
 <script>
-import { MDBRow, MDBCol, MDBContainer } from "mdb-vue-ui-kit";
-import SpellCard from "@/components/SpellCard.vue"
-import { io } from "socket.io-client";
+import { 
+  MDBBtn,
+  MDBRow,
+  MDBCol,
+  MDBContainer,
+  MDBModalHeader,
+  MDBModalTitle,
+  MDBModalBody,
+  MDBModalFooter,
+  MDBModal 
+} from "mdb-vue-ui-kit";
+import SpellCard from "@/components/SpellCard.vue";
 import socket from '@/socket.js';
 import { mapState } from 'pinia';
 import { useGearsStore } from "@/stores/GearsStore";
@@ -56,9 +87,15 @@ import Chat from "@/components/Chat.vue";
 
 export default {
   components: {
+    MDBBtn,
     MDBRow,
     MDBCol,
     MDBContainer,
+    MDBModalHeader,
+    MDBModalTitle,
+    MDBModalBody,
+    MDBModalFooter,
+    MDBModal,
     SpellCard,
     Entity,
     Chat
@@ -75,7 +112,7 @@ export default {
     return {
       socket: {},
       myGear: {},
-      mySkills: [],
+      mySkills: [], // later on myGear directly
       allies: [],
       enemies: [],
       spellSelectedName: "",
@@ -84,9 +121,18 @@ export default {
       fightStarted: false,
       info: [],
       actualTurn: 0,
+      showModal: false,
+      won: false,
     }
   },
   methods: {
+    goBackToWorld() {
+      this.$router.push({name: 'World'});
+    },
+    getLevel() {
+      // call levelUp in contract
+      goBackToWorld();
+    },
     getEntitieFromRoom(room, entitieToFind) {
       return room[entitieToFind.side].find(entitie => entitie.id == entitieToFind.id && entitie.isNPC == entitieToFind.isNPC);
     },
@@ -111,7 +157,6 @@ export default {
       return;
     await this.fillSpells();
     this.isAllowHere = true;
-    // this.socket = io("http://localhost:3222", {auth: {userId: this.gearId}});
     socket.auth = {userId: this.gearId};
     socket.connect();
     console.log("socket id:", socket.auth.userId);
@@ -119,10 +164,11 @@ export default {
       console.log(err.message);
     });
     socket.on("roomData", async roomData => {
-      let room = JSON.parse(roomData)
+      let room = JSON.parse(roomData);
+      if (room == null || !room.hasOwnProperty('group2'))
+        return;
       this.enemies = room.group2;
       let pos = room.group1.findIndex(gear => gear.id == this.gearId);
-      console.log(room.group1);
       this.myGear = await room.group1.splice(pos, pos + 1)[0];
       // --- DEBUG ---
       // this.myGear.Spells.map(spell => {this.mySkills.push(this.getSpell(spell))});
@@ -148,6 +194,14 @@ export default {
       for (let i = 0; i < this.enemies.length; i++)
         this.enemies[i] = this.getEntitieFromRoom(data.room, {id: this.enemies[i].id, isNPC: this.enemies[i].isNPC, side: this.enemies[i].side});
     });
+    socket.on("somebodyIsDead", data => {
+      if (data.id == this.myGear.id && data.isNPC == this.myGear.isNPC && data.side == this.myGear.side) {
+        this.won = false;
+      } else {
+        this.won = true;
+      }
+      this.showModal = true;
+    });
     console.log("before emit: ", this.roomId);
     socket.emit("getRoomData", this.roomId);
   },
@@ -155,6 +209,7 @@ export default {
     socket.off("connect_error");
     socket.off("roomData");
     socket.off("resolveAction");
+    socket.off("somebodyIsDead");
     socket.disconnect();
   },
   destroyed() {
@@ -162,6 +217,7 @@ export default {
       socket.off("connect_error");
       socket.off("roomData");
       socket.off("resolveAction");
+      socket.off("somebodyIsDead");
       socket.disconnect();
     }
   },

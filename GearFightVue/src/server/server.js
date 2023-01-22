@@ -127,7 +127,7 @@ function everyPlayersPlayed(roomId) {
 }
 
 var spells = require('../data/spells.json');
-const { resolveAction, getEntitieFromRoom } = require("./fightsystem/fight");
+const { resolveAction, getEntitieFromRoom, checkLife } = require("./fightsystem/fight");
 
 function getSpell(spellName) {
   return spells.find(spell => spell.name === spellName);
@@ -162,11 +162,18 @@ function resolveTurn(roomId) {
   });
   determineOrder(room, actions);
   // do spells
-  actions.map(action => {
-    console.log(`${action.user.id} launch ${action.spell.name} on ${action.target.id}`);
-    resolveAction(room, action);
-    Socketio.to(roomId).emit("resolveAction", {action: action, room: room});
-  });
+  for (let i = 0; i < actions.length; i++) {
+    console.log(`${actions[i].user.id} launch ${actions[i].spell.name} on ${actions[i].target.id}`);
+    resolveAction(room, actions[i]);
+    Socketio.to(roomId).emit("resolveAction", {action: actions[i], room: room});
+    let info = checkLife(room);
+    if (info.somebodyIsDead) {
+      Socketio.to(roomId).emit("somebodyIsDead", {...info.info});
+      console.log("End of fight for room: ", roomId);
+      roomStore.removeRoom(roomId);
+      return;
+    }
+  }
   console.log(room.group1[0].life);
   room.fightSystem.turn += 1;
   roomStore.saveRoom(roomId, room);

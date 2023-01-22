@@ -1,9 +1,7 @@
 <template>
-  <div class="fight">
+  <div class="monsters-page">
     <h1>World</h1>
     <h3>Monsters available</h3>
-    <!-- <button v-on:click="clickAction">Add 1</button>
-    <p>The button above has been clicked {{ counter }} times.</p> -->
     <div v-if="monsters.length">
       <MDBContainer>
         <MDBRow>
@@ -24,7 +22,6 @@ import MonsterCard from "@/components/MonsterCard.vue";
 import { useMonstersStore } from "@/stores/MonstersStore.js";
 import { mapState } from 'pinia';
 import { MDBRow, MDBCol, MDBContainer } from "mdb-vue-ui-kit";
-// import io from "socket.io-client";
 
 export default {
   components: {
@@ -38,22 +35,15 @@ export default {
   },
   data() {
     return {
-      // counter: 0,
-      // socket: {}
     }
   },
   methods: {
-    // clickAction() {
-    //   console.log("click front")
-    //   this.socket.emit("click", this.counter);
-    // }
   },
-  created() {
-    this.fill(); // monsters
-    // this.socket = io("http://localhost:3222");
-    // this.socket.on("counter", data => {
-    //   this.counter = data;
-    // });
+  async created() {
+    await this.fill(); // monsters
   }
 }
 </script>
+
+<style>
+</style>

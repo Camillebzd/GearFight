@@ -18,6 +18,10 @@ class InMemoryRoomStore extends RoomStore {
     this.rooms.set(id, room);
   }
 
+  removeRoom(id) {
+    this.rooms.delete(id);
+  }
+
   findAllRooms() {
     return [...this.rooms.values()];
   }

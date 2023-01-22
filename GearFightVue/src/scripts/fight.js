@@ -1,9 +1,3 @@
-// var spells = require('@/data/spells.json');
-
-function getSpell(spellName) {
-  return spells.find(spell => spell.name === spellName);
-}
-
 function doDamage(target, amount) {
   target.life -= amount;
 }
@@ -13,7 +7,7 @@ function doHeal(target, amount) {
 }
 
 // export
-function launchSpell(user, spell, target) { 
+export function LaunchSpell(user, spell, target) { 
   switch (spell.data.type) {
     case "DAMAGE":
       doDamage(target, user.attack * spell.data.ratio);
@@ -94,5 +88,3 @@ function getEntitieFromRoom(room, entitieToFind) {
 function resolveAction(room, action) {
   launchSpell(getEntitieFromRoom(room, {id: action.user.id, isNPC: action.user.isNPC, side: action.user.side}), action.spell, getEntitieFromRoom(room, {id: action.target.id, isNPC: action.target.isNPC, side: action.target.side}));
 }
-
-module.exports = { resolveAction, getEntitieFromRoom, checkLife }
