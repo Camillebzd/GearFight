@@ -6,8 +6,7 @@ function doHeal(target, amount) {
   target.life += amount;
 }
 
-// export
-export function LaunchSpell(user, spell, target) { 
+export function resolveSpell(user, spell, target) {
   switch (spell.data.type) {
     case "DAMAGE":
       doDamage(target, user.attack * spell.data.ratio);
@@ -15,11 +14,41 @@ export function LaunchSpell(user, spell, target) {
     case "HEAL":
       doHeal(target, user.attack * spell.data.ratio);
       break;
-    case "BUFF":
-      break;
     default:
       break;
   }
+  spell.data.buffs.map(buff => {
+    switch (buff.target) {
+      case "LAUNCHER":
+        addBuff(user, buff);
+        break;
+      case "ALLIES":
+        break;
+      case "TARGET":
+        addBuff(target, buff);
+        break;
+      case "ENEMIES":
+          break;  
+      default:
+        break;
+    }
+  });
+  spell.data.debuffs.map(debuff => {
+    switch (debuff.target) {
+      case "LAUNCHER":
+        addDebuff(user, debuff);
+        break;
+      case "ALLIES":
+        break;
+      case "TARGET":
+        addDebuff(target, debuff);
+        break;
+      case "ENEMIES":
+          break;  
+      default:
+        break;
+    }
+  });
 }
 
 // export
@@ -28,8 +57,8 @@ function addCooldown(user, spellName) {
   user.Skills_CD[user.Skills.indexOf(spellName)] = spell.cooldown;
 }
 
-function isAlive(user) {
-  return user.Life > 0;
+export function isAlive(entitie) {
+  return entitie.life > 0;
 }
 
 function applyDamageDebuff(user, debuffName) {
@@ -53,32 +82,46 @@ function reduceDebuff(user, debuffName, reduce = 1) {
     user.Debuffs_CD[user.Debuffs.indexOf(debuffName)] = userDebuffCD;
 }
 
-function handleDamageDebuffs(user) {
-  // apply debuff dmg
-  user.Debuffs.map((debuffName) => {if (debuffs[debuffName].type === "DAMAGE") applyDamageDebuff(user, debuffName)});
-// reduce CD debuff dmg by 1
-  user.Debuffs.map((debuffName) => {if (debuffs[debuffName].type === "DAMAGE") reduceDebuff(user, debuffName)});
+export function applyBuffs(target) {
+  for (let i = 0; i < target.buffs.length; i++) {
+    let buff = target.buffs[i];
+    target[buff.data.stat] += target[buff.data.stat + "_base"] * buff.data.ratio;
+    buff.turns -= 1;
+  }
 }
 
-function applyBuffs(user) {
-  user.Buffs.map((buffName) => {
-  });
+function addBuff(target, buff) {  
+  for (let i = 0; i < target.buffs.length; i++)
+    if (target.buffs[i].name == buff.name && target.buffs[i].id == buff.id) // block the type of buff too ?
+      target.buffs.splice(i, 1);
+  target.buffs.push({...buff});
+  // add 1 turn of buff because the apply will remove 1
+  target.buffs[target.buffs.length - 1].turns += 1;
+  applyBuffs(target);
 }
 
-function extractIdentitie(entitie) {
-  return {id: entitie.id, isNPC: entitie.isNPC, side: entitie.side};
-}
-
-function checkLife(room) {
-  let info = {info: {}, somebodyIsDead: false};
-
-  room.group1.map(entitie => {
-    if (entitie.life <= 0) {
-      info.info = extractIdentitie(entitie);
-      info.somebodyIsDead = true;
+export function applyDebuffs(target) {
+  for (let i = 0; i < target.debuffs.length; i++) {
+    let debuff = target.debuffs[i];
+    if (debuff.data.type == "DAMAGE") {
+      target.life -= target[debuff.data.base] * debuff.data.ratio;
+    } else {
+      target[debuff.data.stat] -= target[debuff.data.stat + "_base"] * debuff.data.ratio;
     }
-  });
-  return info;
+    debuff.turns -= 1;
+  }
+}
+
+function addDebuff(target, debuff) {
+  for (let i = 0; i < target.debuffs.length; i++)
+    if (target.debuffs[i].name == debuff.name && target.debuffs[i].id == debuff.id) // stack system ???
+      target.debuffs.splice(i, 1);
+  target.debuffs.push({...debuff});
+  // add 1 turn of debuff because the apply will remove 1
+  if (debuff.data.type != "DAMAGE") {
+    target.buffs[target.buffs.length - 1].turns += 1;
+    applyDebuffs(target);
+  }
 }
 
 function getEntitieFromRoom(room, entitieToFind) {
@@ -86,5 +129,5 @@ function getEntitieFromRoom(room, entitieToFind) {
 }
 
 function resolveAction(room, action) {
-  launchSpell(getEntitieFromRoom(room, {id: action.user.id, isNPC: action.user.isNPC, side: action.user.side}), action.spell, getEntitieFromRoom(room, {id: action.target.id, isNPC: action.target.isNPC, side: action.target.side}));
+  resolveSpell(getEntitieFromRoom(room, {id: action.user.id, isNPC: action.user.isNPC, side: action.user.side}), action.spell, getEntitieFromRoom(room, {id: action.target.id, isNPC: action.target.isNPC, side: action.target.side}));
 }

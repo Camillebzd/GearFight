@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Poison",
+    "id": 0,
+    "data": {
+      "description": "You're poisoned. The damages are based on your defense.",
+      "image": "",
+      "type": "DAMAGE",
+      "base": "defense",
+      "ratio": 1
+    }
+  }
+]

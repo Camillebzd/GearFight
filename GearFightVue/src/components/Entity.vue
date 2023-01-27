@@ -1,12 +1,27 @@
 <template>
   <div class="entity-container">
-    <i v-if="isSelectable == true" class="arrow down moove-up-down"></i>
-    <div class="image-container" >
-      <img :src="image" alt="..." class="img-fluid shadow-2-strong image-entity" />
+    <!-- <i v-if="isSelectable == true" class="arrow down moove-up-down"></i> -->
+    <div class="name-container">
+      <div>{{ entity.name }}</div>
+      <div>LVL.{{ entity.level }}</div>
     </div>
     <div class="health-container">
-      <div style="margin-right: 7px">HP: </div>
-      <progress :max="entity.life_base" :value="entity.life" style="background-color:green"></progress>
+      <div style="margin-right: 7px">Life: </div>
+      <progress :max="entity.life_base" :value="entity.life" style="background-color:green; margin-right: 5px;"></progress>
+      <div style="width: 40px">{{ entity.life * 100 / entity.life_base }}%</div>
+    </div>
+    <!-- <div class="buff-container">
+      <div v-for="buff in entity.buffs">
+        {{ buff.name }}
+      </div>
+    </div>
+    <div class="debuff-container">
+      <div v-for="debuff in entity.debuffs">
+        {{ debuff.name }}
+      </div>
+    </div> -->
+    <div class="image-container" >
+      <img :src="image" alt="..." class="img-fluid image-entity" />
     </div>
   </div>
 </template>
@@ -32,9 +47,6 @@ export default {
   flex-wrap: wrap;
   flex-direction: column;
   align-items: center;
-}
-.image-container {
-  padding-top: 30px;
 }
 .arrow {
   position: absolute;
@@ -62,17 +74,29 @@ export default {
   max-width: 256px;
   max-height: 256px;
 }
+.name-container {
+  /* background-color: red; */
+  /* align-items: center; */
+  width: 100%;
+  justify-content: space-between;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
+  /* margin-top: 10px; */
+}
 .health-container {
   /* background-color: red; */
+  width: 100%;
   /* align-items: center; */
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
-  margin-top: 10px;
+  justify-content: end;
+  margin-bottom: 10px;
 }
 .health-bar {
-  
   color: green;
 }
 </style>

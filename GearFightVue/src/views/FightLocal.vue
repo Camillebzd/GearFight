@@ -5,7 +5,6 @@
       <div class="fighters-container">
         <div>
           <Entity 
-            @click="targetType == 'ALLY' && launchSpell(myGear)"
             :image="myGear.image" 
             :entity="myGear"
             :isSelectable="targetType == 'ALLY'"
@@ -13,7 +12,6 @@
         </div>
         <div>
           <Entity 
-            @click="targetType == 'ENEMY' && launchSpell(monster)"
             :image="'/img/monsters/' + monster.image"
             :entity="monster"
             :isSelectable="targetType == 'ENEMY'"
@@ -25,7 +23,7 @@
       </div>
       <div class="spells-container">
         <SpellCard v-for="mySpell in mySkills" :key="mySpell.id"
-          @click="selecteSpell(mySpell.name)" 
+          @click="launchSpell(mySpell)" 
           :spellName="mySpell.name" 
           :selected="spellSelectedName == mySpell.name ? true : false"
         />
@@ -54,7 +52,7 @@
       </MDBModal>
     </div>
     <div v-else>
-      <p>You don't own this gear.</p>
+      <p>You don't own this gear or you're not connected.</p>
     </div>
   </div>
 </template>
@@ -76,7 +74,7 @@ import { useMonstersStore } from '@/stores/MonstersStore';
 import Entity from "@/components/Entity.vue";
 import Chat from "@/components/Chat.vue";
 import SpellCard from "@/components/SpellCard.vue";
-import { LaunchSpell } from "@/scripts/fight.js";
+import { resolveSpell, isAlive, applyBuffs, applyDebuffs } from "@/scripts/fight.js";
 
 export default {
   components: {
@@ -113,7 +111,7 @@ export default {
   computed: {
     ...mapState(useGearsStore, ['ownedGears', 'fillMyGears', 'isOwned', 'getFightFormGear']),
     ...mapState(useMonstersStore, ['monsters', 'fill', 'getFightFormMonster']),
-    ...mapState(useSpellsStore, ['fillSpells', 'getSpell']),
+    ...mapState(useSpellsStore, ['fillAllSpellData', 'getSpell']),
   },
   methods: {
     goBackToWorld() {
@@ -122,40 +120,41 @@ export default {
     },
     getLevel() {
       // call levelUp in contract
-      goBackToWorld();
+      this.goBackToWorld();
     },
     selecteSpell(spellSelected) {
       this.spellSelectedName = spellSelected;
       this.targetType = this.getSpell(spellSelected).data.target.type;
     },
-    launchSpell(target) {
-      if (this.spellSelectedName == "")
-        return;
+    launchSpell(mySpell) {
       this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
-      // MANAGE SPEED -> action system
-      // user
-      let spellUsedMe = this.getSpell(this.spellSelectedName);
-      this.info.push(`- ${this.myGear.name} launch ${spellUsedMe.name} on ${target.name}`);
-      LaunchSpell(this.myGear, spellUsedMe, target);
-      if (!this.isAlive(this.monster)) {
-        this.won = true;
-        this.showModal = true;
-      }
-      // monster
-      let spellUsedMonster = this.getSpell(this.monster.skills[0]);
-      this.info.push(`- ${this.monster.name} launch ${spellUsedMonster.name} on ${this.myGear.name}`);
-      LaunchSpell(this.monster, spellUsedMonster, this.myGear);
-      if (!this.isAlive(this.myGear)) {
-        this.won = false;
-        this.showModal = true;
+      let actions = [];
+      actions.push({user: this.myGear, spell: mySpell, target: mySpell.data.target.type == "ENEMY" ? this.monster : this.myGear});
+      actions.push({user: this.monster, spell: this.getSpell(this.monster.skills[0]), target: this.getSpell(this.monster.skills[0]).data.target.type == "ENEMY" ? this.myGear : this.monster});
+      actions.sort((a, b) => {
+        return b.user.speed - a.user.speed;
+      });
+      console.log(actions);
+      for (let i = 0; i < actions.length; i++) {
+        applyBuffs(actions[i].user);
+        resolveSpell(actions[i].user, actions[i].spell, actions[i].target);
+        applyDebuffs(actions[i].user);
+        this.info.push(`- ${actions[i].user.name} launched ${actions[i].spell.name} on ${actions[i].target.name}`);
+        if (!isAlive(this.monster)) {
+          this.won = true;
+          this.showModal = true;
+          return;
+        }
+        if (!isAlive(this.myGear)) {
+          this.won = false;
+          this.showModal = true;
+          return;
+        }
       }
       this.actualTurn++;
       this.spellSelectedName = "";
       this.targetType = "";
     },
-    isAlive(entitie) {
-      return entitie.life > 0;
-    }
   },
   async created() {
     await this.fillMyGears();
@@ -163,14 +162,15 @@ export default {
       return;
     this.ownTheGear = true;
     await this.fill();
-    await this.fillSpells();
+    await this.fillAllSpellData();
     this.myGear = this.getFightFormGear(this.gearId);
     this.monster = this.getFightFormMonster(this.monsterId);
     // --- DEBUG ---
+    // this.myGear.skills
     this.mySkills.push(this.getSpell("Fireball"));
     this.mySkills.push(this.getSpell("Basic_cut"));
     this.mySkills.push(this.getSpell("Basic_heal"));
-    this.mySkills.push(this.getSpell("Basic_poisson"));
+    this.mySkills.push(this.getSpell("Basic_poison"));
     // --- ---
     this.readyToFight = true;
   }

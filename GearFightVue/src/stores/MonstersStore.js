@@ -34,6 +34,8 @@ export const useMonstersStore  = defineStore('MonstersStore', {
         speed: parseInt(monster.speed),
         speed_base: parseInt(monster.speed),
         skills: monster.skills,
+        buffs: [],
+        debuffs: [],
         type: monster.type,
         rarity: monster.rarity,
         isNPC: true,

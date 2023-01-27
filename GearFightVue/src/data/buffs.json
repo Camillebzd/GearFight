@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Attack_boost",
+    "id": 0,
+    "data": {
+      "description": "A buff that double the attack.",
+      "image": "",
+      "stat": "attack",
+  		"ratio": 1,
+      "turns": 2
+    }
+  }
+]

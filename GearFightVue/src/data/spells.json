@@ -14,10 +14,14 @@
         "number": "ONE",
         "type": "ENEMY"
       },
-      "debuff": [
-        "BURN"
-      ],
-      "buff": []
+      "debuffs": [],
+      "buffs": [
+        {
+          "name": "Attack_boost",
+          "target": "LAUNCHER",
+          "turns": 2
+        }
+      ]
     }
   },
   {
@@ -35,8 +39,8 @@
         "number": "ONE",
         "type": "ENEMY"
       },
-      "debuff": [],
-      "buff": []
+      "debuffs": [],
+      "buffs": []
     }
   },
   {
@@ -54,16 +58,16 @@
         "number": "ONE",
         "type": "ALLY"
       },
-      "debuff": [],
-      "buff": []
+      "debuffs": [],
+      "buffs": []
     }
   },
   {
-    "name": "Basic_poisson",
+    "name": "Basic_poison",
     "id": 3,
     "data": {
-      "description": "A simple poissonous attack.",
-      "image": "basic_poisson.jpg",
+      "description": "A simple poisonous attack.",
+      "image": "basic_poison.jpg",
       "weigth": 10,
       "number": 10,
       "type": "DEBUFF",
@@ -73,8 +77,14 @@
         "number": "ONE",
         "type": "ENEMY"
       },
-      "debuff": [ "Poisson" ],
-      "buff": []
+      "debuffs": [
+        {
+          "name": "Poison",
+          "target": "TARGET",
+          "turns": 2
+        }
+      ],
+      "buffs": []
     }
   },
   {
@@ -92,8 +102,8 @@
         "number": "ONE",
         "type": "ENEMY"
       },
-      "debuff": [],
-      "buff": []
+      "debuffs": [],
+      "buffs": []
     }
   }
 ]
