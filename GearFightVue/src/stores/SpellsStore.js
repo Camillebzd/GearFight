@@ -41,13 +41,13 @@ export const useSpellsStore  = defineStore('SpellsStore', {
       console.log("done pulling all spells");
     },
     getSpell(spellName) {
-      return this.spells.find(spell => spell.name === spellName);
+      return JSON.parse(JSON.stringify(this.spells.find(spell => spell.name === spellName)));
     },
     getBuff(buffName) {
-      return this.buffs.find(buff => buff.name === buffName);
+      return JSON.parse(JSON.stringify(this.buffs.find(buff => buff.name === buffName)));
     },
     getDebuff(debuffName) {
-      return this.debuffs.find(debuff => debuff.name === debuffName);
+      return JSON.parse(JSON.stringify(this.debuffs.find(debuff => debuff.name === debuffName)));
     },
     addBuffs(spell) {
       for (let i = 0; i < spell.data.buffs.length; i++) {

@@ -7,7 +7,9 @@
           <Entity 
             :image="myGear.image" 
             :entity="myGear"
-            :isSelectable="targetType == 'ALLY'"
+            :isSelectable="targetType == 'ALLY'" 
+            :modifiersOnRight="true"
+            @mouseover="entityTargetedInfo = myGear" @mouseleave="entityTargetedInfo = {}"
           />
         </div>
         <div>
@@ -15,6 +17,8 @@
             :image="'/img/monsters/' + monster.image"
             :entity="monster"
             :isSelectable="targetType == 'ENEMY'"
+            :modifiersOnRight="false"
+            @mouseover="entityTargetedInfo = monster" @mouseleave="entityTargetedInfo = {}"
           />
         </div>
       </div>
@@ -23,10 +27,13 @@
       </div>
       <div class="spells-container">
         <SpellCard v-for="mySpell in mySkills" :key="mySpell.id"
-          @click="launchSpell(mySpell)" 
-          :spellName="mySpell.name" 
-          :selected="spellSelectedName == mySpell.name ? true : false"
+          @click="mySpell.data.number > 0 && launchSpell(mySpell)" 
+          :spell="mySpell"
+          @mouseover="spellTargetedInfo = mySpell" @mouseleave="spellTargetedInfo = {}"
         />
+      </div>
+      <div class="info-entity-container">
+        <InfoWindow :entityInfo="entityTargetedInfo" :spellInfo="spellTargetedInfo" />
       </div>
       <MDBModal
         id="showModal"
@@ -74,13 +81,22 @@ import { useMonstersStore } from '@/stores/MonstersStore';
 import Entity from "@/components/Entity.vue";
 import Chat from "@/components/Chat.vue";
 import SpellCard from "@/components/SpellCard.vue";
-import { resolveSpell, isAlive, applyBuffs, applyDebuffs } from "@/scripts/fight.js";
+import InfoWindow from "@/components/InfoWindow.vue";
+import { 
+  resolveSpell, 
+  isAlive, applyBuffs, 
+  applyDebuffs, 
+  resetAllToBaseStat,
+  cleanFinishedBuff,
+  cleanFinishedDebuff
+} from "@/scripts/fight.js";
 
 export default {
   components: {
     SpellCard,
     Entity,
     Chat,
+    InfoWindow,
     MDBBtn,
     MDBContainer,
     MDBModalHeader,
@@ -100,12 +116,14 @@ export default {
       myGear: {},
       mySkills: [], // later on myGear directly
       monster: {},
-      spellSelectedName: "",
       targetType: "",
       info: [],
       actualTurn: 1,
       showModal: false,
       won: false,
+      upHere: false,
+      entityTargetedInfo: {},
+      spellTargetedInfo: {},
     }
   },
   computed: {
@@ -122,10 +140,6 @@ export default {
       // call levelUp in contract
       this.goBackToWorld();
     },
-    selecteSpell(spellSelected) {
-      this.spellSelectedName = spellSelected;
-      this.targetType = this.getSpell(spellSelected).data.target.type;
-    },
     launchSpell(mySpell) {
       this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
       let actions = [];
@@ -136,10 +150,13 @@ export default {
       });
       console.log(actions);
       for (let i = 0; i < actions.length; i++) {
+        resetAllToBaseStat(actions[i].user);
         applyBuffs(actions[i].user);
         resolveSpell(actions[i].user, actions[i].spell, actions[i].target);
         applyDebuffs(actions[i].user);
-        this.info.push(`- ${actions[i].user.name} launched ${actions[i].spell.name} on ${actions[i].target.name}`);
+        cleanFinishedBuff(actions[i].user);
+        cleanFinishedDebuff(actions[i].user)
+        this.info.push(`- ${actions[i].user.name} launched ${actions[i].spell.data.displayName} on ${actions[i].target.name}`);
         if (!isAlive(this.monster)) {
           this.won = true;
           this.showModal = true;
@@ -209,6 +226,17 @@ export default {
   justify-content: space-between;
   align-content: center;
   width: 40%;
+  height: 12%;
+}
+.info-entity-container{
+  position: fixed;
+  right: 3%;
+  bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  height: 20%;
+  width: 24%;
 }
 .gear-img {
   max-width: 256px;

@@ -3,6 +3,7 @@
     "name": "Attack_boost",
     "id": 0,
     "data": {
+      "displayName": "ATK +",
       "description": "A buff that double the attack.",
       "image": "",
       "stat": "attack",

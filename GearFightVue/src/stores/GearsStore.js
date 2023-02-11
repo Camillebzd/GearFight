@@ -69,6 +69,8 @@ export const useGearsStore  = defineStore('GearStore', {
         attack_base: 1,//parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Strength")),
         speed: 10,//parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Speed")),
         speed_base: 10,//parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Speed")),
+        defense: 1,//parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Defense")),
+        defense_base: 1,//parseInt(this.getGearAttributeInfo(tokenMetadata.attributes, "Defense")),
         skills: [],
         buffs: [],
         debuffs: [],

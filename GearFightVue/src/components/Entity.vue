@@ -1,41 +1,79 @@
 <template>
   <div class="entity-container">
-    <!-- <i v-if="isSelectable == true" class="arrow down moove-up-down"></i> -->
-    <div class="name-container">
-      <div>{{ entity.name }}</div>
-      <div>LVL.{{ entity.level }}</div>
-    </div>
-    <div class="health-container">
-      <div style="margin-right: 7px">Life: </div>
-      <progress :max="entity.life_base" :value="entity.life" style="background-color:green; margin-right: 5px;"></progress>
-      <div style="width: 40px">{{ entity.life * 100 / entity.life_base }}%</div>
-    </div>
-    <!-- <div class="buff-container">
-      <div v-for="buff in entity.buffs">
-        {{ buff.name }}
+    <div v-if="!modifiersOnRight" class="modifiers-container" style="margin-right: 10px">
+      <div v-for="buff in entity.buffs" class="modifier-container">
+        <div style="margin-right;: 5px">{{ buff.turns }}</div>
+        <MDBBadge badge="success"  style="height: fit-content;">
+          {{ buff.data.displayName }}
+        </MDBBadge>
+      </div>
+      <div v-for="debuff in entity.debuffs" class="modifier-container">
+        <div style="margin-right: 5px">{{ debuff.turns }}</div>
+        <MDBBadge badge="danger"  style="height: fit-content;">
+          {{ debuff.data.displayName }}
+        </MDBBadge>
       </div>
     </div>
-    <div class="debuff-container">
-      <div v-for="debuff in entity.debuffs">
-        {{ debuff.name }}
+    <!-- <MDBTooltip tag="div" v-model="tooltip1">
+      <template #reference> -->
+        <div class="main-info-container" >
+          <!-- <i v-if="isSelectable == true" class="arrow down moove-up-down"></i> -->
+          <div class="top-container">
+            <div class="name-container">
+              <div>{{ entity.name }}</div>
+              <div>LVL.{{ entity.level }}</div>
+            </div>
+            <div class="health-container">
+              <div style="margin-right: 7px">Life: </div>
+              <progress :max="entity.life_base" :value="entity.life" style="background-color:green; margin-right: 5px;"></progress>
+              <div style="width: 40px">{{ entity.life * 100 / entity.life_base }}%</div>
+            </div>
+          </div>
+          <div class="image-container" >
+            <img :src="image" alt="..." class="img-fluid image-entity" />
+          </div>
+        </div>
+      <!-- </template> -->
+      <!-- <template #tip>
+        Hi! I'm tooltip
+      </template> -->
+    <!-- </MDBTooltip> -->
+    <div v-if="modifiersOnRight" class="modifiers-container" style="margin-left: 10px">
+      <div v-for="buff in entity.buffs" class="modifier-container">
+        <MDBBadge badge="success"  style="height: fit-content;">
+          {{ buff.data.displayName }}
+        </MDBBadge>
+        <div style="margin-left: 5px">{{ buff.turns }}</div>
       </div>
-    </div> -->
-    <div class="image-container" >
-      <img :src="image" alt="..." class="img-fluid image-entity" />
+      <div v-for="debuff in entity.debuffs" class="modifier-container">
+        <MDBBadge badge="danger"  style="height: fit-content;">
+          {{ debuff.data.displayName }}
+        </MDBBadge>
+        <div style="margin-left: 5px">{{ debuff.turns }}</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { MDBBadge, MDBTooltip } from "mdb-vue-ui-kit";
 
-export default {    
+export default {
   components: {
+    MDBBadge,
+    MDBTooltip
   },
   props: {
     image: { type: String, required: true},
     entity: { type: Object, required: true},
-    isSelectable: {type: Boolean}
+    // isSelectable: {type: Boolean}
+    modifiersOnRight: {type: Boolean}
   },
+  data() {
+    return {
+      tooltip1: false,
+    }
+  }
 }
 </script>
 
@@ -45,8 +83,7 @@ export default {
   /* background-color: red; */
   display: flex;
   flex-wrap: wrap;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
 }
 .arrow {
   position: absolute;
@@ -70,12 +107,33 @@ export default {
     transform: translateY(-10px) rotate(45deg);
   }
 }
+.modifiers-container {
+  margin-top: 75px;
+  height: fit-content;
+  /* margin-left: 10px; */
+  /* margin-right: 5px; */
+  /* background-color: red; */
+  display: flex;
+  flex-direction: column;
+}
+.modifier-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.buff-container {
+  min-height: 1.65em;
+}
+.main-info-container {
+  display: flex;
+  flex-direction: column;
+}
 .image-entity {  
   max-width: 256px;
   max-height: 256px;
 }
 .name-container {
-  /* background-color: red; */
+  /* background-color: blue; */
   /* align-items: center; */
   width: 100%;
   justify-content: space-between;
@@ -83,7 +141,11 @@ export default {
   flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
-  /* margin-top: 10px; */
+  padding: 5px;
+}
+.main-container {
+  display: flex;
+  flex-direction: row;
 }
 .health-container {
   /* background-color: red; */
@@ -94,9 +156,16 @@ export default {
   flex-direction: row;
   align-items: center;
   justify-content: end;
-  margin-bottom: 10px;
+  padding: 5px;
 }
 .health-bar {
   color: green;
+}
+.top-container {
+  border-style: solid;
+  /* border-color: green; */
+  border-width: 2px;
+  border-radius: 5px;
+  margin-bottom: 5px;
 }
 </style>

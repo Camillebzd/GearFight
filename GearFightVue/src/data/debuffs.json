@@ -3,11 +3,24 @@
     "name": "Poison",
     "id": 0,
     "data": {
+      "displayName": "PSN",
       "description": "You're poisoned. The damages are based on your defense.",
       "image": "",
       "type": "DAMAGE",
       "base": "defense",
       "ratio": 1
+    }
+  },
+  {
+    "name": "Burn",
+    "id": 1,
+    "data": {
+      "displayName": "BRN",
+      "description": "You're burning. The damages are based on your maximum health.",
+      "image": "",
+      "type": "DAMAGE",
+      "base": "life_base",
+      "ratio": 0.1
     }
   }
 ]

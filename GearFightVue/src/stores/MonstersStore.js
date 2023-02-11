@@ -16,12 +16,12 @@ export const useMonstersStore  = defineStore('MonstersStore', {
       console.log("monsters pulled");
     },
     getMonster(idToFind) {
-      return this.monsters.find(monster => monster.id == idToFind);
+      return JSON.parse(JSON.stringify(this.monsters.find(monster => monster.id == idToFind)));
     },
     getFightFormMonster(id) {
       let monster = this.getMonster(id);
 
-      return {
+      return JSON.parse(JSON.stringify({
         name: monster.name,
         id: parseInt(id),
         description: monster.description,
@@ -33,6 +33,8 @@ export const useMonstersStore  = defineStore('MonstersStore', {
         attack_base: parseInt(monster.attack),
         speed: parseInt(monster.speed),
         speed_base: parseInt(monster.speed),
+        defense: parseInt(monster.defense),
+        defense_base: parseInt(monster.defense),
         skills: monster.skills,
         buffs: [],
         debuffs: [],
@@ -42,7 +44,7 @@ export const useMonstersStore  = defineStore('MonstersStore', {
         played: false,
         action: {},
         side: 'group2' // manage group on front !
-      };
+      }));
     }
   },
 })
