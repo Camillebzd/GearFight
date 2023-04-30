@@ -5,9 +5,8 @@
       <MDBCardBody>
         <MDBCardTitle>{{monster.name}}</MDBCardTitle>
         <MDBCardText>
-          {{monster.description}} <br/>
-          Level: {{ monster.Level }}
-          <MDBBadge :badge="getBadgeColor">{{ monster.rarity }}</MDBBadge>
+          Level: {{ monster.level }} <br/>
+          Rarity: <MDBBadge :badge="getBadgeColor">{{ monster.rarity }}</MDBBadge>
         </MDBCardText>
       </MDBCardBody>
     </RouterLink>

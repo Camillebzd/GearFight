@@ -1,14 +1,12 @@
 <template>
   <MDBCard style="width: 14rem; margin-bottom: 1rem;">
     <RouterLink :to="{name: 'gear.show', params:{id: gearId, slug: gear.name}}">
+      <!-- <MDBCardImg top :src="'/img/basic_mace_512.png'" alt="..."/> -->
       <MDBCardImg top :src="gear.image" alt="..."/>
       <MDBCardBody>
         <MDBCardTitle>{{gear.name}}</MDBCardTitle>
-        <MDBCardText>
-          {{gear.description}}
-        </MDBCardText>
-        <MDBCardText>
-          Owner: {{owner}}
+        <MDBCardText class="card-title">
+          level: {{ gear.level }}
         </MDBCardText>
       </MDBCardBody>
     </RouterLink>
@@ -25,8 +23,8 @@ import {
   MDBCardImg
 } from "mdb-vue-ui-kit";
 import { RouterLink } from "vue-router";
-const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
+// const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
+// const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 
 export default {
   components: {
@@ -41,25 +39,25 @@ export default {
     gear: {type: Object, require: true},
     gearId: {type: String, require: true},
   },
-  data() {
-    return {
-      owner: ""
-    }
-  },
-  methods: {
-    async getNFTOwner() {
-      const settings = {
-          apiKey: API_KEY,
-          network: Network.MATIC_MUMBAI,
-      };
-      const alchemy = new Alchemy(settings);
-      const owner = await alchemy.nft.getOwnersForNft(CONTRACT_ADDRESS, this.gearId); // externalised this value
-      this.owner = owner?.owners[0];
-    }
-  },
-  async created() {
-    this.getNFTOwner();
-  }
+  // data() {
+  //   return {
+  //     owner: ""
+  //   }
+  // },
+  // methods: {
+  //   async getNFTOwner() {
+  //     const settings = {
+  //         apiKey: API_KEY,
+  //         network: Network.MATIC_MUMBAI,
+  //     };
+  //     const alchemy = new Alchemy(settings);
+  //     const owner = await alchemy.nft.getOwnersForNft(CONTRACT_ADDRESS, this.gearId); // externalised this value
+  //     this.owner = owner?.owners[0];
+  //   }
+  // },
+  // async created() {
+  //   this.getNFTOwner();
+  // }
 };
 
 </script>
@@ -71,5 +69,8 @@ a {
 }
 a:hover {
    color: inherit;
+}
+.card-title {
+  font-size: medium;
 }
 </style>

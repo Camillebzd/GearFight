@@ -17,8 +17,10 @@ export const useGearsStore  = defineStore('GearStore', {
   },
   actions: {
     async getGearsForContract() {
-      if (this.gears.length > 0)
+      if (this.gears.length > 0) {
         this.ownedGears = [];
+        this.gears = [];
+      }
       const settings = {
         apiKey: API_KEY,
         network: Network.MATIC_MUMBAI,

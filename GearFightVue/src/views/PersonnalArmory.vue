@@ -7,7 +7,7 @@
           <MDBRow>
             <MDBCol auto v-for="gear in ownedGears" :key="gear.tokenId">
               <GearCard  
-                :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId"
+                :gear="gear.rawMetadata" :gearId="gear.tokenId"
               />
             </MDBCol>
           </MDBRow>
@@ -17,6 +17,7 @@
         <p>We couldn't find any weapon on your MetaMask account:</p>
         <ol>
           <li>Wait cause it may take some time.</li>
+          <li>Reload the page.</li>
           <li>Check you have NFTs on your MetaMask account.</li>
           <li>Check your first MetaMask account is the one with the nft. (We will handle multiple accounts soon)</li>
         </ol>
@@ -46,40 +47,36 @@ export default {
     ...mapState(useUserStore, ['walletAddress', 'isConnected']),
     ...mapState(useGearsStore, ['ownedGears', 'fillMyGears']),
   },
-  data() {
-    return {
-      gears: [],
-    }
-  },
   methods: {
-    getGearInfo(gear) {
-      return {
-        name: gear.name,
-        description: gear.description,
-        image: gear.image,
-        family: this.getGearAttributeInfo(gear.attributes, "Family"),
-        type: this.getGearAttributeInfo(gear.attributes, "Type"),
-        level: this.getGearAttributeInfo(gear.attributes, "Level"),
-        hp: this.getGearAttributeInfo(gear.attributes, "Health Point"),
-        dmg: this.getGearAttributeInfo(gear.attributes, "Damage Point"),
-        dmgType: this.getGearAttributeInfo(gear.attributes, "Damage Type"),
-        speed: this.getGearAttributeInfo(gear.attributes, "Speed"),
-        capacities: this.getGearAttributeInfo(gear.attributes, "Capacities"), // handle this
-      };
-    },
-    getGearAttributeInfo(attributes, trait_type) {
-      for (let i = 0; i < attributes.length; i++) {
-        if (attributes[i].trait_type === trait_type)
-          return attributes[i].value;
-      }
-      return "";
-    }
+    // getGearInfo(gear) {
+    //   return {
+    //     name: gear.name,
+    //     description: gear.description,
+    //     image: gear.image,
+    //     family: this.getGearAttributeInfo(gear.attributes, "Family"),
+    //     type: this.getGearAttributeInfo(gear.attributes, "Type"),
+    //     level: this.getGearAttributeInfo(gear.attributes, "Level"),
+    //     hp: this.getGearAttributeInfo(gear.attributes, "Health Point"),
+    //     dmg: this.getGearAttributeInfo(gear.attributes, "Damage Point"),
+    //     dmgType: this.getGearAttributeInfo(gear.attributes, "Damage Type"),
+    //     speed: this.getGearAttributeInfo(gear.attributes, "Speed"),
+    //     capacities: this.getGearAttributeInfo(gear.attributes, "Capacities"), // handle this
+    //   };
+    // },
+    // getGearAttributeInfo(attributes, trait_type) {
+    //   for (let i = 0; i < attributes.length; i++) {
+    //     if (attributes[i].trait_type === trait_type)
+    //       return attributes[i].value;
+    //   }
+    //   return "";
+    // }
   },
   async created() {
-    this.fillMyGears();
+    await this.fillMyGears();
+    console.log(this.ownedGears);
   },
   watch: {
-    'this.walletAddress': function(newVal, oldVal) {
+    walletAddress: function(newVal, oldVal) {
       this.fillMyGears();
     }
   }

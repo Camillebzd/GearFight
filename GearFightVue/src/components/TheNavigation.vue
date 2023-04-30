@@ -1,12 +1,13 @@
 <template>
   <MDBNavbar light bg="light" expand="lg" container>
-    <MDBNavbarBrand>
-      <img
+    <MDBNavbarBrand href="http://127.0.0.1:5173/"> <!-- Change in prod to reflect the site -->
+      <!-- <img
         src="@/assets/sword_and_shield_icon.png"
         height="30"
         alt=""
         loading="lazy"
-      />
+      /> -->
+      GearFight
     </MDBNavbarBrand>
     <MDBNavbarToggler target="navbarNav"></MDBNavbarToggler>
     <MDBNavbarNav collapse="navbarNav">
@@ -23,7 +24,7 @@
         placeholder="Type query"
         aria-label="Search"
       />
-      <MDBBtn outline="primary" @click="test"> Search </MDBBtn>
+      <MDBBtn outline="primary" @click="researchPop"> Search </MDBBtn>
     </form>
     <TheMetamaskConnectionButton />
   </MDBNavbar>
@@ -50,28 +51,24 @@ export default {
     MDBBtn,
     TheMetamaskConnectionButton,
   },
-  // emits: ['updateAccountAddress'],
   methods: {
     checkActive(toCheck) {
       return toCheck === this.$router.currentRoute.value.path;
     },
-    // to delet 
-    test() {
+    // Working on the search system
+    researchPop() {
       this.$notify({
         type: "error",
-        title: "Connection failed",
-        text: "🦊 You must install Metamask, a virtual Ethereum wallet, in your browser.",
+        title: "Not working!",
+        text: "Sorry but the search system ins't working for the moment.",
       });
     },
-    // updateAccountAddress(address) {
-    //   this.$emit('updateAccountAddress', address);
-    // }
   }
 };
 </script>
 
 <style>
-#test-active-classes{
+#researchPop-active-classes{
   color:red
 }
 </style>

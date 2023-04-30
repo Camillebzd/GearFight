@@ -17,17 +17,7 @@ import TheNavigation from '@/components/TheNavigation.vue'
 export default{
   components: {
     TheNavigation
-  },
-  data() {
-    return {
-      // accountAddress: "",
-    }
-  },
-  methods: {
-    // updateAccountAddress(accountAddress) {
-    //   this.accountAddress = accountAddress;
-    // }
-  },
+  }
 }
 </script>
 
