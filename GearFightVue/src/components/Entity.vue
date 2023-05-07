@@ -24,9 +24,9 @@
               <div>LVL.{{ entity.level }}</div>
             </div>
             <div class="health-container">
-              <div style="margin-right: 7px">Life: </div>
-              <progress :max="entity.life_base" :value="entity.life" style="background-color:green; margin-right: 5px;"></progress>
-              <div style="width: 40px">{{ entity.life * 100 / entity.life_base }}%</div>
+              <div style="margin-right: 7px">Health: </div>
+              <progress :max="entity.healthBase" :value="entity.health" style="background-color:green; margin-right: 5px;"></progress>
+              <div style="width: 40px">{{ Math.round(entity.health * 100 / entity.healthBase) }}%</div>
             </div>
           </div>
           <div class="image-container" >

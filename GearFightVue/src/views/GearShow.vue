@@ -2,59 +2,74 @@
   <div>
     <div v-if="gear == null">
       <h1>Loading...</h1>
-      <p>We are loading the gear, if this take to much time it may be because a problem has happend.</p>
+      <p>We are loading the gear, if this take to much time it may be because a problem has happened.</p>
     </div>
     <div v-else>
-      <h1>{{getGearInfo(gear.rawMetadata)?.name}}</h1>
+      <h1>{{ gear.name }}</h1>
       <div class="flex-div">
-        <img :src="getGearInfo(gear.rawMetadata)?.image" class="img-fluid shadow-2-strong nft-img" />
+        <img :src="gear?.image" class="img-fluid shadow-2-strong nft-img" />
         <div>
-          <p>Description: {{getGearInfo(gear.rawMetadata)?.description}}</p>
-          <p>Level: {{getGearInfo(gear.rawMetadata)?.level}}</p>
-          <p>Family: {{getGearInfo(gear.rawMetadata)?.family}}</p>
-          <p>Type: {{getGearInfo(gear.rawMetadata)?.type}}</p>
-          <p>Damage Type: {{getGearInfo(gear.rawMetadata)?.dmgType}}</p>
-          <p>Capacities: {{getGearInfo(gear.rawMetadata)?.capacities}}</p>
+          <div>Health: {{gear.health}}</div>
+          <div>Speed: {{gear.speed}}</div>
+          <div>Sharp Damage: {{gear.sharpDmg}}</div>
+          <div>Blunt Damage: {{gear.bluntDmg}}</div>
+          <div>Sharp Resistance: {{gear.sharpRes}}</div>
+          <div>Blunt Resistance: {{gear.bluntRes}}</div>
+          <div>Penetration Resistance: {{gear.penRes}}</div>
+          <div>Handling: {{gear.handling}}</div>
+          <div>Guard: {{gear.guard}}</div>
+          <div>Lethality: {{gear.lethality}}</div>
+        </div>
+        <div>
+          <div>XP: {{ gear.xp }}</div>
+          <div>Level: {{ gear.level }}</div>
+          <div>Stage: {{ gear.stage }}</div>
+          <div>Type: {{ gear.weaponType }}</div>
+          <div>Spells: {{ gear.spells[0].name }}, {{ gear.spells[1].name }}, {{ gear.spells[2].name }}, {{ gear.spells[3].name }}</div>
         </div>
       </div>
-      <div class="row text-center stats">
-        <div class="col-lg-3 col-md-6 mb-5 mb-md-5 mb-lg-0 position-relative">
-          <i class="fas fa-crosshairs fa-3x text-primary mb-4"></i>
-          <h5 class="text-primary fw-bold mb-3">{{getGearInfo(gear.rawMetadata)?.dmg}}</h5>
-          <h6 class="fw-normal mb-0">Damage</h6>
-          <div class="vr vr-blurry position-absolute my-0 h-100 d-none d-md-block top-0 end-0"></div>
-        </div>
-  
-        <div class="col-lg-3 col-md-6 mb-5 mb-md-5 mb-lg-0 position-relative">
-          <i class="fas fa-heart fa-3x text-primary mb-4"></i>
-          <h5 class="text-primary fw-bold mb-3">{{getGearInfo(gear.rawMetadata)?.hp}}</h5>
-          <h6 class="fw-normal mb-0">HP</h6>
-          <div class="vr vr-blurry position-absolute my-0 h-100 d-none d-md-block top-0 end-0"></div>
-        </div>
-  
-        <div class="col-lg-3 col-md-6 mb-5 mb-md-0 position-relative">
-          <i class="fas fa-angle-double-right fa-3x text-primary mb-4"></i>
-          <h5 class="text-primary fw-bold mb-3">{{getGearInfo(gear.rawMetadata)?.speed}}</h5>
-          <h6 class="fw-normal mb-0">speed</h6>
-        </div>
+      <p>{{ gear.description }}</p>
+      <!-- level up system here -->
+      <div v-if="gear.xp > 0" class="flex-div flex-center">
+        <div style="margin-right: 10px;">You have {{ gear.xp }} xp, you can spend 1 xp to gain 1 level!</div>
+        <MDBBtn color="success" @click="levelUp">LEVEL UP</MDBBtn>
       </div>
-      <div class="owner">
-        <p>Owners: {{gearOwners.owners}}</p>
-        <MDBBtn outline="primary" @click="transfereTest">Test transfere</MDBBtn>
+      <!-- upgrade system here -->
+      <div v-if="gear.stage < gear.level * 1 && gear.stage < 3" class="flex-div flex-center">
+        <div style="margin-right: 10px;">You have enough level, you can upgrade your weapon!</div>
+        <MDBBtn color="success" @click="upgrade">UPGRADE</MDBBtn>
+      </div>
+      <!-- manual refresh -->
+      <div class="flex-div flex-center">
+        <div style="margin-right: 10px;">If data take too much time to be updated, click here: </div>
+        <MDBBtn color="success" @click="manualRefresh">refresh</MDBBtn>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { Network, Alchemy, Wallet, Utils } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import { MDBBtn } from "mdb-vue-ui-kit";
-const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
+import { mapState } from 'pinia';
+import { useGearsStore } from "@/stores/GearsStore";
+import { useUserStore } from "@/stores/UserStore.js";
+
+import { ethers } from 'ethers';
+import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+
+const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
 
 export default {
   components: {
     MDBBtn,
+  },
+  computed: {
+    ...mapState(useUserStore, ['walletAddress', 'isConnected']),
+    ...mapState(useGearsStore, ['gears', 'ownedGearsFormatted', 'starterGears', 
+      'getGearsForContract', 'fillMyGears', 'fillStarterGears',
+      'getGear', 'getMyGearFormatted', 'getStarterGear', 'getFightFormGear',
+      'getWeaponStatsForLevelUp', 'getWeaponImageForUpgrade', 'refreshTokenMetadata'
+    ]),
   },
   data() {
     return {
@@ -64,75 +79,86 @@ export default {
     }
   },
   methods: {
-    async transfereTest() {
-      if (this.accountAddress == undefined || this.accountAddress?.length < 1) {
-        // notification
-        return;
+    createContract() {
+      const ethereum = window.ethereum;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner(this.walletAddress);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
+      return contract;
+    },
+    async manualRefresh() {
+      console.log("todo manual refresh")
+    },
+    async levelUp() {
+      const contract = this.createContract();
+      let weaponStats = await this.getWeaponStatsForLevelUp(this.gear.weaponType);
+      console.log(weaponStats);
+      try {
+        await contract.levelUp(this.gear.id, weaponStats);
+        this.$notify({
+          type: "success",
+          title: "Level up!",
+          text: "Your weapon gained a level, wait a minute and reload to see it!",
+        });
+      } catch {
+        this.$notify({
+          type: "error",
+          title: "Level up failed",
+          text: "An error happened during the level up process...",
+        });
       }
-      console.log("start transfere");
-      const settings = {
-        apiKey: PRIVATE_KEY,
-        network: Network.ETH_GOERLI, // Replace the network needed.
-      };
-      const alchemy = new Alchemy(settings);
-      const wallet = new Wallet(PRIVATE_KEY);
-      
-      const transaction = {
-        to: "0x0863a707dbfdcec01ee55a92aa77c38d9f3645e5",
-        value: Utils.parseEther("0.001"),
-        gasLimit: "21000",
-        maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
-        maxFeePerGas: Utils.parseUnits("20", "gwei"),
-        nonce: await alchemy.core.getTransactionCount(wallet.getAddress()),
-      };
-      
-
-      const rawTransaction = await wallet.signTransaction(transaction);
-      // const response = await alchemy.transact.sendTransaction(rawTransaction);
-      console.log(response);
-    },
-    async getNFTInfo() {
-      const settings = {
-          apiKey: API_KEY,
-          network: Network.MATIC_MUMBAI,
-      };
-      const alchemy = new Alchemy(settings);
-      this.gear = await alchemy.nft.getNftMetadata(CONTRACT_ADDRESS, this.$route.params.id); // externalised this value
-      console.log(this.gear);
-      this.gearOwners = await alchemy.nft.getOwnersForNft(CONTRACT_ADDRESS, this.$route.params.id);
-      // console.log()
-    },
-    getGearInfo(gear) { // mettre dans un utils.js ?
-      return {
-        name: gear.name,
-        description: gear.description,
-        image: gear.image,
-        family: this.getGearAttributeInfo(gear.attributes, "Family"),
-        type: this.getGearAttributeInfo(gear.attributes, "Type"),
-        level: this.getGearAttributeInfo(gear.attributes, "Level"),
-        hp: this.getGearAttributeInfo(gear.attributes, "Health Point"),
-        dmg: this.getGearAttributeInfo(gear.attributes, "Damage Point"),
-        dmgType: this.getGearAttributeInfo(gear.attributes, "Damage Type"),
-        speed: this.getGearAttributeInfo(gear.attributes, "Speed"),
-        capacities: this.getGearAttributeInfo(gear.attributes, "Capacities"), // handle this
-      };
-    },
-    getGearAttributeInfo(attributes, trait_type) {
-      for (let i = 0; i < attributes.length; i++) {
-        if (attributes[i].trait_type === trait_type)
-          return attributes[i].value;
+      try {
+        this.refreshTokenMetadata(this.gear.id);
+        console.log("metadata refreshed");
+      } catch {
+        console.log("ERROR: metadata not refreshed");
       }
-      return "";
+    },
+    async upgrade() {
+      const contract = this.createContract();
+      let image = await this.getWeaponImageForUpgrade(this.gear.weaponType, this.gear.stage + 1);
+      console.log(image);
+      try {
+        await contract.upgradeWeapon(this.gear.id, image);
+        this.$notify({
+          type: "success",
+          title: "Upgrade done!",
+          text: "Your weapon upgraded, wait a minute and reload to see it!",
+        });
+      } catch {
+        this.$notify({
+          type: "error",
+          title: "Upgrade failed",
+          text: "An error happened during the upgrade process...",
+        });
+      }
     }
   },
   async created() {
-    this.accountAddress = this.$attrs.accountAddress;
-    this.getNFTInfo();
+    // this.accountAddress = this.$attrs.accountAddress;
+    // this.getNFTInfo();
+    switch (this.$route.params.storeType) {
+      case "gears":
+        await this.getGearsForContract();
+        this.gear = await this.getFightFormGear(this.getGear(this.$route.params.id));
+        break;
+      case "ownedGearsFormatted":
+        await this.fillMyGears();
+        this.gear = await this.getMyGearFormatted(this.$route.params.id);
+        break;
+      case "starterGears":
+        await this.fillStarterGears();
+        this.gear = await this.getStarterGear(this.$route.params.id);
+        break;
+      default:
+        console.log("ERROR: the store is not supported!");
+        break;
+    }
   },
   watch: {
     '$attrs.accountAddress': function(newVal, oldVal) {
-      this.accountAddress = newVal;
-      this.getNFTInfo();
+      // this.accountAddress = newVal;
+      // this.getNFTInfo();
     },
   }
 }
@@ -148,6 +174,10 @@ export default {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
+}
+.flex-center {
+  align-items: center;
+  margin-bottom: 20px;
 }
 .nft-img {
   height: 256px;

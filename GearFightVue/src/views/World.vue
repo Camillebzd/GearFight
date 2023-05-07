@@ -4,7 +4,7 @@
     <h3>Monsters available</h3>
     <div v-if="monsters.length">
       <MDBContainer>
-        <MDBRow>
+        <MDBRow class="justify-content-around">
           <MDBCol auto v-for="monster in monsters" :key="monster.id">
             <MonsterCard :monster="monster" :monsterId="monster.id" />
           </MDBCol>
@@ -31,7 +31,7 @@ export default {
     MDBContainer
   },
   computed: {
-    ...mapState(useMonstersStore, ['monsters', 'fill']),
+    ...mapState(useMonstersStore, ['monsters', 'fillMonstersData']),
   },
   data() {
     return {
@@ -40,7 +40,7 @@ export default {
   methods: {
   },
   async created() {
-    await this.fill(); // monsters
+    await this.fillMonstersData(); // monsters
   }
 }
 </script>

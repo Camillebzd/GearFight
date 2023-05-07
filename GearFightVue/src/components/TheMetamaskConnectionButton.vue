@@ -1,7 +1,7 @@
 <template>
   <div class="metamask-container">
     <MDBBtn outline="primary" v-if="!isConnected" v-on:click="connectToMetamask">Connect Wallet</MDBBtn>
-    <MDBBtn outline="primary" v-else v-on:click="">Connected: {{smallAddress}} </MDBBtn>
+    <MDBBtn outline="primary" v-else v-on:click="connectToMetamask">Connected: {{smallAddress}} </MDBBtn>
   </div>
 </template>
 
@@ -32,6 +32,23 @@ export default {
             title: "Connection failed",
             text: "😥 " + err.message,
           });
+        }
+        try {
+          await ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x13881' }],
+          });
+          console.log("switch request done.");
+        } catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask.
+          if (switchError.code === 4902) {
+            this.$notify({
+              type: "error",
+              title: "Missing the good network",
+              text: "⚠️ You don't have the Mumbai network. Please add it and connect to it.",
+            });
+          }
+          // handle other "switch" errors
         }
       } else {
         this.$notify({

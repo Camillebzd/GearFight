@@ -5,8 +5,7 @@
       <MDBCardBody>
         <MDBCardTitle>{{monster.name}}</MDBCardTitle>
         <MDBCardText>
-          Level: {{ monster.level }} <br/>
-          Rarity: <MDBBadge :badge="getBadgeColor">{{ monster.rarity }}</MDBBadge>
+          Difficulty: <MDBBadge :badge="getBadgeColor">{{ getDifficultyName }}</MDBBadge>
         </MDBCardText>
       </MDBCardBody>
     </RouterLink>
@@ -42,13 +41,20 @@ export default {
   },
   computed: {
     getBadgeColor() {
-      if (this.monster.rarity === "NORMAL")
+      if (this.monster.difficulty === 1)
         return "secondary";
-      else if (this.monster.rarity === "ELITE")
+      else if (this.monster.difficulty === 2)
         return "warning";
       else
         return "danger";
-
+    },
+    getDifficultyName() {
+      if (this.monster.difficulty === 1)
+        return "easy";
+      else if (this.monster.difficulty === 2)
+        return "normal";
+      else
+        return "hard";
     }
   },
 };

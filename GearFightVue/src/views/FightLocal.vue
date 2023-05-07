@@ -26,8 +26,8 @@
         <Chat :lignes="info"/>
       </div>
       <div class="spells-container">
-        <SpellCard v-for="mySpell in mySkills" :key="mySpell.id"
-          @click="mySpell.data.number > 0 && launchSpell(mySpell)" 
+        <SpellCard v-for="mySpell in mySpells" :key="mySpell.id"
+          @click="launchSpell(mySpell)" 
           :spell="mySpell"
           @mouseover="spellTargetedInfo = mySpell" @mouseleave="spellTargetedInfo = {}"
         />
@@ -54,7 +54,7 @@
         </MDBModalBody>
         <MDBModalFooter>
           <MDBBtn color="secondary" @click="goBackToWorld"> Go back to world </MDBBtn>
-          <MDBBtn color="primary" v-if="won" @click="getLevel"> Level up! </MDBBtn>
+          <MDBBtn color="primary" v-if="won" @click="gainXP"> gain xp! </MDBBtn>
         </MDBModalFooter>
       </MDBModal>
     </div>
@@ -88,8 +88,14 @@ import {
   applyDebuffs, 
   resetAllToBaseStat,
   cleanFinishedBuff,
-  cleanFinishedDebuff
+  cleanFinishedDebuff,
+  resolveTurn,
+  END_OF_TURN
 } from "@/scripts/fight.js";
+import { ethers } from 'ethers';
+import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+
+const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
 
 export default {
   components: {
@@ -114,63 +120,127 @@ export default {
       ownTheGear: false,
       readyToFight: false,
       myGear: {},
-      mySkills: [], // later on myGear directly
+      mySpells: [],
       monster: {},
       targetType: "",
       info: [],
       actualTurn: 1,
+      actions: [],
+      isMonterCombo: false,
+      isPlayerCombo: false,
       showModal: false,
       won: false,
-      upHere: false,
       entityTargetedInfo: {},
       spellTargetedInfo: {},
     }
   },
   computed: {
-    ...mapState(useGearsStore, ['ownedGears', 'fillMyGears', 'isOwned', 'getFightFormGear']),
-    ...mapState(useMonstersStore, ['monsters', 'fill', 'getFightFormMonster']),
-    ...mapState(useSpellsStore, ['fillAllSpellData', 'getSpell']),
+    ...mapState(useGearsStore, ['fillMyGears', 'isOwned', 'getFightFormGear', 'getMyGearFormatted', 'refreshTokenMetadata']),
+    ...mapState(useMonstersStore, ['monsters', 'fillMonstersData', 'getFightFormMonster']),
+    // ...mapState(useSpellsStore, ['fillAllSpellData', 'getSpell']),
   },
   methods: {
     goBackToWorld() {
       this.showModal = false;
       this.$router.push({name: 'World'});
     },
-    getLevel() {
-      // call levelUp in contract
+    async gainXP() {
+      // call earn money / xp
+      const ethereum = window.ethereum;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner(this.walletAddress);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
+
+      try {
+        await contract.gainXP(this.myGear.id, this.monster.difficulty);
+        this.$notify({
+          type: "success",
+          title: "XP earned!",
+          text: `Your weapon gained ${this.monster.difficulty} xp, wait a minute and you will see it!`,
+        });
+        this.refreshTokenMetadata(this.myGear.id);
+      } catch {
+        this.$notify({
+          type: "error",
+          title: "XP error",
+          text: "An error happened during the the process of gaining experience.",
+        });
+      }
       this.goBackToWorld();
     },
     launchSpell(mySpell) {
-      this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
-      let actions = [];
-      actions.push({user: this.myGear, spell: mySpell, target: mySpell.data.target.type == "ENEMY" ? this.monster : this.myGear});
-      actions.push({user: this.monster, spell: this.getSpell(this.monster.skills[0]), target: this.getSpell(this.monster.skills[0]).data.target.type == "ENEMY" ? this.myGear : this.monster});
-      actions.sort((a, b) => {
-        return b.user.speed - a.user.speed;
-      });
-      console.log(actions);
-      for (let i = 0; i < actions.length; i++) {
-        resetAllToBaseStat(actions[i].user);
-        applyBuffs(actions[i].user);
-        resolveSpell(actions[i].user, actions[i].spell, actions[i].target);
-        applyDebuffs(actions[i].user);
-        cleanFinishedBuff(actions[i].user);
-        cleanFinishedDebuff(actions[i].user)
-        this.info.push(`- ${actions[i].user.name} launched ${actions[i].spell.data.displayName} on ${actions[i].target.name}`);
-        if (!isAlive(this.monster)) {
-          this.won = true;
-          this.showModal = true;
-          return;
-        }
-        if (!isAlive(this.myGear)) {
+      // let actions = [];
+      // actions.push({user: this.myGear, spell: mySpell, target: mySpell.data.target.type == "ENEMY" ? this.monster : this.myGear});
+      // actions.push({user: this.monster, spell: this.monster.spells[0], target: this.getSpell(this.monster.skills[0]).data.target.type == "ENEMY" ? this.myGear : this.monster});
+      // --- old system ---
+      // actions.sort((a, b) => {
+      //   return b.user.speed - a.user.speed;
+      // });
+      // console.log(actions);
+      // for (let i = 0; i < actions.length; i++) {
+      //   resetAllToBaseStat(actions[i].user);
+      //   applyBuffs(actions[i].user);
+      //   resolveSpell(actions[i].user, actions[i].spell, actions[i].target);
+      //   applyDebuffs(actions[i].user);
+      //   cleanFinishedBuff(actions[i].user);
+      //   cleanFinishedDebuff(actions[i].user);
+      //   this.info.push(`- ${actions[i].user.name} launched ${actions[i].spell.data.displayName} on ${actions[i].target.name}`);
+      //   if (!isAlive(this.monster)) {
+      //     this.won = true;
+      //     this.showModal = true;
+      //     return;
+      //   }
+      //   if (!isAlive(this.myGear)) {
+      //     this.won = false;
+      //     this.showModal = true;
+      //     return;
+      //   }
+      // }
+      // this.actualTurn++;
+      // this.spellSelectedName = "";
+      // this.targetType = "";
+      // --- ---
+      if (this.isPlayerCombo == false) {
+        this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
+        // random select spell for monster
+        this.actions.push({attacker: this.monster, spell: this.monster.spells[0], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
+      }
+      this.actions.push({attacker: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo});
+      this.turn();
+    },
+    turn() {
+      // clean actions done ?
+      this.actions = this.actions.filter((action) => {return action.hasBeenDone === false});
+      let ret = resolveTurn(this.actions, this.info);
+      switch (ret) {
+        case END_OF_TURN.PLAYER_COMBO:
+          this.isPlayerCombo = true;
+          this.info.push("PLAYER COMBO!");
+          break;
+        case END_OF_TURN.MONSTER_COMBO:
+          this.isMonterCombo = true;
+          this.info.push("MONSTER COMBO!");
+          this.actions.push({attacker: this.monster, spell: this.monster.spells[0], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
+          turn();
+          break;
+        case END_OF_TURN.PLAYER_DIED:
           this.won = false;
           this.showModal = true;
           return;
-        }
+        case END_OF_TURN.MONSTER_DIED:
+          this.won = true;
+          this.showModal = true;
+          return;
+        case END_OF_TURN.NORMAL:
+        default:
+          // end turn
+          this.info.push("-------------------------------- END OF TURN --------------------------------");
+          this.isMonterCombo = false;
+          this.isPlayerCombo = false;
+          this.actions = []; // this.actions = this.actions.filter((action) => {return action.hasBeenDone === false});
+          this.actualTurn++;
+          break;
       }
-      this.actualTurn++;
-      this.spellSelectedName = "";
-      this.targetType = "";
     },
   },
   async created() {
@@ -178,17 +248,15 @@ export default {
     if (!this.isOwned(this.gearId))
       return;
     this.ownTheGear = true;
-    await this.fill();
-    await this.fillAllSpellData();
-    this.myGear = this.getFightFormGear(this.gearId);
+    await this.fillMonstersData();
+    // await this.fillAllSpellData();
+    this.myGear = this.getFightFormGear(this.getMyGearFormatted(this.gearId));
     this.monster = this.getFightFormMonster(this.monsterId);
-    // --- DEBUG ---
-    // this.myGear.skills
-    this.mySkills.push(this.getSpell("Fireball"));
-    this.mySkills.push(this.getSpell("Basic_cut"));
-    this.mySkills.push(this.getSpell("Basic_heal"));
-    this.mySkills.push(this.getSpell("Basic_poison"));
-    // --- ---
+    console.log(this.monster)
+    this.myGear.spells.forEach((spell) => {
+      this.mySpells.push(JSON.parse(JSON.stringify(spell)));
+    });
+    console.log(this.myGear);
     this.readyToFight = true;
   }
 }

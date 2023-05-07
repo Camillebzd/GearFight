@@ -5,7 +5,10 @@ export const useSpellsStore  = defineStore('SpellsStore', {
     return {
       spells: [],
       buffs: [],
-      debuffs: []
+      debuffs: [],
+      // new
+      weaponsSpells: [],
+      monstersSpells: []
     }
   },
   getters: {
@@ -65,5 +68,26 @@ export const useSpellsStore  = defineStore('SpellsStore', {
           spell.data.debuffs[i] = {...this.getDebuff(spell.data.debuffs[i].name)};
       }
     },
+    // new
+    async fillWeaponsSpells() {
+      this.weaponsSpells = (await import("@/data/spells/weapons.json")).default;
+      console.log("weapons spells pulled");
+    },
+    async fillMonstersSpells() {
+      this.monstersSpells = (await import("@/data/spells/monsters.json")).default;
+      console.log("monsters spells pulled");
+    },
+    getWeaponsSpellFromId(id) {
+      return JSON.parse(JSON.stringify(this.weaponsSpells.find(spell => spell.id === id)));
+    },
+    getWeaponsSpellFromName(name) {
+      return JSON.parse(JSON.stringify(this.weaponsSpells.find(spell => spell.name === name)));
+    },
+    getMonstersSpellFromId(id) {
+      return JSON.parse(JSON.stringify(this.monstersSpells.find(spell => spell.id === id)));
+    },
+    getMonstersSpellFromName(name) {
+      return JSON.parse(JSON.stringify(this.monstersSpells.find(spell => spell.name === name)));
+    }
   },
 })

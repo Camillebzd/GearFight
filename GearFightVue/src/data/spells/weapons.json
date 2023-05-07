@@ -1,0 +1,86 @@
+[
+  {
+    "id": 0,
+    "name": "Riposte",
+    "damage": 50,
+    "initiative": 0,
+    "type": "SHARP"
+  },
+  {
+    "id": 1,
+    "name": "Powerslam",
+    "damage": 50,
+    "initiative": 5,
+    "type": "BLUNT"
+  },
+  {
+    "id": 2,
+    "name": "Disarm",
+    "damage": 46,
+    "initiative": 5,
+    "type": "BLUNT"
+  },
+  {
+    "id": 3,
+    "name": "Lunge",
+    "damage": 43,
+    "initiative": 10,
+    "type": "SHARP"
+  },
+  {
+    "id": 4,
+    "name": "Crush",
+    "damage": 43,
+    "initiative": 10,
+    "type": "BLUNT"
+  },
+  {
+    "id": 5,
+    "name": "Bash",
+    "damage": 39,
+    "initiative": 20,
+    "type": "BLUNT"
+  },
+  {
+    "id": 6,
+    "name": "Sweep",
+    "damage": 35,
+    "initiative": 25,
+    "type": "SHARP"
+  },
+  {
+    "id": 7,
+    "name": "Thrash",
+    "damage": 36,
+    "initiative": 25,
+    "type": "BLUNT"
+  },
+  {
+    "id": 8,
+    "name": "Push",
+    "damage": 33,
+    "initiative": 25,
+    "type": "BLUNT"
+  },
+  {
+    "id": 9,
+    "name": "Lash",
+    "damage": 31,
+    "initiative": 30,
+    "type": "SHARP"
+  },
+  {
+    "id": 10,
+    "name": "Slash",
+    "damage": 30,
+    "initiative": 35,
+    "type": "SHARP"
+  },
+  {
+    "id": 11,
+    "name": "Thrust",
+    "damage": 30,
+    "initiative": 35,
+    "type": "SHARP"
+  }
+]

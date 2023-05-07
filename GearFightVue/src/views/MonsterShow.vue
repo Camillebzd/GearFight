@@ -5,12 +5,20 @@
       <div class="flex-div">
         <img :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
         <div>
-          <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ monster.Rarity }}</MDBBadge>
-          <p>Level: {{monster.level}}</p>
-          <p>Attack: {{monster.attack}}</p>
-          <p>Defense: {{monster.defense}}</p>
-          <p>Life: {{monster.life}}</p>
-          <p>Speed: {{monster.speed}}</p>
+          <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ getDifficultyName }}</MDBBadge>
+          <div>Health: {{monster.health}}</div>
+          <div>Speed: {{monster.speed}}</div>
+          <div>Sharp Damage: {{monster.sharpDmg}}</div>
+          <div>Blunt Damage: {{monster.bluntDmg}}</div>
+          <div>Sharp Resistance: {{monster.sharpRes}}</div>
+          <div>Blunt Resistance: {{monster.bluntRes}}</div>
+          <div>Penetration Resistance: {{monster.penRes}}</div>
+          <div>Handling: {{monster.handling}}</div>
+          <div>Guard: {{monster.guard}}</div>
+          <div>Lethality: {{monster.lethality}}</div>
+        </div>
+        <div>
+          <div>Spells: {{ monster.spells[0]?.name }}, {{ monster.spells[1]?.name }}, {{ monster.spells[2]?.name }}, {{ monster.spells[3]?.name }}</div>
         </div>
       </div>
       <p>{{monster.description}}</p>
@@ -33,21 +41,21 @@
             <MDBModalTitle id="exampleModalScrollableTitle"> Choose your Gear for the figth </MDBModalTitle>
           </MDBModalHeader>
           <MDBModalBody>
-            <MDBContainer v-if="ownedGears.length > 0">
+            <MDBContainer v-if="ownedGearsFormatted.length > 0">
               <MDBRow>
-                <MDBCol auto v-for="gear in ownedGears" :key="gear.tokenId">
-                    <GearCardHorizontal 
-                      :gear="getGearInfo(gear.rawMetadata)" :gearId="gear.tokenId" @click="selectGear(gear.tokenId)" style="cursor: pointer" 
-                      :class="{selectedGear: isSelected(gear.tokenId)}"
-                    />
+                <MDBCol auto v-for="gear in ownedGearsFormatted" :key="gear.id">
+                  <GearCardHorizontal 
+                    :gear="gear" :gearId="gear.id" @click="selectGear(gear.id)" style="cursor: pointer"
+                    :class="{selectedGear: isSelected(gear.id)}"
+                  />
                 </MDBCol>
               </MDBRow>
             </MDBContainer>
           </MDBModalBody>
           <MDBModalFooter>
             <MDBBtn color="secondary" @click="exampleModalScrollable = false"> Close </MDBBtn>
-            <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchFight" > Use this weapon (serv) </MDBBtn>
-            <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchLocalFight" > (local) </MDBBtn>
+            <!-- <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchFight" > Use this weapon (serv) </MDBBtn> -->
+            <MDBBtn color="primary" :disabled="gearSelected < 0" @click="launchLocalFight" > Fight </MDBBtn>
           </MDBModalFooter>
         </MDBModal>
       </div>
@@ -98,26 +106,35 @@ export default {
     GearCardHorizontal
   },
   computed: {
-    ...mapState(useMonstersStore, ['monsters', 'fill', 'getFightFormMonster']),
+    ...mapState(useMonstersStore, ['monsters', 'fillMonstersData', 'getFightFormMonster']),
     ...mapState(useUserStore, ['isConnected']),
-    ...mapState(useGearsStore, ['ownedGears', 'fillMyGears', 'getFightFormGear']),
+    ...mapState(useGearsStore, ['ownedGearsFormatted', 'fillMyGears', 'getFightFormGear', 'getMyGear']),
     monster() {
       return this.monsters[this.$route.params.id];
     },
     getBadgeColor() {
-      if (this.monster.Rarity === "NORMAL")
+      if (this.monster.difficulty === 1)
         return "secondary";
-      else if (this.monster.Rarity === "ELITE")
+      else if (this.monster.difficulty === 2)
         return "warning";
       else
         return "danger";
+    },
+    getDifficultyName() {
+      if (this.monster.difficulty === 1)
+        return "easy";
+      else if (this.monster.difficulty === 2)
+        return "normal";
+      else
+        return "hard";
     }
   },
   methods: {
     launchLocalFight() {
-      this.exampleModalScrollable = false
+      this.exampleModalScrollable = false;
       this.$router.push({name: 'fight.local', params:{monsterId: this.$route.params.id, gearId: this.gearSelected}});
     },
+    // fct for future connected fights
     async launchFight() {
       this.exampleModalScrollable = false;
       // loading to tell the client to wait the start of the fight ?
@@ -140,8 +157,8 @@ export default {
       // monster.side = 'group2';
       // fightData.group2.push(monster);
       fightData.group2.push(this.getFightFormMonster(this.$route.params.id));
-      // fightData.allies.push(this.ownedGears.find(gear => gear.tokenId == this.gearSelected));
-      fightData.group1.push(this.getFightFormGear(this.gearSelected));
+      // fightData.allies.push(this.ownedGearsFormatted.find(gear => gear.tokenId == this.gearSelected));
+      fightData.group1.push(this.getFightFormGear(this.getMyGear(this.gearSelected)));
       fightData.roomLeader = this.gearSelected;
       socket.emit("initFight", fightData);
     },
@@ -157,31 +174,9 @@ export default {
     openModal() {
       this.gearSelected = -1;
       this.exampleModalScrollable = true
-      if (this.ownedGears.length < 1)
+      if (this.ownedGearsFormatted.length < 1)
         this.fillMyGears();
     },
-    getGearInfo(gear) {
-      return {
-        name: gear.name,
-        description: gear.description,
-        image: gear.image,
-        family: this.getGearAttributeInfo(gear.attributes, "Family"),
-        type: this.getGearAttributeInfo(gear.attributes, "Type"),
-        level: this.getGearAttributeInfo(gear.attributes, "Level"),
-        hp: this.getGearAttributeInfo(gear.attributes, "Health Point"),
-        dmg: this.getGearAttributeInfo(gear.attributes, "Damage Point"),
-        dmgType: this.getGearAttributeInfo(gear.attributes, "Damage Type"),
-        speed: this.getGearAttributeInfo(gear.attributes, "Speed"),
-        capacities: this.getGearAttributeInfo(gear.attributes, "Capacities"), // handle this
-      };
-    },
-    getGearAttributeInfo(attributes, trait_type) {
-      for (let i = 0; i < attributes.length; i++) {
-        if (attributes[i].trait_type === trait_type)
-          return attributes[i].value;
-      }
-      return "";
-    }
   },
   data() {
     return {
@@ -192,7 +187,7 @@ export default {
   },
   async created() {
     console.log("created");
-    await this.fill();
+    await this.fillMonstersData();
     await this.fillMyGears();
   },
   unmounted() {

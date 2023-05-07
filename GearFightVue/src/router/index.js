@@ -8,20 +8,22 @@ const routes = [
   {path: '/market', name: 'Market', component: ()=>import('@/views/Market.vue')},
   {path: '/about', name: 'About', component: ()=>import('@/views/About.vue')},
   {
-    path: '/gear/:id/:slug',
+    path: '/gear/:storeType/:id/:slug',
     name: 'gear.show', 
     component: ()=>import('@/views/GearShow.vue'),
     // props: route=>({...route.params, id: parseInt(route.params.id)}),
-    beforeEnter(to, from) {
-      const maxTokenId = 30; //number of token minted to get dynamicaly
-      if (parseInt(to.params.id) > maxTokenId)
-        return {
-          name: 'NotFound',
-          params: {pathMatch: to.path.split('/').slice(1)},
-          query: to.query,
-          hash: to.hash
-        }
-    },
+
+    // HANDLER OF ID HERE
+    // beforeEnter(to, from) {
+    //   const maxTokenId = 30; //number of token minted to get dynamicaly
+    //   if (parseInt(to.params.id) > maxTokenId)
+    //     return {
+    //       name: 'NotFound',
+    //       params: {pathMatch: to.path.split('/').slice(1)},
+    //       query: to.query,
+    //       hash: to.hash
+    //     }
+    // },
   },
   {
     path: '/monster/:id/:slug',
@@ -42,6 +44,7 @@ const routes = [
   {path: '/fight/:roomId/:gearId', name: 'fight', props: true, component: ()=>import('@/views/Fight.vue')},
   {path: '/fight.local/:monsterId/:gearId', name: 'fight.local', props: true, component: ()=>import('@/views/FightLocal.vue')},
   {path: '/:pathMatch(.*)*', name: 'NotFound', component: ()=>import('@/views/NotFound.vue')},
+  {path: '/starter', name: 'Starter', component: ()=>import('@/views/Starter.vue')},
 ]
 
 const router = createRouter({

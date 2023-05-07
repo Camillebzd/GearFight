@@ -155,3 +155,65 @@ function getEntitieFromRoom(room, entitieToFind) {
 function resolveAction(room, action) {
   resolveSpell(getEntitieFromRoom(room, {id: action.user.id, isNPC: action.user.isNPC, side: action.user.side}), action.spell, getEntitieFromRoom(room, {id: action.target.id, isNPC: action.target.isNPC, side: action.target.side}));
 }
+
+
+// NEW FIGHT SYSTEM BY SIMON
+
+const ATTACKER_SPEED_WEIGHT = 2;
+const DEFENDER_GUARD_WEIGHT = 0.57;
+const DAMAGE_STAT_WEIGHT = 25;
+const ATTACKER_LETHALITY_WEIGHT = 0.77;
+const CRIT_DAMAGE_MULTIPLIER = 1.5;
+const ATTACKER_HANDLING_WEIGHT = 0.37;
+
+export function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+export const END_OF_TURN = {"NORMAL": 0, "PLAYER_COMBO": 1, "MONSTER_COMBO": 2, "PLAYER_DIED": 3, "MONSTER_DIED": 4};
+
+export function resolveTurn(actions, info) {
+  // 1. Calculate the order
+  actions.sort((a, b) => {
+    // add random when equal speed
+    return (b.spell.initiative * ((b.attacker.speed ** ATTACKER_SPEED_WEIGHT) / 1000)) - (a.spell.initiative * ((a.attacker.speed ** ATTACKER_SPEED_WEIGHT) / 1000));
+  });
+  for (let i = 0; i < actions.length; i++) {
+    let currentAction = actions[i];
+    info.push(`${currentAction.attacker.name} launch ${currentAction.spell.name}.`);
+    // 2. & 3. Parry
+    if (currentAction.target.guard * DEFENDER_GUARD_WEIGHT >= getRandomInt(101)) {
+      info.push(`${currentAction.target.name} blocked the attack!`);
+      // actions.splice(i, 1);
+      currentAction.hasBeenDone = true;
+      continue;
+    }
+    // 4. Calc dmg
+    let finalDamage = 0;
+    if (currentAction.spell.type == "SHARP")
+      finalDamage = currentAction.spell.damage * (1 + currentAction.attacker.sharpDmg / DAMAGE_STAT_WEIGHT) / (1 + (currentAction.target.sharpRes * (1 - currentAction.attacker.penRes / 100)) / DAMAGE_STAT_WEIGHT);
+    else if (currentAction.spell.type == "BLUNT")
+      finalDamage = currentAction.spell.damage * (1 + currentAction.attacker.bluntDmg / DAMAGE_STAT_WEIGHT) / (1 + (currentAction.target.bluntRes * (1 - currentAction.attacker.penRes / 100)) / DAMAGE_STAT_WEIGHT);
+    finalDamage = Math.round(finalDamage);
+    // 5., 6. & 7. Crit
+    if (currentAction.attacker.lethality * ATTACKER_LETHALITY_WEIGHT >= getRandomInt(101)) {
+      finalDamage = Math.round(finalDamage * CRIT_DAMAGE_MULTIPLIER);
+      info.push(`${currentAction.attacker.name} crits on the attack!`);
+    }
+    // 8. Apply dmg
+    info.push(`${currentAction.target.name} takes ${finalDamage}`);
+    currentAction.target.health -= finalDamage;
+    // check health
+    if (currentAction.target.health <= 0)
+      return currentAction.target.isNPC == false ? END_OF_TURN.PLAYER_DIED : END_OF_TURN.MONSTER_DIED;
+    // 9. Combo
+    if ((currentAction.attacker.handling * ATTACKER_HANDLING_WEIGHT >= getRandomInt(101)) && currentAction.isCombo == false) {
+      // actions.splice(i, 1);
+      currentAction.hasBeenDone = true;
+      return currentAction.attacker.isNPC == false ? END_OF_TURN.PLAYER_COMBO : END_OF_TURN.MONSTER_COMBO;
+    }
+    // actions.splice(i, 1);
+    currentAction.hasBeenDone = true;
+  }
+  return END_OF_TURN.NORMAL;
+}

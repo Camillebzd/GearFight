@@ -14,7 +14,7 @@
       <MDBNavbarItem to="/" :active="checkActive('/')"> Home </MDBNavbarItem>
       <MDBNavbarItem to="/world" :active="checkActive('/world')"> World </MDBNavbarItem>
       <MDBNavbarItem to="/personnalarmory" :active="checkActive('/personnalarmory')"> Personnal Armory </MDBNavbarItem>
-      <MDBNavbarItem to="/market" :active="checkActive('/market')"> Market </MDBNavbarItem>
+      <!-- <MDBNavbarItem to="/market" :active="checkActive('/market')"> Market </MDBNavbarItem> -->
       <MDBNavbarItem to="/about" :active="checkActive('/about')"> About </MDBNavbarItem>
     </MDBNavbarNav>
     <form class="d-flex input-group w-auto">

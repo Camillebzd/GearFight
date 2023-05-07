@@ -1,30 +1,40 @@
 <template>
   <div class="info-container" >
+    <!-- Entity -->
     <div class="main-entity-container" v-if="Object.keys(entityInfo).length !== 0">
-      <div class="top-entity-container">
-        <div v-if="entityInfo?.name">{{ entityInfo.name }}</div>
-        <div v-if="entityInfo?.level">level: {{ entityInfo.level }}</div>
-      </div>
       <div class="stats-entity-container">
-        <div v-if="entityInfo?.life">
-          <div >life: {{ entityInfo.life }}/{{ entityInfo.life_base }}</div>
+        <div>
+          <div>{{ entityInfo.name }}</div>
+          <div >health: {{ entityInfo.health }}/{{ entityInfo.healthBase }}</div>
+          <div>sharpDmg: {{ entityInfo.sharpDmg }}</div>
+          <div>bluntDmg: {{ entityInfo.bluntDmg }}</div>
+          <div>handling: {{ entityInfo.handling }}</div>
+          <div>lethality: {{ entityInfo.lethality }}</div>
+          
         </div>
-        <div v-if="entityInfo?.attack">attack: {{ entityInfo.attack }}</div>
-        <div v-if="entityInfo?.defense">defense: {{ entityInfo.defense }}</div>
-        <div v-if="entityInfo?.speed">speed: {{ entityInfo.speed }}</div>
+        <div>
+          <div>level: {{ entityInfo.level }}</div>
+          <div>speed: {{ entityInfo.speed }}</div>
+          <div>sharpRes: {{ entityInfo.sharpRes }}</div>
+          <div>bluntRes: {{ entityInfo.bluntRes }}</div>
+          <div>guard: {{ entityInfo.guard }}</div>
+          <div>penRes: {{ entityInfo.penRes }}</div>
+        </div>
       </div>
     </div>
+    <!-- Spell -->
     <div class="main-entity-container" v-if="Object.keys(spellInfo).length !== 0">
       <div class="top-spell-container">
-        <div v-if="spellInfo?.data?.displayName">{{ spellInfo.data.displayName }}</div>
-        <div v-if="spellInfo?.data?.number">Uses left: {{ spellInfo.data.number }}</div>
+        <div v-if="spellInfo?.name">{{ spellInfo.name }}</div>
+        <!-- <div v-if="spellInfo?.data?.number">Uses left: {{ spellInfo.data.number }}</div> -->
       </div>
-      <div v-if="spellInfo?.data?.displayName">Type: {{ spellInfo.data.type }}</div>
+      <div v-if="spellInfo?.type">Type: {{ spellInfo.type }}</div>
       <div class="top-spell-container">
-        <div v-if="spellInfo?.data?.ratioStat">Stat: {{ spellInfo.data.ratioStat }}</div>
-        <div>Ratio: {{ spellInfo.data.ratio }}</div>
+        <div v-if="spellInfo?.damage">Damage: {{ spellInfo.damage }}</div>
+        <div v-if="spellInfo?.initiative">Initiative: {{ spellInfo.initiative }}</div>        
       </div>
-      <div v-if="spellInfo.data.buffs.length" class="buffs-container">
+      <!-- BUFF / DEBUFF on spells -->
+      <!-- <div v-if="spellInfo.data.buffs.length" class="buffs-container">
         <div>Buffs: </div>
         <div class="badges-container">
           <MDBBadge badge="success" v-for="buff in spellInfo.data.buffs">
@@ -39,7 +49,7 @@
             {{ debuff.data.displayName }}
           </MDBBadge>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -80,6 +90,12 @@ export default {
   flex-wrap: wrap;
   flex-direction: row;
   /* background-color: blue; */
+  justify-content: space-between;
+}
+.stats-entity-container {
+  width: 90%;
+  display: flex;
+  flex-direction: row;
   justify-content: space-between;
 }
 .buffs-container {

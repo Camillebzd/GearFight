@@ -2,12 +2,16 @@
   <div class="home">
     <h1>Personnal Armory</h1>
     <div v-if="isConnected"> <!-- Change to print a loader during the retreave of nft -->
-      <div v-if="ownedGears.length">
+      <div v-if="requestAvailable" class="flex-div-row">
+        <div style="margin-right: 20px;">You have {{ 1 }} free weapon request left! Go select it: </div>
+        <MDBBtn color="success" rounded @click="this.$router.push({name: 'Starter'});">Choose</MDBBtn>
+      </div>
+      <div v-if="ownedGearsFormatted.length">
         <MDBContainer>
-          <MDBRow>
-            <MDBCol auto v-for="gear in ownedGears" :key="gear.tokenId">
+          <MDBRow class="justify-content-around">
+            <MDBCol auto v-for="gear in ownedGearsFormatted" :key="gear.id">
               <GearCard  
-                :gear="gear.rawMetadata" :gearId="gear.tokenId"
+                :gear="gear" :storeType="'ownedGearsFormatted'"
               />
             </MDBCol>
           </MDBRow>
@@ -16,6 +20,7 @@
       <div v-else>
         <p>We couldn't find any weapon on your MetaMask account:</p>
         <ol>
+          <li>If you're new, click on the button above to request a weapon! Note: the weapon could take several minutes to appear.</li>
           <li>Wait cause it may take some time.</li>
           <li>Reload the page.</li>
           <li>Check you have NFTs on your MetaMask account.</li>
@@ -31,7 +36,7 @@
 
 <script>
 import GearCard from '@/components/GearCard.vue';
-import { MDBRow, MDBCol, MDBContainer } from "mdb-vue-ui-kit";
+import { MDBRow, MDBCol, MDBContainer, MDBBtn } from "mdb-vue-ui-kit";
 import { mapState } from 'pinia';
 import { useUserStore } from "@/stores/UserStore.js";
 import { useGearsStore } from "@/stores/GearsStore";
@@ -41,42 +46,26 @@ export default {
     GearCard,
     MDBRow,
     MDBCol,
-    MDBContainer
+    MDBContainer,
+    MDBBtn
+  },
+  data() {
+    return {
+      requestAvailable: true, // get this from the contract...
+    }
   },
   computed: {
     ...mapState(useUserStore, ['walletAddress', 'isConnected']),
-    ...mapState(useGearsStore, ['ownedGears', 'fillMyGears']),
+    ...mapState(useGearsStore, ['ownedGearsFormatted', 'fillMyGears']),
   },
   methods: {
-    // getGearInfo(gear) {
-    //   return {
-    //     name: gear.name,
-    //     description: gear.description,
-    //     image: gear.image,
-    //     family: this.getGearAttributeInfo(gear.attributes, "Family"),
-    //     type: this.getGearAttributeInfo(gear.attributes, "Type"),
-    //     level: this.getGearAttributeInfo(gear.attributes, "Level"),
-    //     hp: this.getGearAttributeInfo(gear.attributes, "Health Point"),
-    //     dmg: this.getGearAttributeInfo(gear.attributes, "Damage Point"),
-    //     dmgType: this.getGearAttributeInfo(gear.attributes, "Damage Type"),
-    //     speed: this.getGearAttributeInfo(gear.attributes, "Speed"),
-    //     capacities: this.getGearAttributeInfo(gear.attributes, "Capacities"), // handle this
-    //   };
-    // },
-    // getGearAttributeInfo(attributes, trait_type) {
-    //   for (let i = 0; i < attributes.length; i++) {
-    //     if (attributes[i].trait_type === trait_type)
-    //       return attributes[i].value;
-    //   }
-    //   return "";
-    // }
   },
   async created() {
     await this.fillMyGears();
-    console.log(this.ownedGears);
+    console.log(this.ownedGearsFormatted);
   },
   watch: {
-    walletAddress: function(newVal, oldVal) {
+    walletAddress: function() {
       this.fillMyGears();
     }
   }
@@ -84,9 +73,13 @@ export default {
 </script>
 
 <style>
-.flex-div {
+.flex-div-row {
   display: flex;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
   flex-direction: row;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
+
 </style>

@@ -1,18 +1,29 @@
 import { defineStore } from 'pinia'
-
+import { useSpellsStore } from './SpellsStore';
 
 export const useMonstersStore  = defineStore('MonstersStore', {
   state: () => {
     return {
-      monsters: []
+      monsters: [],
     }
   },
   getters: {
   },
   actions: {
     // API on it to get data from back
-    async fill() {
-      this.monsters = (await import('@/data/monsters.json')).default;
+    async fillMonstersData() {
+      // this.monsters = (await import('@/data/monsters.json')).default;
+      this.monsters = JSON.parse(JSON.stringify((await import('@/data/monsters/base.json')).default));
+      let spellsStore = useSpellsStore();
+      await spellsStore.fillMonstersSpells();
+      for (let i = 0; i < this.monsters.length; i++) {
+        let spellsId = this.monsters[i].spells;
+        let monsterSpells = [];
+        spellsId.forEach((spellId) => {
+          monsterSpells.push(spellsStore.getMonstersSpellFromId(spellId));
+        });
+        this.monsters[i].spells = monsterSpells;
+      }
       console.log("monsters pulled");
     },
     getMonster(idToFind) {
@@ -22,24 +33,11 @@ export const useMonstersStore  = defineStore('MonstersStore', {
       let monster = this.getMonster(id);
 
       return JSON.parse(JSON.stringify({
-        name: monster.name,
-        id: parseInt(id),
-        description: monster.description,
-        image: monster.image,
-        level: parseInt(monster.level),
-        life: parseInt(monster.life),
-        life_base: parseInt(monster.life),
-        attack: parseInt(monster.attack),
-        attack_base: parseInt(monster.attack),
-        speed: parseInt(monster.speed),
-        speed_base: parseInt(monster.speed),
-        defense: parseInt(monster.defense),
-        defense_base: parseInt(monster.defense),
-        skills: monster.skills,
+        ...monster,
+        spells: JSON.parse(JSON.stringify(monster.spells)),
+        healthBase: monster.health,
         buffs: [],
         debuffs: [],
-        type: monster.type,
-        rarity: monster.rarity,
         isNPC: true,
         played: false,
         action: {},

@@ -1,7 +1,7 @@
 <template>
   <div v-if="Object.keys(spell).length > 0" class="container-spell">
-    <div>{{ spell.data.displayName }}</div>
-    <div>{{ spell.data.number }}</div>
+    <div>{{ spell.name }}</div>
+    <!-- <div>{{ spell.data.number }}</div> -->
   </div>
 </template>
 
