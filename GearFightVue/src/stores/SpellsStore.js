@@ -69,6 +69,7 @@ export const useSpellsStore  = defineStore('SpellsStore', {
       }
     },
     // new
+    // add condition to stop pulling for nothing ?
     async fillWeaponsSpells() {
       this.weaponsSpells = (await import("@/data/spells/weapons.json")).default;
       console.log("weapons spells pulled");

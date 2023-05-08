@@ -3,6 +3,10 @@ import { useUserStore } from './UserStore';
 import { useSpellsStore } from './SpellsStore';
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 
+import { ethers } from 'ethers';
+import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+
+import { Buffer } from 'buffer';
 
 const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
 const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
@@ -38,7 +42,7 @@ export const useGearsStore  = defineStore('GearStore', {
         this.gears.push(tokens.nfts[i]);
     },
     // get all the gear of the connected user
-    async fillMyGears() {
+    async fillMyGears(forceRefresh) {
       let userStore = useUserStore();
       if (!userStore.isConnected) {
         console.log("You should be connected if you want to get your Gears!");
@@ -46,25 +50,27 @@ export const useGearsStore  = defineStore('GearStore', {
         this.ownedGearsFormatted = [];
         return;
       }
-      if (this.ownedGears.length > 0 || this.ownedGearsFormatted.length > 0) {
-        this.ownedGears = [];
-        this.ownedGearsFormatted = [];
+      
+      if (this.ownedGears.length > 0 && this.ownedGearsFormatted.length > 0 && !forceRefresh) {
+        console.log("Not empty gears and refresh not forced so exit.");
+        return;
       }
+      this.ownedGears = [];
+      this.ownedGearsFormatted = [];
       const settings = {
         apiKey: API_KEY,
         network: Network.MATIC_MUMBAI,
       };
       const alchemy = new Alchemy(settings);
-      const nfts = await alchemy.nft.getNftsForOwner(userStore.walletAddress);
+      const nfts = await alchemy.nft.getNftsForOwner(userStore.walletAddress, {omitMetadata: true});
 
-      const tmpNFT = await alchemy.nft.getNftsForContract(CONTRACT_ADDRESS);
-      console.log(tmpNFT);
-
+      const contract = this.createContract();
       await Promise.all(nfts.ownedNfts.map(async (nft) => {
         if (nft.contract.address == CONTRACT_ADDRESS) {
-          console.log(nft);
+          let weaponURI = await contract.uri(nft.tokenId);
+          let weaponObj = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
           this.ownedGears.push(nft);
-          this.ownedGearsFormatted.push(await this.getClassicFormGear(nft));
+          this.ownedGearsFormatted.push((await this.getClassicFormGearManual(weaponObj, nft.tokenId)));
         }
       }));
     },
@@ -120,6 +126,7 @@ export const useGearsStore  = defineStore('GearStore', {
       return this.starterGears.find(gear => gear.id == tokenId);
     },
     // format a user's gear in the good format for everything
+    // ALCHEMY VERSION WITH RAWMETADA
     async getClassicFormGear(token) {
       if (token == null || token == undefined || token.rawMetadata == undefined) {
         console.log("WARNING: format performed on an empty token.");
@@ -154,6 +161,41 @@ export const useGearsStore  = defineStore('GearStore', {
         weaponType: this.getGearAttributeInfo(tokenMetadata.attributes, "Weapon Type")
       };
     },
+    // format a user's gear in the good format for everything
+    // MANUAL VERSION WITH URI CALL DIRECTLY
+    async getClassicFormGearManual(token, tokenId) {
+      if (token == null || token == undefined) {
+        console.log("WARNING: format performed on an empty token.");
+        return {};
+      }
+      let spellsStore = useSpellsStore();
+      await spellsStore.fillWeaponsSpells();
+      let weaponSpells = [];
+      this.getGearAttributeInfo(token.attributes, "Spells").forEach((spellName) => {
+        weaponSpells.push(spellsStore.getWeaponsSpellFromName(spellName));
+      });
+      return {
+        name: token.name,
+        id: parseInt(tokenId),
+        description: token.description,
+        image: token.image,
+        level: parseInt(this.getGearAttributeInfo(token.attributes, "Level")),
+        stage: parseInt(this.getGearAttributeInfo(token.attributes, "Stage")),
+        health: parseInt(this.getGearAttributeInfo(token.attributes, "Health")),
+        speed: parseInt(this.getGearAttributeInfo(token.attributes, "Speed")),
+        sharpDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Sharp Damage")),
+        bluntDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Blunt Damage")),
+        sharpRes: parseInt(this.getGearAttributeInfo(token.attributes, "Sharp Resistance")),
+        bluntRes: parseInt(this.getGearAttributeInfo(token.attributes, "Blunt Resistance")),
+        penRes: parseInt(this.getGearAttributeInfo(token.attributes, "Penetration Resistance")),
+        handling: parseInt(this.getGearAttributeInfo(token.attributes, "Handling")),
+        guard: parseInt(this.getGearAttributeInfo(token.attributes, "Guard")),
+        lethality: parseInt(this.getGearAttributeInfo(token.attributes, "Lethality")),
+        spells: weaponSpells,
+        xp: parseInt(this.getGearAttributeInfo(token.attributes, "Experience")),
+        weaponType: this.getGearAttributeInfo(token.attributes, "Weapon Type")
+      };
+    },
     // format a user's gear in the good format for fight /!\ should be classic formatted 
     getFightFormGear(token) {
       if (token == null || token == undefined) {
@@ -179,6 +221,7 @@ export const useGearsStore  = defineStore('GearStore', {
       }
       return "";
     },
+    // care with the form of the obj
     isOwned(tokenId) {
       return this.ownedGears.findIndex(gear => gear.tokenId == tokenId) > -1;
     },
@@ -195,6 +238,7 @@ export const useGearsStore  = defineStore('GearStore', {
       weaponType = weaponType.toLowerCase();
       return (await import(`@/data/weapons/${weaponType}/images.json`)).default[stage]
     },
+    // alchemy refresh
     async refreshTokenMetadata(tokenId) {
       const settings = {
         apiKey: API_KEY,
@@ -203,6 +247,27 @@ export const useGearsStore  = defineStore('GearStore', {
       const alchemy = new Alchemy(settings);
       const isRefreshed = await alchemy.nft.refreshNftMetadata(CONTRACT_ADDRESS, tokenId);
       console.log("tried to refresh metadata: ", isRefreshed);
+    },
+    // manual refresh
+    async refreshTokenMetadataManual(tokenId) {
+      const gearIndex = this.ownedGearsFormatted.findIndex((gear) => gear.id == tokenId);
+      if (gearIndex < 0) {
+        console.log("Error:can't refresh metadata on non existant gear");
+        return;
+      }
+      const contract = this.createContract();
+      let weaponURI = await contract.uri(tokenId);
+      let weaponObj = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
+      this.ownedGearsFormatted[gearIndex] = await this.getClassicFormGearManual(weaponObj, tokenId);
+      console.log(`token with id: ${tokenId} refreshed!`);
+    },
+    // function to create a contract ethers.js of gearFactory
+    createContract() {
+      const ethereum = window.ethereum;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner(this.walletAddress);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
+      return contract;
     }
   },
 })

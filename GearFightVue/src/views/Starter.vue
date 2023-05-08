@@ -2,7 +2,7 @@
   <div class="home">
     <h1>Starter Weapons</h1>
     <!-- Protect if the user access the page without free request -->
-    <div v-if="isConnected">
+    <div v-if="this.isConnected == true && this.requestAvailable > 0">
       <p>Choose one of the following weapons:</p>
       <div v-if="starterGears.length">
         <MDBContainer>
@@ -18,7 +18,7 @@
       </div>
     </div>
     <div v-else>
-      <p>You should be connected to your wallet if you want to request a weapon.</p>
+      <p>You should be connected to your wallet if you want to request a weapon and you should have request available.</p>
     </div>
   </div>
 </template>
@@ -51,6 +51,17 @@ export default {
     ...mapState(useContractStore, ['contractStatic', 'createStaticContract'])
   },
   methods: {
+    async getRequestAvailable() {
+      if (!this.isConnected)
+        return;
+      const ethereum = window.ethereum;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner(this.walletAddress);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
+      const maxWeaponsRequest = await contract.maxWeaponsRequest();
+      const weaponsRequested = await contract.weaponsRequested(this.walletAddress);
+      this.requestAvailable = maxWeaponsRequest - weaponsRequested;
+    },
     async chooseStarter(starterGear) {
       console.log(starterGear);
       let weapon = {
@@ -89,16 +100,31 @@ export default {
       const signer = provider.getSigner(this.walletAddress);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
       // console.log((await contract.maxWeaponsRequest()).toString());
-      // pop up
-      await contract.requestWeapon(weapon);
+      try {
+        await contract.requestWeapon(weapon);
+        this.$notify({
+          type: "success",
+          title: "Weapon requested!",
+          text: "Your weapon was created, wait a minute and you will see it appear!",
+        });
+        this.$router.push({name: 'PersonnalArmory'});
+      } catch {
+        this.$notify({
+          type: "error",
+          title: "Weapon request failed",
+          text: "An error occuquered during the request weapon process.",
+        });
+      }
     }
   },
   data() {
     return {
+      requestAvailable: 0,
     }
   },
   async created() {
     await this.fillStarterGears();
+    await this.getRequestAvailable();
   }
 }
 </script>

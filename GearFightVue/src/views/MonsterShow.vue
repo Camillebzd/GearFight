@@ -175,7 +175,7 @@ export default {
       this.gearSelected = -1;
       this.exampleModalScrollable = true
       if (this.ownedGearsFormatted.length < 1)
-        this.fillMyGears();
+        this.fillMyGears(false);
     },
   },
   data() {
@@ -188,7 +188,7 @@ export default {
   async created() {
     console.log("created");
     await this.fillMonstersData();
-    await this.fillMyGears();
+    await this.fillMyGears(false);
   },
   unmounted() {
     socket.off("connect_error");

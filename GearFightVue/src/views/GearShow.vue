@@ -68,7 +68,7 @@ export default {
     ...mapState(useGearsStore, ['gears', 'ownedGearsFormatted', 'starterGears', 
       'getGearsForContract', 'fillMyGears', 'fillStarterGears',
       'getGear', 'getMyGearFormatted', 'getStarterGear', 'getFightFormGear',
-      'getWeaponStatsForLevelUp', 'getWeaponImageForUpgrade', 'refreshTokenMetadata'
+      'getWeaponStatsForLevelUp', 'getWeaponImageForUpgrade', 'refreshTokenMetadataManual'
     ]),
   },
   data() {
@@ -87,7 +87,21 @@ export default {
       return contract;
     },
     async manualRefresh() {
-      console.log("todo manual refresh")
+      try {
+        this.refreshTokenMetadataManual(this.gear.id);
+        this.$notify({
+          type: "success",
+          title: "Metadata refreshed",
+          text: "The metadata of this gear has been refreshed, wait a minute and reload the page",
+        });
+        await this.loadWeapon();
+      } catch {
+        this.$notify({
+          type: "success",
+          title: "Metadata not refreshed",
+          text: "The metadata of this gear can't be refreshed due to an error...",
+        });
+      }
     },
     async levelUp() {
       const contract = this.createContract();
@@ -98,7 +112,7 @@ export default {
         this.$notify({
           type: "success",
           title: "Level up!",
-          text: "Your weapon gained a level, wait a minute and reload to see it!",
+          text: "Your weapon gained a level, wait a minute and click on refresh to see it!",
         });
       } catch {
         this.$notify({
@@ -106,12 +120,6 @@ export default {
           title: "Level up failed",
           text: "An error happened during the level up process...",
         });
-      }
-      try {
-        this.refreshTokenMetadata(this.gear.id);
-        console.log("metadata refreshed");
-      } catch {
-        console.log("ERROR: metadata not refreshed");
       }
     },
     async upgrade() {
@@ -123,7 +131,7 @@ export default {
         this.$notify({
           type: "success",
           title: "Upgrade done!",
-          text: "Your weapon upgraded, wait a minute and reload to see it!",
+          text: "Your weapon upgraded, wait a minute click on refresh to see it!",
         });
       } catch {
         this.$notify({
@@ -132,28 +140,29 @@ export default {
           text: "An error happened during the upgrade process...",
         });
       }
-    }
+    },
+    async loadWeapon() {
+      switch (this.$route.params.storeType) {
+        case "gears":
+          await this.getGearsForContract();
+          this.gear = await this.getFightFormGear(this.getGear(this.$route.params.id));
+          break;
+        case "ownedGearsFormatted":
+          await this.fillMyGears(false);
+          this.gear = await this.getMyGearFormatted(this.$route.params.id);
+          break;
+        case "starterGears":
+          await this.fillStarterGears();
+          this.gear = await this.getStarterGear(this.$route.params.id);
+          break;
+        default:
+          console.log("ERROR: the store is not supported!");
+          break;
+      }
+    },
   },
   async created() {
-    // this.accountAddress = this.$attrs.accountAddress;
-    // this.getNFTInfo();
-    switch (this.$route.params.storeType) {
-      case "gears":
-        await this.getGearsForContract();
-        this.gear = await this.getFightFormGear(this.getGear(this.$route.params.id));
-        break;
-      case "ownedGearsFormatted":
-        await this.fillMyGears();
-        this.gear = await this.getMyGearFormatted(this.$route.params.id);
-        break;
-      case "starterGears":
-        await this.fillStarterGears();
-        this.gear = await this.getStarterGear(this.$route.params.id);
-        break;
-      default:
-        console.log("ERROR: the store is not supported!");
-        break;
-    }
+    await this.loadWeapon();
   },
   watch: {
     '$attrs.accountAddress': function(newVal, oldVal) {

@@ -152,7 +152,7 @@ export default {
     },
   },
   async created() {
-    await this.fillMyGears();
+    await this.fillMyGears(false);
     if (this.isOwned(this.gearId) === -1)
       return;
     await this.fillSpells();

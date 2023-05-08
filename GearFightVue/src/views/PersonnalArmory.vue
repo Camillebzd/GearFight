@@ -2,8 +2,8 @@
   <div class="home">
     <h1>Personnal Armory</h1>
     <div v-if="isConnected"> <!-- Change to print a loader during the retreave of nft -->
-      <div v-if="requestAvailable" class="flex-div-row">
-        <div style="margin-right: 20px;">You have {{ 1 }} free weapon request left! Go select it: </div>
+      <div v-if="requestAvailable > 0" class="flex-div-row">
+        <div style="margin-right: 20px;">You have {{ requestAvailable }} free weapon request left! Go select it: </div>
         <MDBBtn color="success" rounded @click="this.$router.push({name: 'Starter'});">Choose</MDBBtn>
       </div>
       <div v-if="ownedGearsFormatted.length">
@@ -16,6 +16,10 @@
             </MDBCol>
           </MDBRow>
         </MDBContainer>
+        <div class="flex-div-row">
+          <div style="margin-right: 10px;">Refresh the metadata of the armory: </div>
+          <MDBBtn color="success" @click="refreshMyGearsMetadata">refresh</MDBBtn>
+        </div>
       </div>
       <div v-else>
         <p>We couldn't find any weapon on your MetaMask account:</p>
@@ -40,6 +44,10 @@ import { MDBRow, MDBCol, MDBContainer, MDBBtn } from "mdb-vue-ui-kit";
 import { mapState } from 'pinia';
 import { useUserStore } from "@/stores/UserStore.js";
 import { useGearsStore } from "@/stores/GearsStore";
+import { ethers } from 'ethers';
+import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+
+const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
 
 export default {
   components: {
@@ -51,7 +59,7 @@ export default {
   },
   data() {
     return {
-      requestAvailable: true, // get this from the contract...
+      requestAvailable: 0,
     }
   },
   computed: {
@@ -59,14 +67,30 @@ export default {
     ...mapState(useGearsStore, ['ownedGearsFormatted', 'fillMyGears']),
   },
   methods: {
+    async getRequestAvailable() {
+      if (!this.isConnected)
+        return;
+      const ethereum = window.ethereum;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner(this.walletAddress);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
+      const maxWeaponsRequest = await contract.maxWeaponsRequest();
+      const weaponsRequested = await contract.weaponsRequested(this.walletAddress);
+      this.requestAvailable = maxWeaponsRequest - weaponsRequested;
+    },
+    async refreshMyGearsMetadata() {
+      await this.fillMyGears(true);
+    }
   },
   async created() {
-    await this.fillMyGears();
+    await this.fillMyGears(false);
+    await this.getRequestAvailable();
     console.log(this.ownedGearsFormatted);
   },
   watch: {
     walletAddress: function() {
-      this.fillMyGears();
+      this.fillMyGears(true);
+      this.getRequestAvailable();
     }
   }
 }
@@ -81,5 +105,4 @@ export default {
   margin-top: 20px;
   margin-bottom: 20px;
 }
-
 </style>

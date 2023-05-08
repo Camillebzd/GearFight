@@ -137,7 +137,6 @@ export default {
   computed: {
     ...mapState(useGearsStore, ['fillMyGears', 'isOwned', 'getFightFormGear', 'getMyGearFormatted', 'refreshTokenMetadata']),
     ...mapState(useMonstersStore, ['monsters', 'fillMonstersData', 'getFightFormMonster']),
-    // ...mapState(useSpellsStore, ['fillAllSpellData', 'getSpell']),
   },
   methods: {
     goBackToWorld() {
@@ -158,7 +157,6 @@ export default {
           title: "XP earned!",
           text: `Your weapon gained ${this.monster.difficulty} xp, wait a minute and you will see it!`,
         });
-        this.refreshTokenMetadata(this.myGear.id);
       } catch {
         this.$notify({
           type: "error",
@@ -169,37 +167,6 @@ export default {
       this.goBackToWorld();
     },
     launchSpell(mySpell) {
-      // let actions = [];
-      // actions.push({user: this.myGear, spell: mySpell, target: mySpell.data.target.type == "ENEMY" ? this.monster : this.myGear});
-      // actions.push({user: this.monster, spell: this.monster.spells[0], target: this.getSpell(this.monster.skills[0]).data.target.type == "ENEMY" ? this.myGear : this.monster});
-      // --- old system ---
-      // actions.sort((a, b) => {
-      //   return b.user.speed - a.user.speed;
-      // });
-      // console.log(actions);
-      // for (let i = 0; i < actions.length; i++) {
-      //   resetAllToBaseStat(actions[i].user);
-      //   applyBuffs(actions[i].user);
-      //   resolveSpell(actions[i].user, actions[i].spell, actions[i].target);
-      //   applyDebuffs(actions[i].user);
-      //   cleanFinishedBuff(actions[i].user);
-      //   cleanFinishedDebuff(actions[i].user);
-      //   this.info.push(`- ${actions[i].user.name} launched ${actions[i].spell.data.displayName} on ${actions[i].target.name}`);
-      //   if (!isAlive(this.monster)) {
-      //     this.won = true;
-      //     this.showModal = true;
-      //     return;
-      //   }
-      //   if (!isAlive(this.myGear)) {
-      //     this.won = false;
-      //     this.showModal = true;
-      //     return;
-      //   }
-      // }
-      // this.actualTurn++;
-      // this.spellSelectedName = "";
-      // this.targetType = "";
-      // --- ---
       if (this.isPlayerCombo == false) {
         this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
         // random select spell for monster
@@ -244,7 +211,7 @@ export default {
     },
   },
   async created() {
-    await this.fillMyGears();
+    await this.fillMyGears(false);
     if (!this.isOwned(this.gearId))
       return;
     this.ownTheGear = true;
