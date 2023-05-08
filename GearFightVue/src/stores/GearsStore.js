@@ -8,10 +8,8 @@ import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
 
 import { Buffer } from 'buffer';
 
-// const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
-// const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
-const API_KEY = process.env.VITE_ALCHEMY_API_KEY_MATIC;
-const CONTRACT_ADDRESS = process.env.VITE_NEW_CONTRACT_ADDRESS;
+const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
+const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
 
 export const useGearsStore  = defineStore('GearStore', {
   state: () => {
@@ -45,6 +43,7 @@ export const useGearsStore  = defineStore('GearStore', {
     },
     // get all the gear of the connected user
     async fillMyGears(forceRefresh) {
+      console.log("contract add env var: ", CONTRACT_ADDRESS);
       let userStore = useUserStore();
       if (!userStore.isConnected) {
         console.log("You should be connected if you want to get your Gears!");
