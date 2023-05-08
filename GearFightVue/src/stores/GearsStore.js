@@ -8,8 +8,10 @@ import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
 
 import { Buffer } from 'buffer';
 
-const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
-const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
+// const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
+// const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
+const API_KEY = process.env.VITE_ALCHEMY_API_KEY_MATIC;
+const CONTRACT_ADDRESS = process.env.VITE_NEW_CONTRACT_ADDRESS;
 
 export const useGearsStore  = defineStore('GearStore', {
   state: () => {
