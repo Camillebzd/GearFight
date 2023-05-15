@@ -83,13 +83,8 @@ import Chat from "@/components/Chat.vue";
 import SpellCard from "@/components/SpellCard.vue";
 import InfoWindow from "@/components/InfoWindow.vue";
 import { 
-  resolveSpell, 
-  isAlive, applyBuffs, 
-  applyDebuffs, 
-  resetAllToBaseStat,
-  cleanFinishedBuff,
-  cleanFinishedDebuff,
   resolveTurn,
+  getRandomInt,
   END_OF_TURN
 } from "@/scripts/fight.js";
 import { ethers } from 'ethers';
@@ -170,7 +165,7 @@ export default {
       if (this.isPlayerCombo == false) {
         this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
         // random select spell for monster
-        this.actions.push({attacker: this.monster, spell: this.monster.spells[0], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
+        this.actions.push({attacker: this.monster, spell: this.monster.spells[getRandomInt(this.monster.spells.length)], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
       }
       this.actions.push({attacker: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo});
       this.turn();
@@ -187,8 +182,8 @@ export default {
         case END_OF_TURN.MONSTER_COMBO:
           this.isMonterCombo = true;
           this.info.push("MONSTER COMBO!");
-          this.actions.push({attacker: this.monster, spell: this.monster.spells[0], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
-          turn();
+          this.actions.push({attacker: this.monster, spell: this.monster.spells[getRandomInt(this.monster.spells.length)], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
+          this.turn();
           break;
         case END_OF_TURN.PLAYER_DIED:
           this.won = false;

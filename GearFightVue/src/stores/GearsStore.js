@@ -9,7 +9,7 @@ import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
 import { Buffer } from 'buffer';
 
 const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
-const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
+const CONTRACT_ADDRESS = (import.meta.env.VITE_NEW_CONTRACT_ADDRESS).toLowerCase();
 
 export const useGearsStore  = defineStore('GearStore', {
   state: () => {
@@ -64,10 +64,9 @@ export const useGearsStore  = defineStore('GearStore', {
       };
       const alchemy = new Alchemy(settings);
       const nfts = await alchemy.nft.getNftsForOwner(userStore.walletAddress, {omitMetadata: true});
-
       const contract = this.createContract();
       await Promise.all(nfts.ownedNfts.map(async (nft) => {
-        if (nft.contract.address == CONTRACT_ADDRESS) {
+        if (nft.contract.address.toLowerCase() == CONTRACT_ADDRESS) {
           let weaponURI = await contract.uri(nft.tokenId);
           let weaponObj = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
           this.ownedGears.push(nft);
