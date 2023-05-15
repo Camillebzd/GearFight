@@ -1,6 +1,6 @@
 <template>
   <MDBNavbar light bg="light" expand="lg" container>
-    <MDBNavbarBrand href="http://127.0.0.1:5173/"> <!-- Change in prod to reflect the site -->
+    <MDBNavbarBrand href="https://gearfighttest.netlify.app/"> <!-- Change in prod to reflect the site -->
       <!-- <img
         src="@/assets/sword_and_shield_icon.png"
         height="30"
