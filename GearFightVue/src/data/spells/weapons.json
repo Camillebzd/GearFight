@@ -25,7 +25,8 @@
     "name": "Lunge",
     "damage": 43,
     "initiative": 10,
-    "type": "SHARP"
+    "type": "SHARP",
+    "isMagical": true
   },
   {
     "id": 4,
@@ -39,7 +40,8 @@
     "name": "Bash",
     "damage": 39,
     "initiative": 20,
-    "type": "BLUNT"
+    "type": "BLUNT",
+    "isMagical": false
   },
   {
     "id": 6,
@@ -74,13 +76,15 @@
     "name": "Slash",
     "damage": 30,
     "initiative": 35,
-    "type": "SHARP"
+    "type": "SHARP",
+    "isMagical": false
   },
   {
     "id": 11,
     "name": "Thrust",
     "damage": 30,
     "initiative": 35,
-    "type": "SHARP"
+    "type": "SHARP",
+    "isMagical": false
   }
 ]

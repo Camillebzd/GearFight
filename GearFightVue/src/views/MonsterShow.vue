@@ -8,16 +8,20 @@
           <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ getDifficultyName }}</MDBBadge>
           <div>Health: {{monster.health}}</div>
           <div>Speed: {{monster.speed}}</div>
+          <div>Mind: {{monster.mind}}</div>
           <div>Sharp Damage: {{monster.sharpDmg}}</div>
           <div>Blunt Damage: {{monster.bluntDmg}}</div>
+          <div>Burn Damage: {{monster.burnDmg}}</div>
           <div>Sharp Resistance: {{monster.sharpRes}}</div>
           <div>Blunt Resistance: {{monster.bluntRes}}</div>
-          <div>Penetration Resistance: {{monster.penRes}}</div>
+        </div>
+        <div style="margin-left: 15px;">
+          <div>Burn Resistance: {{monster.burnRes}}</div>
+          <div>Pierce: {{monster.pierce}}</div>
           <div>Handling: {{monster.handling}}</div>
           <div>Guard: {{monster.guard}}</div>
           <div>Lethality: {{monster.lethality}}</div>
-        </div>
-        <div>
+          <div>Level: {{ monster.level }}</div>
           <div>Spells: {{ monster.spells[0]?.name }}, {{ monster.spells[1]?.name }}, {{ monster.spells[2]?.name }}, {{ monster.spells[3]?.name }}</div>
         </div>
       </div>

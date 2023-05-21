@@ -1,7 +1,11 @@
 <template>
   <div v-if="Object.keys(spell).length > 0" class="container-spell">
     <div>{{ spell.name }}</div>
-    <!-- <div>{{ spell.data.number }}</div> -->
+    <div>DMG {{ spell.damage }} | INI {{ spell.initiative }}</div>
+    <div v-if="spell.isMagical == true" class="fluxe-info-container"> 
+      <div>{{ playerFluxes }}/1</div>
+      <div class="fluxe-circle-full"></div>
+    </div>
   </div>
 </template>
 
@@ -10,6 +14,7 @@
 export default {
   props: {
     spell: {type: Object, required: true},
+    playerFluxes: {type: Number, required: true}
   },
 };
 
@@ -26,19 +31,26 @@ a:hover {
 .container-spell {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
   height: 100%;
   width: 20%;
   cursor: pointer;
   border-style: solid;
-  /* border-color: green; */
   border-width: 2px;
   border-radius: 5px;
-
 }
-.spell-img {
-  max-width: 128px;
-  max-height: 128px;
+.fluxe-info-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.fluxe-circle-full {
+  margin-left: 5px;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+  background-color: #d518db;
 }
 </style>

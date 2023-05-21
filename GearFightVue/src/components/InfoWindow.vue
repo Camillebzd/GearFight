@@ -4,21 +4,22 @@
     <div class="main-entity-container" v-if="Object.keys(entityInfo).length !== 0">
       <div class="stats-entity-container">
         <div>
-          <div>{{ entityInfo.name }}</div>
+          <!-- <div>{{ entityInfo.name }}</div> -->
           <div >health: {{ entityInfo.health }}/{{ entityInfo.healthBase }}</div>
           <div>sharpDmg: {{ entityInfo.sharpDmg }}</div>
           <div>bluntDmg: {{ entityInfo.bluntDmg }}</div>
+          <div>burnDmg: {{ entityInfo.burnDmg }}</div>
           <div>handling: {{ entityInfo.handling }}</div>
           <div>lethality: {{ entityInfo.lethality }}</div>
           
         </div>
         <div>
-          <div>level: {{ entityInfo.level }}</div>
           <div>speed: {{ entityInfo.speed }}</div>
           <div>sharpRes: {{ entityInfo.sharpRes }}</div>
           <div>bluntRes: {{ entityInfo.bluntRes }}</div>
+          <div>burnRes: {{ entityInfo.burnRes }}</div>
+          <div>Pierce: {{ entityInfo.pierce }}</div>
           <div>guard: {{ entityInfo.guard }}</div>
-          <div>penRes: {{ entityInfo.penRes }}</div>
         </div>
       </div>
     </div>

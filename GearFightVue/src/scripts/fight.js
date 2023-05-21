@@ -164,15 +164,23 @@ const DEFENDER_GUARD_WEIGHT = 0.57;
 const DAMAGE_STAT_WEIGHT = 25;
 const ATTACKER_LETHALITY_WEIGHT = 0.77;
 const CRIT_DAMAGE_MULTIPLIER = 1.5;
-const ATTACKER_HANDLING_WEIGHT = 0.37;
+const ATTACKER_HANDLING_WEIGHT = 100; //0.37;
+const MIND_WEIGHT = 8;
+export const MAX_FLUXES = 6;
 
+// utils
+// random num between 0 - max
 export function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
+export function addStartingFluxes(entity) {
+  entity["fluxes"] = Math.floor(entity.mind / MIND_WEIGHT) > MAX_FLUXES ? MAX_FLUXES : Math.floor(entity.mind / MIND_WEIGHT);
+}
+
 export const END_OF_TURN = {"NORMAL": 0, "PLAYER_COMBO": 1, "MONSTER_COMBO": 2, "PLAYER_DIED": 3, "MONSTER_DIED": 4};
 
-export function resolveTurn(actions, info) {
+export function resolveActions(actions, info) {
   // 1. Calculate the order
   actions.sort((a, b) => {
     // add random when equal speed
@@ -191,9 +199,9 @@ export function resolveTurn(actions, info) {
     // 4. Calc dmg
     let finalDamage = 0;
     if (currentAction.spell.type == "SHARP")
-      finalDamage = currentAction.spell.damage * (1 + currentAction.attacker.sharpDmg / DAMAGE_STAT_WEIGHT) / (1 + (currentAction.target.sharpRes * (1 - currentAction.attacker.penRes / 100)) / DAMAGE_STAT_WEIGHT);
+      finalDamage = currentAction.spell.damage * (1 + currentAction.attacker.sharpDmg / DAMAGE_STAT_WEIGHT) / (1 + (currentAction.target.sharpRes * (1 - currentAction.attacker.pierce / 100)) / DAMAGE_STAT_WEIGHT);
     else if (currentAction.spell.type == "BLUNT")
-      finalDamage = currentAction.spell.damage * (1 + currentAction.attacker.bluntDmg / DAMAGE_STAT_WEIGHT) / (1 + (currentAction.target.bluntRes * (1 - currentAction.attacker.penRes / 100)) / DAMAGE_STAT_WEIGHT);
+      finalDamage = currentAction.spell.damage * (1 + currentAction.attacker.bluntDmg / DAMAGE_STAT_WEIGHT) / (1 + (currentAction.target.bluntRes * (1 - currentAction.attacker.pierce / 100)) / DAMAGE_STAT_WEIGHT);
     finalDamage = Math.round(finalDamage);
     // 5., 6. & 7. Crit
     if (currentAction.attacker.lethality * ATTACKER_LETHALITY_WEIGHT >= getRandomInt(101)) {

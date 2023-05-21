@@ -28,6 +28,14 @@
               <progress :max="entity.healthBase" :value="entity.health" style="background-color:green; margin-right: 5px;"></progress>
               <div style="width: 40px">{{ Math.round(entity.health * 100 / entity.healthBase) }}%</div>
             </div>
+            <div class="fluxes-container">
+              <div style="margin-right: 7px">Fluxes: </div>
+              <div class="fluxes-circles-container">
+                <div class="fluxe-circle fluxe-full" v-for="n in entity.fluxes"></div>
+                <div class="fluxe-circle fluxe-empty" v-for="n in 6 - entity.fluxes"></div>
+              </div>
+              <!-- <div>{{ entity.fluxes }}</div> -->
+            </div>
           </div>
           <div class="image-container" >
             <img :src="image" alt="..." class="img-fluid image-entity" />
@@ -160,6 +168,35 @@ export default {
 }
 .health-bar {
   color: green;
+}
+.fluxes-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 5px;
+}
+.fluxes-circles-container {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  /* background-color: red; */
+  justify-content: space-around;
+  /* align-items: center; */
+
+}
+.fluxe-circle {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+}
+.fluxe-full {
+  background-color: #d518db;
+}
+.fluxe-empty {
+  background-color: #525252;
 }
 .top-container {
   border-style: solid;

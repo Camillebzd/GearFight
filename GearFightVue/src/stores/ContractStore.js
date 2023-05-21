@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ethers } from "ethers";
-import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+import contractABI from "@/abi/GearFactory.json";
 
 const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
 const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;

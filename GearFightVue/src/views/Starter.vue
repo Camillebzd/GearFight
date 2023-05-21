@@ -32,7 +32,7 @@ import { useContractStore } from "@/stores/ContractStore.js"; // to remove
 import GearCard from '@/components/GearCard.vue';
 import { MDBRow, MDBCol, MDBContainer, MDBBtn } from "mdb-vue-ui-kit";
 import { ethers } from 'ethers';
-import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+import contractABI from "@/abi/GearFactory.json";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
 
@@ -67,20 +67,27 @@ export default {
       let weapon = {
           name: starterGear.name,
           description: starterGear.description,
-          imageURI: starterGear.image,
+          image: starterGear.image,
           level: starterGear.level,
           stage: starterGear.stage,
           weaponStats: {
-              health: starterGear.health,
-              speed: starterGear.speed,
-              sharpDmg: starterGear.sharpDmg,
-              bluntDmg: starterGear.bluntDmg,
-              sharpRes: starterGear.sharpRes,
-              bluntRes: starterGear.bluntRes,
-              penRes: starterGear.penRes,
-              handling: starterGear.handling,
-              guard: starterGear.guard,
-              lethality: starterGear.lethality
+            health: starterGear.health,
+            speed: starterGear.speed,
+            mind: starterGear.mind,
+            offensiveStats: {
+                sharpDamage: starterGear.sharpDmg,
+                bluntDamage: starterGear.bluntDmg,
+                burnDamage: starterGear.burnDmg,
+                pierce: starterGear.pierce,
+                lethality: starterGear.lethality
+            },
+            defensiveStats: {
+                sharpResistance: starterGear.sharpRes,
+                bluntResistance: starterGear.bluntRes,
+                burnResistance: starterGear.burnRes,
+                guard: starterGear.guard,
+            },
+            handling: starterGear.handling,
           },
           xp: starterGear.xp,
       };

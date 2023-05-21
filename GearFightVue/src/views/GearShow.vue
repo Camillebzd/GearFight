@@ -11,16 +11,19 @@
         <div>
           <div>Health: {{gear.health}}</div>
           <div>Speed: {{gear.speed}}</div>
+          <div>Mind: {{gear.mind}}</div>
           <div>Sharp Damage: {{gear.sharpDmg}}</div>
           <div>Blunt Damage: {{gear.bluntDmg}}</div>
+          <div>Burn Damage: {{gear.burnDmg}}</div>
           <div>Sharp Resistance: {{gear.sharpRes}}</div>
           <div>Blunt Resistance: {{gear.bluntRes}}</div>
-          <div>Penetration Resistance: {{gear.penRes}}</div>
+          <div>Burn Resistance: {{gear.burnRes}}</div>
+          <div>Pierce: {{gear.pierce}}</div>
+        </div>
+        <div style="margin-left: 15px;">
           <div>Handling: {{gear.handling}}</div>
           <div>Guard: {{gear.guard}}</div>
           <div>Lethality: {{gear.lethality}}</div>
-        </div>
-        <div>
           <div>XP: {{ gear.xp }}</div>
           <div>Level: {{ gear.level }}</div>
           <div>Stage: {{ gear.stage }}</div>
@@ -53,11 +56,11 @@ import { MDBBtn } from "mdb-vue-ui-kit";
 import { mapState } from 'pinia';
 import { useGearsStore } from "@/stores/GearsStore";
 import { useUserStore } from "@/stores/UserStore.js";
-
 import { ethers } from 'ethers';
-import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+import contractABI from "@/abi/GearFactory.json";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
+
 
 export default {
   components: {

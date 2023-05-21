@@ -4,7 +4,7 @@ import { useSpellsStore } from './SpellsStore';
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 
 import { ethers } from 'ethers';
-import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+import contractABI from "@/abi/GearFactory.json";
 
 import { Buffer } from 'buffer';
 
@@ -126,7 +126,7 @@ export const useGearsStore  = defineStore('GearStore', {
       return this.starterGears.find(gear => gear.id == tokenId);
     },
     // format a user's gear in the good format for everything
-    // ALCHEMY VERSION WITH RAWMETADA
+    // ALCHEMY VERSION WITH RAWMETADA - deprecated
     async getClassicFormGear(token) {
       if (token == null || token == undefined || token.rawMetadata == undefined) {
         console.log("WARNING: format performed on an empty token.");
@@ -183,11 +183,14 @@ export const useGearsStore  = defineStore('GearStore', {
         stage: parseInt(this.getGearAttributeInfo(token.attributes, "Stage")),
         health: parseInt(this.getGearAttributeInfo(token.attributes, "Health")),
         speed: parseInt(this.getGearAttributeInfo(token.attributes, "Speed")),
+        mind: parseInt(this.getGearAttributeInfo(token.attributes, "Mind")),
         sharpDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Sharp Damage")),
         bluntDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Blunt Damage")),
+        burnDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Burn Damage")),
         sharpRes: parseInt(this.getGearAttributeInfo(token.attributes, "Sharp Resistance")),
         bluntRes: parseInt(this.getGearAttributeInfo(token.attributes, "Blunt Resistance")),
-        penRes: parseInt(this.getGearAttributeInfo(token.attributes, "Penetration Resistance")),
+        burnRes: parseInt(this.getGearAttributeInfo(token.attributes, "Burn Resistance")),
+        pierce: parseInt(this.getGearAttributeInfo(token.attributes, "Pierce")),
         handling: parseInt(this.getGearAttributeInfo(token.attributes, "Handling")),
         guard: parseInt(this.getGearAttributeInfo(token.attributes, "Guard")),
         lethality: parseInt(this.getGearAttributeInfo(token.attributes, "Lethality")),
@@ -206,6 +209,18 @@ export const useGearsStore  = defineStore('GearStore', {
       for (let i = 0; i < tokenFightForm.spells.length; i++)
         tokenFightForm.spells[i] = tokenFightForm.spells[i];
       tokenFightForm.healthBase = token.health;
+      tokenFightForm.speedBase = token.speed;
+      tokenFightForm.mindBase = token.mind;
+      tokenFightForm.sharpDmgBase = token.sharpDmg;
+      tokenFightForm.bluntDmgBase = token.bluntDmg;
+      tokenFightForm.burnDmgBase = token.burnDmg;
+      tokenFightForm.sharpResBase = token.sharpRes;
+      tokenFightForm.bluntResBase = token.bluntRes;
+      tokenFightForm.burnResBase = token.burnRes;
+      tokenFightForm.pierceBase = token.pierce;
+      tokenFightForm.handlingBase = token.handling;
+      tokenFightForm.guardBase = token.guard;
+      tokenFightForm.lethalityBase = token.lethality;
       tokenFightForm.buffs = [];
       tokenFightForm.debuffs = [];
       tokenFightForm.isNPC = false;
