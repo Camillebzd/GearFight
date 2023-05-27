@@ -4,13 +4,15 @@
       <div v-for="buff in entity.buffs" class="modifier-container">
         <div style="margin-right;: 5px">{{ buff.turns }}</div>
         <MDBBadge badge="success"  style="height: fit-content;">
-          {{ buff.data.displayName }}
+          <!-- {{ buff.data.displayName }} -->
+          {{ buff.name }} {{ buff.stack }}
         </MDBBadge>
       </div>
       <div v-for="debuff in entity.debuffs" class="modifier-container">
         <div style="margin-right: 5px">{{ debuff.turns }}</div>
         <MDBBadge badge="danger"  style="height: fit-content;">
-          {{ debuff.data.displayName }}
+          <!-- {{ debuff.data.displayName }} -->
+          {{ debuff.name }} {{ debuff.stack }}
         </MDBBadge>
       </div>
     </div>
@@ -34,7 +36,6 @@
                 <div class="fluxe-circle fluxe-full" v-for="n in entity.fluxes"></div>
                 <div class="fluxe-circle fluxe-empty" v-for="n in 6 - entity.fluxes"></div>
               </div>
-              <!-- <div>{{ entity.fluxes }}</div> -->
             </div>
           </div>
           <div class="image-container" >
@@ -49,13 +50,13 @@
     <div v-if="modifiersOnRight" class="modifiers-container" style="margin-left: 10px">
       <div v-for="buff in entity.buffs" class="modifier-container">
         <MDBBadge badge="success"  style="height: fit-content;">
-          {{ buff.data.displayName }}
+          {{ buff.name }}  {{ buff.stack }}
         </MDBBadge>
         <div style="margin-left: 5px">{{ buff.turns }}</div>
       </div>
       <div v-for="debuff in entity.debuffs" class="modifier-container">
         <MDBBadge badge="danger"  style="height: fit-content;">
-          {{ debuff.data.displayName }}
+          {{ debuff.name }}  {{ debuff.stack }}
         </MDBBadge>
         <div style="margin-left: 5px">{{ debuff.turns }}</div>
       </div>

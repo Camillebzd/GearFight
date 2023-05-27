@@ -107,6 +107,7 @@ export default {
       }
     },
     async levelUp() {
+      // TODO Level up broken.....
       const contract = this.createContract();
       let weaponStats = await this.getWeaponStatsForLevelUp(this.gear.weaponType);
       console.log(weaponStats);

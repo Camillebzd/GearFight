@@ -214,7 +214,7 @@ export default {
     },
     launchSpellMonster() {
       let monsterSpell = null;
-      let fluxesSelected = 0;
+      let fluxesUsed = 0;
 
       while (1) {
         monsterSpell = this.monster.spells[getRandomInt(this.monster.spells.length)];
@@ -222,7 +222,7 @@ export default {
           break;
         else {
           if (this.monster.fluxes > 0) {
-            fluxesSelected = getRandomInt(this.monster.fluxes) + 1;
+            fluxesUsed = getRandomInt(this.monster.fluxes) + 1;
             break;
           }
           // check if monster is blocked -> only fluxes spell with 0 fluxes
@@ -232,15 +232,17 @@ export default {
           }
         }
       }
-      this.actions.push({attacker: this.monster, spell: monsterSpell, target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo, fluxesSelected: fluxesSelected});
+      this.actions.push({attacker: this.monster, spell: monsterSpell, target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo, fluxesSelected: fluxesUsed});
+      this.monster.fluxes -= fluxesUsed;
     },
     async launchSpell(mySpell) {
       if (this.isTurnRunning == true && this.isPlayerCombo != true) {
         console.log("Error: this is not your turn to play.");
         return;
       }
-      // manage fluxes
       this.selectedSpell = mySpell;
+      let fluxesUsed = 0;
+      // manage fluxes
       if (mySpell.isMagical) {
         if (this.myGear.fluxes == 0) {
           console.log("Error: can't use this spell with no fluxes.");
@@ -251,13 +253,17 @@ export default {
           console.log("Player canceled");
           this.selectedSpell = null;
           return;
+        } else {
+          this.myGear.fluxes -= this.fluxesSelected;
+          fluxesUsed = this.fluxesSelected;
+          this.fluxesSelected = 1;
         }
       }
-      this.actions.push({attacker: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo, fluxesSelected: this.fluxesSelected});
+      this.actions.push({attacker: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo, fluxesSelected: fluxesUsed});
       this.selectedSpell = null; // if needed after keep it...
       if (this.isPlayerCombo == false) {
-        // manage fluxes for monster
-        this.resolveTurn();
+        //this.resolveTurn();
+        this.playerSpellPromise.resolve();
       } else {
         this.playerComboPromise.resolve();
       }
@@ -277,7 +283,7 @@ export default {
           case END_OF_TURN.MONSTER_COMBO:
             this.isMonterCombo = true;
             this.info.push("MONSTER COMBO!");
-            this.actions.push({attacker: this.monster, spell: this.monster.spells[getRandomInt(this.monster.spells.length)], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo, fluxesSelected: 0});
+            this.launchSpellMonster();
             break;
           case END_OF_TURN.PLAYER_DIED:
             this.won = false;
@@ -302,14 +308,18 @@ export default {
     // in test
     async gameLoop() {
       while (1) {
+        // APPLY HERE ALL A THE BEGINNING OF TURN
+        // check if monster can play & select a spell
+        if (this.isEntityCanPlay(this.monster)) {
+          this.launchSpellMonster();
+        }
         // check if player can play & select a spell
-        if (isEntityCanPlay(this.myGear)) {
+        if (this.isEntityCanPlay(this.myGear)) {
           this.playerSpellPromise = this.deferred();
           await this.playerSpellPromise.promise;
         }
-        // check if monster can play
-        // monster select a spell
-        // resolveTurn
+        await this.resolveTurn();
+        // APPLY HERE ALL AT THE END OF TURN
       }
     },
     async handleFluxesSelection() {
@@ -348,9 +358,8 @@ export default {
     addStartingFluxes(this.myGear);
     console.log(this.monster);
     console.log(this.myGear);
+    this.gameLoop();
     this.readyToFight = true;
-    // start game loop ?
-
   }
 }
 </script>
