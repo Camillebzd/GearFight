@@ -9,21 +9,21 @@
       <div class="flex-div">
         <img :src="gear?.image" class="img-fluid shadow-2-strong nft-img" />
         <div>
-          <div>Health: {{gear.health}}</div>
-          <div>Speed: {{gear.speed}}</div>
-          <div>Mind: {{gear.mind}}</div>
-          <div>Sharp Damage: {{gear.sharpDmg}}</div>
-          <div>Blunt Damage: {{gear.bluntDmg}}</div>
-          <div>Burn Damage: {{gear.burnDmg}}</div>
-          <div>Sharp Resistance: {{gear.sharpRes}}</div>
-          <div>Blunt Resistance: {{gear.bluntRes}}</div>
-          <div>Burn Resistance: {{gear.burnRes}}</div>
-          <div>Pierce: {{gear.pierce}}</div>
+          <div>Health: {{gear.stats.health}}</div>
+          <div>Speed: {{gear.stats.speed}}</div>
+          <div>Mind: {{gear.stats.mind}}</div>
+          <div>Sharp Damage: {{gear.stats.sharpDmg}}</div>
+          <div>Blunt Damage: {{gear.stats.bluntDmg}}</div>
+          <div>Burn Damage: {{gear.stats.burnDmg}}</div>
+          <div>Sharp Resistance: {{gear.stats.sharpRes}}</div>
+          <div>Blunt Resistance: {{gear.stats.bluntRes}}</div>
+          <div>Burn Resistance: {{gear.stats.burnRes}}</div>
+          <div>Pierce: {{gear.stats.pierce}}</div>
         </div>
         <div style="margin-left: 15px;">
-          <div>Handling: {{gear.handling}}</div>
-          <div>Guard: {{gear.guard}}</div>
-          <div>Lethality: {{gear.lethality}}</div>
+          <div>Handling: {{gear.stats.handling}}</div>
+          <div>Guard: {{gear.stats.guard}}</div>
+          <div>Lethality: {{gear.stats.lethality}}</div>
           <div>XP: {{ gear.xp }}</div>
           <div>Level: {{ gear.level }}</div>
           <div>Stage: {{ gear.stage }}</div>
@@ -148,6 +148,7 @@ export default {
     async loadWeapon() {
       switch (this.$route.params.storeType) {
         case "gears":
+          console.log("WARNING: deprecated system used for this, work todo here");
           await this.getGearsForContract();
           this.gear = await this.getFightFormGear(this.getGear(this.$route.params.id));
           break;

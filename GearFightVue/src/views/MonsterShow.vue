@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="monsters.length > 0">
+    <div v-if="monster != undefined">
       <h1>{{monster.name}}</h1>
       <div class="flex-div">
         <img :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
@@ -110,12 +110,12 @@ export default {
     GearCardHorizontal
   },
   computed: {
-    ...mapState(useMonstersStore, ['monsters', 'fillMonstersData', 'getFightFormMonster']),
+    ...mapState(useMonstersStore, ['getMonster', 'fillMonstersData', 'getFightFormMonster']),
     ...mapState(useUserStore, ['isConnected']),
-    ...mapState(useGearsStore, ['ownedGearsFormatted', 'fillMyGears', 'getFightFormGear', 'getMyGear']),
-    monster() {
-      return this.monsters[this.$route.params.id];
-    },
+    ...mapState(useGearsStore, ['ownedGearsFormatted', 'fillMyGears', 'getMyGear']),
+    // monster() {
+    //   return this.monsters[this.$route.params.id];
+    // },
     getBadgeColor() {
       if (this.monster.difficulty === 1)
         return "secondary";
@@ -162,7 +162,7 @@ export default {
       // fightData.group2.push(monster);
       fightData.group2.push(this.getFightFormMonster(this.$route.params.id));
       // fightData.allies.push(this.ownedGearsFormatted.find(gear => gear.tokenId == this.gearSelected));
-      fightData.group1.push(this.getFightFormGear(this.getMyGear(this.gearSelected)));
+      // fightData.group1.push(this.getFightFormGear(this.getMyGear(this.gearSelected))); // getFightFormGear deprecated
       fightData.roomLeader = this.gearSelected;
       socket.emit("initFight", fightData);
     },
@@ -184,6 +184,7 @@ export default {
   },
   data() {
     return {
+      monster: undefined,
       exampleModalScrollable: false,
       gearSelected: -1,
       socket: {},
@@ -191,8 +192,8 @@ export default {
   },
   async created() {
     console.log("created");
-    await this.fillMonstersData();
     await this.fillMyGears(false);
+    this.monster = await this.getMonster(this.$route.params.id);
   },
   unmounted() {
     socket.off("connect_error");

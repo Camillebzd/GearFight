@@ -251,5 +251,27 @@
     "stack": 0,
     "targetedStat": "",
     "description": "Mitigates a percentage of damage taken from all sources, calculated after any other parameter"
+  },
+  {
+    "id": 24,
+    "name": "Strength",
+    "type": "DECAYING",
+    "direction": "BUFF",
+    "timeframe": "CONTINUOUS",
+    "value": 25,
+    "stack": 0,
+    "targetedStat": "",
+    "description": "Deals a percentage of additional damage, calculated after any other parameter"
+  },
+  {
+    "id": 25,
+    "name": "Recovery",
+    "type": "DECAYING",
+    "direction": "BUFF",
+    "timeframe": "PERIODIC",
+    "value": 10,
+    "stack": 0,
+    "targetedStat": "",
+    "description": "Recovers a percentage of maximum health at the end of the turn"
   }
 ]

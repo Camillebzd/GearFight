@@ -27,8 +27,8 @@
             </div>
             <div class="health-container">
               <div style="margin-right: 7px">Health: </div>
-              <progress :max="entity.healthBase" :value="entity.health" style="background-color:green; margin-right: 5px;"></progress>
-              <div style="width: 40px">{{ Math.round(entity.health * 100 / entity.healthBase) }}%</div>
+              <progress :max="entity.stats.healthMax" :value="entity.stats.health" style="background-color:green; margin-right: 5px;"></progress>
+              <div style="width: 40px">{{ Math.round(entity.stats.health * 100 / entity.stats.healthMax) }}%</div>
             </div>
             <div class="fluxes-container">
               <div style="margin-right: 7px">Fluxes: </div>

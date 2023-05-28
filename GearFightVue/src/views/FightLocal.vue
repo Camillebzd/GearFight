@@ -112,11 +112,10 @@ import Chat from "@/components/Chat.vue";
 import SpellCard from "@/components/SpellCard.vue";
 import InfoWindow from "@/components/InfoWindow.vue";
 import { 
-  resolveActions,
-  getRandomInt,
-  END_OF_TURN,
-  addStartingFluxes
+  resolveActions
 } from "@/scripts/fight.js";
+import { getRandomInt } from "@/scripts/utils.js";
+import { Action, END_OF_TURN } from "@/scripts/actions";
 import { ethers } from 'ethers';
 import contractABI from "@/abi/GearFactory.json";
 
@@ -166,8 +165,8 @@ export default {
     }
   },
   computed: {
-    ...mapState(useGearsStore, ['fillMyGears', 'isOwned', 'getFightFormGear', 'getMyGearFormatted', 'refreshTokenMetadata']),
-    ...mapState(useMonstersStore, ['monsters', 'fillMonstersData', 'getFightFormMonster']),
+    ...mapState(useGearsStore, ['isOwned', 'getMyGearFormatted']),
+    ...mapState(useMonstersStore, ['getMonster']),
   },
   methods: {
     // https://stackoverflow.com/questions/75466751/how-to-await-a-value-being-set-asynchronously
@@ -206,35 +205,6 @@ export default {
       }
       this.goBackToWorld();
     },
-    isEntityCanPlay(entity) {
-      for (let i = 0; i < entity.spells.length; i++)
-        if (entity.spells[i].isMagical == false)
-          return true;
-      return entity.fluxes > 0 ? true : false;
-    },
-    launchSpellMonster() {
-      let monsterSpell = null;
-      let fluxesUsed = 0;
-
-      while (1) {
-        monsterSpell = this.monster.spells[getRandomInt(this.monster.spells.length)];
-        if (!monsterSpell.isMagical)
-          break;
-        else {
-          if (this.monster.fluxes > 0) {
-            fluxesUsed = getRandomInt(this.monster.fluxes) + 1;
-            break;
-          }
-          // check if monster is blocked -> only fluxes spell with 0 fluxes
-          if (!isEntityCanPlay(this.monster)) {
-            console.log("monster can't play, action skipped");
-            return;
-          }
-        }
-      }
-      this.actions.push({attacker: this.monster, spell: monsterSpell, target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo, fluxesSelected: fluxesUsed});
-      this.monster.fluxes -= fluxesUsed;
-    },
     async launchSpell(mySpell) {
       if (this.isTurnRunning == true && this.isPlayerCombo != true) {
         console.log("Error: this is not your turn to play.");
@@ -259,10 +229,9 @@ export default {
           this.fluxesSelected = 1;
         }
       }
-      this.actions.push({attacker: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo, fluxesSelected: fluxesUsed});
+      this.actions.push(new Action({caster: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo, fluxesSelected: fluxesUsed, info: this.info}));
       this.selectedSpell = null; // if needed after keep it...
       if (this.isPlayerCombo == false) {
-        //this.resolveTurn();
         this.playerSpellPromise.resolve();
       } else {
         this.playerComboPromise.resolve();
@@ -272,18 +241,16 @@ export default {
       this.isTurnRunning = true;
       this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
       while (this.actions.length > 0) {
-        let ret = resolveActions(this.actions, this.info);
+        let ret = resolveActions(this.actions);
         switch (ret) {
           case END_OF_TURN.PLAYER_COMBO:
             this.isPlayerCombo = true;
-            this.info.push("PLAYER COMBO!");
             this.playerComboPromise = this.deferred();
             await this.playerComboPromise.promise;
             break;
           case END_OF_TURN.MONSTER_COMBO:
             this.isMonterCombo = true;
-            this.info.push("MONSTER COMBO!");
-            this.launchSpellMonster();
+            this.actions.push(this.monster.launchRandomSpell(this.myGear, this.isMonterCombo));
             break;
           case END_OF_TURN.PLAYER_DIED:
             this.won = false;
@@ -301,6 +268,8 @@ export default {
         }
         this.actions = this.actions.filter((action) => {return action.hasBeenDone === false});
       }
+      this.myGear.applyDecayingModifier();
+      this.monster.applyDecayingModifier();
       this.actualTurn++;
       this.isTurnRunning = false;
       this.info.push("-------------------------------- END OF TURN --------------------------------");
@@ -308,18 +277,16 @@ export default {
     // in test
     async gameLoop() {
       while (1) {
-        // APPLY HERE ALL A THE BEGINNING OF TURN
         // check if monster can play & select a spell
-        if (this.isEntityCanPlay(this.monster)) {
-          this.launchSpellMonster();
+        if (this.monster.isEntityAbleToPlay()) {
+          this.actions.push(this.monster.launchRandomSpell(this.myGear, this.isMonterCombo));
         }
         // check if player can play & select a spell
-        if (this.isEntityCanPlay(this.myGear)) {
+        if (this.myGear.isEntityAbleToPlay()) {
           this.playerSpellPromise = this.deferred();
           await this.playerSpellPromise.promise;
         }
         await this.resolveTurn();
-        // APPLY HERE ALL AT THE END OF TURN
       }
     },
     async handleFluxesSelection() {
@@ -343,19 +310,16 @@ export default {
     }
   },
   async created() {
-    await this.fillMyGears(false);
-    if (!this.isOwned(this.gearId))
+    if (!await this.isOwned(this.gearId))
       return;
     this.ownTheGear = true;
-    await this.fillMonstersData();
-    // await this.fillAllSpellData();
-    this.myGear = this.getFightFormGear(this.getMyGearFormatted(this.gearId));
-    this.monster = this.getFightFormMonster(this.monsterId);
+    this.myGear = await this.getMyGearFormatted(this.gearId);
+    this.monster = await this.getMonster(this.monsterId);
     this.myGear.spells.forEach((spell) => {
       this.mySpells.push(JSON.parse(JSON.stringify(spell)));
     });
-    addStartingFluxes(this.monster);
-    addStartingFluxes(this.myGear);
+    this.myGear.info = this.info;
+    this.monster.info = this.info;
     console.log(this.monster);
     console.log(this.myGear);
     this.gameLoop();

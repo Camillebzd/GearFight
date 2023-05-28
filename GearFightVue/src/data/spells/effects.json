@@ -22,5 +22,13 @@
     "applyChance": 100,
     "aftermathType": "MODIFIER",
     "aftermathId": 23
+  },
+  {
+    "id": 4,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 25
   }
 ]

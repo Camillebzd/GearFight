@@ -5,21 +5,21 @@
       <div class="stats-entity-container">
         <div>
           <!-- <div>{{ entityInfo.name }}</div> -->
-          <div >health: {{ entityInfo.health }}/{{ entityInfo.healthBase }}</div>
-          <div>sharpDmg: {{ entityInfo.sharpDmg }}</div>
-          <div>bluntDmg: {{ entityInfo.bluntDmg }}</div>
-          <div>burnDmg: {{ entityInfo.burnDmg }}</div>
-          <div>handling: {{ entityInfo.handling }}</div>
-          <div>lethality: {{ entityInfo.lethality }}</div>
+          <div >health: {{ entityInfo.stats.health }}/{{ entityInfo.stats.healthMax }}</div>
+          <div>sharpDmg: {{ entityInfo.stats.sharpDmg }}</div>
+          <div>bluntDmg: {{ entityInfo.stats.bluntDmg }}</div>
+          <div>burnDmg: {{ entityInfo.stats.burnDmg }}</div>
+          <div>handling: {{ entityInfo.stats.handling }}</div>
+          <div>lethality: {{ entityInfo.stats.lethality }}</div>
           
         </div>
         <div>
-          <div>speed: {{ entityInfo.speed }}</div>
-          <div>sharpRes: {{ entityInfo.sharpRes }}</div>
-          <div>bluntRes: {{ entityInfo.bluntRes }}</div>
-          <div>burnRes: {{ entityInfo.burnRes }}</div>
-          <div>Pierce: {{ entityInfo.pierce }}</div>
-          <div>guard: {{ entityInfo.guard }}</div>
+          <div>speed: {{ entityInfo.stats.speed }}</div>
+          <div>sharpRes: {{ entityInfo.stats.sharpRes }}</div>
+          <div>bluntRes: {{ entityInfo.stats.bluntRes }}</div>
+          <div>burnRes: {{ entityInfo.stats.burnRes }}</div>
+          <div>Pierce: {{ entityInfo.stats.pierce }}</div>
+          <div>guard: {{ entityInfo.stats.guard }}</div>
         </div>
       </div>
     </div>

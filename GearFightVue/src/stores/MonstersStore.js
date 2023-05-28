@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useSpellsStore } from './SpellsStore';
+import { Monster } from '@/scripts/entities';
 
 export const useMonstersStore  = defineStore('MonstersStore', {
   state: () => {
@@ -11,23 +12,34 @@ export const useMonstersStore  = defineStore('MonstersStore', {
   },
   actions: {
     // API on it to get data from back
-    async fillMonstersData() {
-      // this.monsters = (await import('@/data/monsters.json')).default;
-      this.monsters = JSON.parse(JSON.stringify((await import('@/data/monsters/base.json')).default));
+    async fillMonstersData(forceReaload = false) {
+      if (this.monsters.length > 0 && !forceReaload)
+        return;
+      let monstersData = JSON.parse(JSON.stringify((await import('@/data/monsters/base.json')).default));
       let spellsStore = useSpellsStore();
       await spellsStore.fillMonstersSpells();
-      for (let i = 0; i < this.monsters.length; i++) {
-        let spellsId = this.monsters[i].spells;
+      for (let i = 0; i < monstersData.length; i++) {
+        let spellsId = monstersData[i].spells;
         let monsterSpells = [];
         spellsId.forEach((spellId) => {
           monsterSpells.push(spellsStore.getMonstersSpellFromId(spellId));
         });
-        this.monsters[i].spells = monsterSpells;
+        monstersData[i].spells = monsterSpells;
+        this.monsters.push(new Monster(monstersData[i]));
       }
       console.log("monsters pulled");
     },
-    getMonster(idToFind) {
-      return JSON.parse(JSON.stringify(this.monsters.find(monster => monster.id == idToFind)));
+    async getMonster(idToFind) {
+      let monster = this.monsters.find(monster => monster.id == idToFind);
+      if (!monster) {
+        await this.fillMonstersData(true);
+        monster = this.monsters.find(monster => monster.id == idToFind);
+        if (!monster) {
+          console.log("Error: can't get a valid monster");
+          return {};
+        }
+      }
+      return monster.clone();
     },
     getFightFormMonster(id) {
       let monster = this.getMonster(id);
