@@ -224,12 +224,12 @@ export default {
           this.selectedSpell = null;
           return;
         } else {
-          this.myGear.fluxes -= this.fluxesSelected;
+          this.myGear.useFluxes(this.fluxesSelected);
           fluxesUsed = this.fluxesSelected;
           this.fluxesSelected = 1;
         }
       }
-      this.actions.push(new Action({caster: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo, fluxesSelected: fluxesUsed, info: this.info}));
+      this.actions.push(new Action({caster: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo, fluxesUsed: fluxesUsed, info: this.info}));
       this.selectedSpell = null; // if needed after keep it...
       if (this.isPlayerCombo == false) {
         this.playerSpellPromise.resolve();
@@ -268,8 +268,18 @@ export default {
         }
         this.actions = this.actions.filter((action) => {return action.hasBeenDone === false});
       }
-      this.myGear.applyDecayingModifier();
-      this.monster.applyDecayingModifier();
+      if (!this.myGear.applyDecayingModifier()) {
+        // die of dots
+        this.won = false;
+        this.showEndModal = true;
+      }
+      if (!this.monster.applyDecayingModifier()) {
+        // die of dots
+        this.won = true;
+        this.showEndModal = true;
+      }
+      this.myGear.resetRulesOnAction();
+      this.monster.resetRulesOnAction();
       this.actualTurn++;
       this.isTurnRunning = false;
       this.info.push("-------------------------------- END OF TURN --------------------------------");

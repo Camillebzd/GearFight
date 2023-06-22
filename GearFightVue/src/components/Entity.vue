@@ -1,18 +1,13 @@
 <template>
   <div class="entity-container">
     <div v-if="!modifiersOnRight" class="modifiers-container" style="margin-right: 10px">
-      <div v-for="buff in entity.buffs" class="modifier-container">
-        <div style="margin-right;: 5px">{{ buff.turns }}</div>
-        <MDBBadge badge="success"  style="height: fit-content;">
-          <!-- {{ buff.data.displayName }} -->
-          {{ buff.name }} {{ buff.stack }}
+      <div v-for="modifier in entity.modifiers" class="modifier-container">
+        <div style="margin-right;: 5px">{{ modifier.turns }}</div>
+        <MDBBadge v-if="modifier.direction == 'BUFF'" badge="success"  style="height: fit-content; margin-bottom: 5px;">
+          {{ modifier.name }} {{ modifier.stack }}
         </MDBBadge>
-      </div>
-      <div v-for="debuff in entity.debuffs" class="modifier-container">
-        <div style="margin-right: 5px">{{ debuff.turns }}</div>
-        <MDBBadge badge="danger"  style="height: fit-content;">
-          <!-- {{ debuff.data.displayName }} -->
-          {{ debuff.name }} {{ debuff.stack }}
+        <MDBBadge v-else badge="danger"  style="height: fit-content; margin-bottom: 5px;">
+          {{ modifier.name }} {{ modifier.stack }}
         </MDBBadge>
       </div>
     </div>
@@ -48,17 +43,14 @@
       </template> -->
     <!-- </MDBTooltip> -->
     <div v-if="modifiersOnRight" class="modifiers-container" style="margin-left: 10px">
-      <div v-for="buff in entity.buffs" class="modifier-container">
-        <MDBBadge badge="success"  style="height: fit-content;">
-          {{ buff.name }}  {{ buff.stack }}
-        </MDBBadge>
-        <div style="margin-left: 5px">{{ buff.turns }}</div>
-      </div>
-      <div v-for="debuff in entity.debuffs" class="modifier-container">
-        <MDBBadge badge="danger"  style="height: fit-content;">
-          {{ debuff.name }}  {{ debuff.stack }}
-        </MDBBadge>
-        <div style="margin-left: 5px">{{ debuff.turns }}</div>
+      <div v-for="modifier in entity.modifiers" class="modifier-container">
+        <div style="margin-right;: 5px">{{ modifier.turns }}</div>
+          <MDBBadge v-if="modifier.direction == 'BUFF'" badge="success"  style="height: fit-content; margin-bottom: 5px;">
+            {{ modifier.name }} {{ modifier.stack }}
+          </MDBBadge>
+          <MDBBadge v-else badge="danger"  style="height: fit-content; margin-bottom: 5px;">
+            {{ modifier.name }} {{ modifier.stack }}
+          </MDBBadge>
       </div>
     </div>
   </div>

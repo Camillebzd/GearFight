@@ -29,6 +29,22 @@
     "targetId": 2,
     "applyChance": 100,
     "aftermathType": "MODIFIER",
-    "aftermathId": 25
+    "aftermathId": 39
+  },
+  {
+    "id": 5,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 1
+  },
+  {
+    "id": 100,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 21
   }
 ]

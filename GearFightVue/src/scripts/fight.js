@@ -168,12 +168,10 @@ import { END_OF_TURN } from "./actions";
 // fight
 
 // Main loop for resolves actions
-export function resolveActions(actions) { 
+export function resolveActions(actions) {
+  // TODO Apply some rules here ?
   // 2. Calculate the order
-  actions.sort((a, b) => {
-    let speedDif = (b.spell.initiative * ((b.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000)) - (a.spell.initiative * ((a.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000));
-    return speedDif == 0 ? (getRandomInt(1) == 0 ? -1 : 1) : speedDif;
-  });
+  sortActionOrder(actions);
   for (let i = 0; i < actions.length; i++) {
     let resultOfAction = actions[i].resolve();
 
@@ -182,4 +180,15 @@ export function resolveActions(actions) {
     // latter get the id here if there is a combo so handle easily multiple entities
     return resultOfAction;
   }
+}
+
+function sortActionOrder(actions) {
+  actions.sort((a, b) => {
+    let prioDif = (b.caster.getSpeedState() + b.getSpeedRule()) - (a.caster.getSpeedState() + a.getSpeedRule());
+    if (prioDif == 0) {
+      let speedDif = (b.spell.initiative * ((b.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000)) - (a.spell.initiative * ((a.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000));
+      return speedDif == 0 ? (getRandomInt(1) == 0 ? -1 : 1) : speedDif;
+    } else
+      return prioDif;
+  });
 }

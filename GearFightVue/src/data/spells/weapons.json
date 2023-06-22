@@ -7,7 +7,7 @@
     "type": "SHARP",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 1,
@@ -17,7 +17,7 @@
     "type": "BLUNT",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 2,
@@ -27,7 +27,7 @@
     "type": "BLUNT",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 3,
@@ -36,8 +36,13 @@
     "initiative": 10,
     "type": "SHARP",
     "isMagical": true,
-    "effects": [],
-    "effectsStacks": []
+    "effects": [100],
+    "effectsValue": [
+      {
+        "id": 100,
+        "value": 1
+      }
+    ]
   },
   {
     "id": 4,
@@ -47,7 +52,7 @@
     "type": "BLUNT",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 5,
@@ -56,23 +61,27 @@
     "initiative": 20,
     "type": "BLUNT",
     "isMagical": false,
-    "effects": [1, 2, 3, 4],
-    "effectsStacks": [
+    "effects": [1, 2, 3, 4, 5],
+    "effectsValue": [
       {
         "id": 1,
-        "stack": 1
+        "value": 1
       },
       {
         "id": 2,
-        "stack": 1
+        "value": 1
       },
       {
         "id": 3,
-        "stack": 2
+        "value": 2
       },
       {
         "id": 4,
-        "stack": 2
+        "value": 2
+      },
+      {
+        "id": 5,
+        "value": 100
       }
     ]
   },
@@ -84,7 +93,7 @@
     "type": "SHARP",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 7,
@@ -94,7 +103,7 @@
     "type": "BLUNT",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 8,
@@ -104,7 +113,7 @@
     "type": "BLUNT",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 9,
@@ -114,7 +123,7 @@
     "type": "SHARP",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 10,
@@ -124,7 +133,7 @@
     "type": "SHARP",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   },
   {
     "id": 11,
@@ -134,6 +143,6 @@
     "type": "SHARP",
     "isMagical": false,
     "effects": [],
-    "effectsStacks": []
+    "effectsValue": []
   }
 ]
