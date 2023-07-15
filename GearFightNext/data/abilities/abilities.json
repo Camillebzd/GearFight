@@ -1,0 +1,29 @@
+[
+  {
+    "id": 0,
+    "name": "Heavy slash",
+    "type": "SHARP",
+    "isMagical": false,
+    "damage": 30,
+    "initiative": 25,
+    "effects": []
+  },
+  {
+    "id": 1,
+    "name": "Quick slash",
+    "type": "SHARP",
+    "isMagical": false,
+    "damage": 20,
+    "initiative": 35,
+    "effects": []
+  },
+  {
+    "id": 2,
+    "name": "Slice",
+    "type": "SHARP",
+    "isMagical": false,
+    "damage": 10,
+    "initiative": 50,
+    "effects": []
+  }
+]

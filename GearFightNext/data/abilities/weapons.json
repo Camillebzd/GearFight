@@ -1,0 +1,148 @@
+[
+  {
+    "id": 0,
+    "name": "Riposte",
+    "damage": 50,
+    "initiative": 0,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 1,
+    "name": "Powerslam",
+    "damage": 50,
+    "initiative": 5,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 2,
+    "name": "Disarm",
+    "damage": 46,
+    "initiative": 5,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 3,
+    "name": "Lunge",
+    "damage": 43,
+    "initiative": 10,
+    "type": "SHARP",
+    "isMagical": true,
+    "effects": [100],
+    "effectsValue": [
+      {
+        "id": 100,
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Crush",
+    "damage": 43,
+    "initiative": 10,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 5,
+    "name": "Bash",
+    "damage": 39,
+    "initiative": 20,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [1, 2, 3, 4, 5],
+    "effectsValue": [
+      {
+        "id": 1,
+        "value": 1
+      },
+      {
+        "id": 2,
+        "value": 1
+      },
+      {
+        "id": 3,
+        "value": 2
+      },
+      {
+        "id": 4,
+        "value": 2
+      },
+      {
+        "id": 5,
+        "value": 100
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Sweep",
+    "damage": 35,
+    "initiative": 25,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 7,
+    "name": "Thrash",
+    "damage": 36,
+    "initiative": 25,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 8,
+    "name": "Push",
+    "damage": 33,
+    "initiative": 25,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 9,
+    "name": "Lash",
+    "damage": 31,
+    "initiative": 30,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 10,
+    "name": "Slash",
+    "damage": 30,
+    "initiative": 35,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 11,
+    "name": "Thrust",
+    "damage": 30,
+    "initiative": 35,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  }
+]

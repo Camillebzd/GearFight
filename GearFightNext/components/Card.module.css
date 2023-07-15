@@ -1,0 +1,16 @@
+.card {
+  max-width: 16rem;
+  display: flex;
+  flex-direction: column;
+  /* background-color: blue; */
+  align-items: center;
+  overflow: hidden;
+}
+
+.cardImage {
+  transition: transform 0.3s;
+}
+
+.cardImage:hover {
+  transform: scale(1.2);
+}
