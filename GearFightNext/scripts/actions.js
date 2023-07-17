@@ -1,4 +1,4 @@
-import effects from "../data/spells/effects.json";
+/*import effects from "../data/spells/effects.json";
 import conditions from "../data/spells/conditions.json";
 import targets from "../data/spells/targets.json"
 import rules from "../data/spells/rules.json";
@@ -432,4 +432,4 @@ export class Action {
       return 1;
     return 0;
   }
-}
+}*/

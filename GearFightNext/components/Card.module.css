@@ -10,7 +10,3 @@
 .cardImage {
   transition: transform 0.3s;
 }
-
-.cardImage:hover {
-  transform: scale(1.2);
-}

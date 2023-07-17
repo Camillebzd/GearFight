@@ -1,6 +1,6 @@
 'use client'
 
-import { Monster } from "@/scripts/entities";
+import { Monster, Weapon } from "@/scripts/entities";
 import { Card, CardBody, CardFooter, Heading, Stack, Button, Image } from '@chakra-ui/react'
 import DifficultyBadge from "./DifficultyBadge";
 
@@ -9,33 +9,31 @@ import { useEffect, useRef, useState } from "react";
 
 import Link from 'next/link'
 
-const MonsterCard = ({monster}: {monster: Monster}) => {
+const WeaponCard = ({weapon}: {weapon: Weapon}) => {
   const [isOver, setIsOver] = useState(false);
-  const imageMonster: any = useRef(null);
+  const imageWeapon: any = useRef(null);
 
   useEffect(() => {
-    if (isOver && imageMonster != null)
-      imageMonster.current.style.transform = "scale(1.2)";
-    else if (!isOver && imageMonster != null)
-      imageMonster.current.style.transform = "scale(1)";
+    if (isOver && imageWeapon != null)
+      imageWeapon.current.style.transform = "scale(1.2)";
+    else if (!isOver && imageWeapon != null)
+      imageWeapon.current.style.transform = "scale(1)";
   }, [isOver]);
 
   return (
-    <Link href={`/monster/${monster.id}`}>
+    <Link href={`/weapons/${weapon.id}`}>
       <Card className={styles.card} onMouseEnter={() => setIsOver(true)} onMouseLeave={() => setIsOver(false)}>
         <CardBody className={styles.cardBody}>
           <Image
-            src={`/img/monsters/${monster.image}`}
-            alt={`image of a ${monster.name}`}
+            src={weapon.image}
+            alt={`image of weapon named ${weapon.name}`}
             borderRadius='lg'
             className={styles.cardImage}
-            ref={imageMonster}
+            ref={imageWeapon}
           />
           <Stack mt='6' spacing='3' >
-            <Heading size='md'>{monster.name}</Heading>
-            <p style={{justifySelf: 'flex-end'}}>
-              Difficulty: <DifficultyBadge difficulty={monster.difficulty}/>
-            </p>
+            <Heading size='md'>{weapon.name}</Heading>
+            <p>{weapon.description}</p>
           </Stack>
         </CardBody>
         <CardFooter >
@@ -50,4 +48,4 @@ const MonsterCard = ({monster}: {monster: Monster}) => {
   );
 }
 
-export default MonsterCard;
+export default WeaponCard;

@@ -1,11 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit";
 import counterReducer from "./features/counterSlice";
 import authReducer from "./features/authSlice";
+import abilityReducer from "./features/abilitySlice";
+import monsterReducer from "./features/monsterSlice";
+import weaponReducer from "./features/weaponSlice";
 
 export const store = configureStore({
   reducer: {
     authReducer,
     counterReducer,
+    monsterReducer,
+    abilityReducer,
+    weaponReducer,
   },
   devTools: process.env.NODE_ENV !== "production",
 });
