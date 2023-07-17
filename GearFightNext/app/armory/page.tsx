@@ -1,21 +1,19 @@
 'use client'
 
-// import { fillUserWeapons } from '@/redux/features/weaponSlice';
 import styles from '../page.module.css';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useEffect } from 'react';
-import { fillStoreAbilities } from '@/redux/features/abilitySlice';
 import WeaponList from '@/components/weaponList';
+
 import { fillUserWeapons } from '@/redux/features/weaponSlice';
 
 export default function Page() {
   const dispatch = useAppDispatch();
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
-  // const userWeapons = useAppSelector((state) => state.monsterReducer?.monstersWorld);
-  // console.log("WOOOOWW: ", userWeapons);
+  const userWeapons = useAppSelector((state) => state.weaponReducer.userWeapons);
 
   useEffect(() => {
-    dispatch(fillUserWeapons());
+    dispatch(fillUserWeapons(""));
   }, [isConnected]);
 
   return (
@@ -25,7 +23,7 @@ export default function Page() {
         (<p>You have to connect your wallet to interact here.</p>)
         :      
         <div>
-          {/* <WeaponList weapons={userWeapons} /> */}
+          <WeaponList weapons={userWeapons} />
         </div>
       }
     </main>

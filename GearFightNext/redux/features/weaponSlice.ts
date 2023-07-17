@@ -3,10 +3,9 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import { fillStoreAbilities } from "./abilitySlice";
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
-import { createContract, getAbilityFromName } from "@/scripts/utils";
-import { Ability, AbilityData } from "@/scripts/abilities";
-
-import { store } from '../store';
+import { createContract } from "@/scripts/utils";
+import { Ability } from "@/scripts/abilities";
+import { RootState } from "../store";
 
 const API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_MATIC;
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
@@ -31,17 +30,17 @@ function getGearAttributeInfo(attributes: AttributeOnNFT[], trait_type: string):
   return "";
 }
 
-const getClassicFormGearManual = (token: WeaponNFT, tokenId: string): undefined | Weapon => {
+const getClassicFormGearManual = (token: WeaponNFT, tokenId: string, abilities: Ability[]): undefined | Weapon => {
   if (token == null || token == undefined) {
     console.log("WARNING: format performed on an empty token.");
     return undefined;
   }
-  store.dispatch(fillStoreAbilities(false));
+  // store.dispatch(fillStoreAbilities(false));
   let weaponAbilities: (Ability | undefined)[] = [];
   let weaponAbilitiesNames = getGearAttributeInfo(token.attributes, "Spells");
   if (Array.isArray(weaponAbilitiesNames))
-    weaponAbilitiesNames.forEach((spellName) => {
-      weaponAbilities.push(getAbilityFromName(spellName));
+    weaponAbilitiesNames.forEach((abilityName) => {
+      weaponAbilities.push(abilities.find((abilitie) => abilitie.name === abilityName));
     });
   let data: WeaponData = {
     name: token.name,
@@ -67,15 +66,15 @@ const getClassicFormGearManual = (token: WeaponNFT, tokenId: string): undefined 
     xp: parseInt(getGearAttributeInfo(token.attributes, "Experience") as string),
     weaponType: getGearAttributeInfo(token.attributes, "Weapon Type") as WeaponType,
   };
-  return new Weapon(data);
+  return new Weapon(data); // Error: No reducer provided for key "weaponReducer"
 };
 
-export const fillUserWeapons = createAsyncThunk(
+export const fillUserWeapons = createAsyncThunk<Weapon[], any, {state: RootState} >(
   'weapons/fillUserWeapons',
-  async () => {
+  async (data: any, thunkAPI) => {
     console.log("starting of fillUserWeapons");
-    const isConnected = store.getState().authReducer.isConnected;
-    const address = store.getState().authReducer.address;
+    const isConnected = thunkAPI.getState().authReducer.isConnected;
+    const address = thunkAPI.getState().authReducer.address;
     if (!isConnected) {
       console.log("You should be connected if you want to get your Gears!");
       return [];
@@ -88,11 +87,13 @@ export const fillUserWeapons = createAsyncThunk(
     const alchemy = new Alchemy(settings);
     const nfts = await alchemy.nft.getNftsForOwner(address, {omitMetadata: true});
     const contract = createContract(address);
+
+    thunkAPI.dispatch(fillStoreAbilities(false));
     await Promise.all(nfts.ownedNfts.map(async (nft) => {
       if (nft.contract.address.toLowerCase() == CONTRACT_ADDRESS) {
         let weaponURI = await contract.uri(nft.tokenId);
         let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
-        let userWeapon = getClassicFormGearManual(weaponObj, nft.tokenId);
+        let userWeapon = getClassicFormGearManual(weaponObj, nft.tokenId, thunkAPI.getState().abilityReducer.abilities);
         if (userWeapon)
           userWeapons.push(userWeapon);
       }
@@ -122,8 +123,9 @@ export const weapons = createSlice({
     },
   },
   extraReducers: (builder) => {
+    builder.addCase(fillUserWeapons.pending, (state, action) => {
+    }),
     builder.addCase(fillUserWeapons.fulfilled, (state, action) => {
-      console.log(action.payload);
       state.userWeapons = action.payload;
     })
   }

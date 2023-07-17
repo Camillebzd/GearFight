@@ -15,7 +15,7 @@ import {
   MAX_PERMANENT_MODIFIER_TIER,
   MAX_DECAYING_MODIFIER_COUNTER,
 } from "./systemValues";
-import { Action } from "./actions";
+// import { Action } from "./actions";
 import { Ability, Modifier, ModifierDirection } from "./abilities";
 
 export const SPEED_STATE = {"SLOW": -1, "NORMAL": 1, "FAST": 1};
@@ -650,6 +650,6 @@ export class Monster extends Entity {
       }
     }
     this.useFluxes(fluxesUsed);
-    return new Action({caster: this, ability: monsterAbility, target: target, hasBeenDone: false, isCombo: isCombo, fluxesUsed: fluxesUsed, info: this.info});
+    // return new Action({caster: this, ability: monsterAbility, target: target, hasBeenDone: false, isCombo: isCombo, fluxesUsed: fluxesUsed, info: this.info});
   }
 }

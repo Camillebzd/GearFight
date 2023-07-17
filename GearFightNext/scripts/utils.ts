@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import contractABI from "@/abi/GearFactory.json";
 
 import { Ability } from './abilities';
-import { store } from '@/redux/store';
+// import { store } from '@/redux/store';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
@@ -26,7 +26,7 @@ export function createContract(walletAddress: string) {
   return contract;
 }
 
-export const getAbilityFromName = (name: string): Ability | undefined  => {
-  let abilities = store.getState().abilityReducer?.abilities;
-  return abilities == undefined || name === "" ? undefined : abilities.find((abilitie) => abilitie.name === name);
-};
+// export const getAbilityFromName = (name: string): Ability | undefined  => {
+//   let abilities = store.getState().abilityReducer?.abilities;
+//   return abilities == undefined || name === "" ? undefined : abilities.find((abilitie) => abilitie.name === name);
+// };
