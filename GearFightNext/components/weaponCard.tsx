@@ -1,8 +1,7 @@
 'use client'
 
-import { Monster, Weapon } from "@/scripts/entities";
+import { Weapon } from "@/scripts/entities";
 import { Card, CardBody, CardFooter, Heading, Stack, Button, Image } from '@chakra-ui/react'
-import DifficultyBadge from "./DifficultyBadge";
 
 import styles from './Card.module.css'
 import { useEffect, useRef, useState } from "react";
@@ -21,7 +20,7 @@ const WeaponCard = ({weapon}: {weapon: Weapon}) => {
   }, [isOver]);
 
   return (
-    <Link href={`/weapons/${weapon.id}`}>
+    <Link href={`/weapon/${weapon.id}`}>
       <Card className={styles.card} onMouseEnter={() => setIsOver(true)} onMouseLeave={() => setIsOver(false)}>
         <CardBody className={styles.cardBody}>
           <Image
@@ -37,11 +36,6 @@ const WeaponCard = ({weapon}: {weapon: Weapon}) => {
           </Stack>
         </CardBody>
         <CardFooter >
-          {isOver && 
-            (<Button position='absolute' top='89%' right='40%' size='sm' colorScheme='blue'>
-              Fight
-            </Button>)
-          }
         </CardFooter>
       </Card>
     </Link>

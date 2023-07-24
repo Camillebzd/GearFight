@@ -1,12 +1,8 @@
 .main {
-  display: flex;
-  flex-direction: column;
-  /* justify-content: space-between; */
-  /* align-items: center; */
   padding-left: 6rem;
   padding-right: 6rem;
   padding-top: 1rem;
-  min-height: 100vh;
+  height: 100%;
 }
 
 .logo {
@@ -247,4 +243,51 @@
   to {
     transform: rotate(0deg);
   }
+}
+
+/* Fight local page */
+
+.mainFightContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* background-color: blue; */
+  gap: 2rem;
+}
+
+.fightersContainer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 400px;
+}
+
+.infoChatContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-self: flex-end;
+  height: 10rem;
+  width: 20rem;
+}
+
+.bottomFightContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.abilitiesCointainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  /* background-color: red; */
+}
+
+.phasePrinter {
+  display: flex;
+  align-items: center;
 }

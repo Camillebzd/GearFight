@@ -35,7 +35,6 @@ const getClassicFormGearManual = (token: WeaponNFT, tokenId: string, abilities: 
     console.log("WARNING: format performed on an empty token.");
     return undefined;
   }
-  // store.dispatch(fillStoreAbilities(false));
   let weaponAbilities: (Ability | undefined)[] = [];
   let weaponAbilitiesNames = getGearAttributeInfo(token.attributes, "Spells");
   if (Array.isArray(weaponAbilitiesNames))
@@ -69,9 +68,11 @@ const getClassicFormGearManual = (token: WeaponNFT, tokenId: string, abilities: 
   return new Weapon(data); // Error: No reducer provided for key "weaponReducer"
 };
 
-export const fillUserWeapons = createAsyncThunk<Weapon[], any, {state: RootState} >(
+export const fillUserWeapons = createAsyncThunk<Weapon[], boolean, {state: RootState} >(
   'weapons/fillUserWeapons',
-  async (data: any, thunkAPI) => {
+  async (forceReaload: boolean, thunkAPI) => {
+    if (thunkAPI.getState().weaponReducer.userWeapons.length > 0 && !forceReaload)
+      return thunkAPI.getState().weaponReducer.userWeapons;
     console.log("starting of fillUserWeapons");
     const isConnected = thunkAPI.getState().authReducer.isConnected;
     const address = thunkAPI.getState().authReducer.address;
@@ -88,7 +89,7 @@ export const fillUserWeapons = createAsyncThunk<Weapon[], any, {state: RootState
     const nfts = await alchemy.nft.getNftsForOwner(address, {omitMetadata: true});
     const contract = createContract(address);
 
-    thunkAPI.dispatch(fillStoreAbilities(false));
+    thunkAPI.dispatch(fillStoreAbilities(false)); // dispatch from reducer is anti pattern
     await Promise.all(nfts.ownedNfts.map(async (nft) => {
       if (nft.contract.address.toLowerCase() == CONTRACT_ADDRESS) {
         let weaponURI = await contract.uri(nft.tokenId);
@@ -100,6 +101,23 @@ export const fillUserWeapons = createAsyncThunk<Weapon[], any, {state: RootState
     }));
     console.log(userWeapons);
     return userWeapons;
+  }
+);
+
+export const refreshOwnedTokenMetadata = createAsyncThunk<{weaponIndex: number, newWeaponData: Weapon | undefined}, number, {state: RootState} >(
+  'weapons/refreshTokenMetadataManual',
+  async (tokenId, thunkAPI) => {
+    const weaponIndex = thunkAPI.getState().weaponReducer.userWeapons.findIndex((weapon) => weapon.id == tokenId);
+    if (weaponIndex < 0) {
+      console.log("Error:can't refresh metadata on non existant or non possessed weapon.");
+      return {weaponIndex, newWeaponData: undefined};
+    }
+    const contract = createContract(thunkAPI.getState().authReducer.address);
+    let weaponURI = await contract.uri(tokenId);
+    let weaponObj = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
+    let userWeapon = getClassicFormGearManual(weaponObj, tokenId.toString(), thunkAPI.getState().abilityReducer.abilities);
+    console.log(`token with id: ${tokenId} refreshed!`);
+    return {weaponIndex, newWeaponData: userWeapon};
   }
 );
 
@@ -127,6 +145,10 @@ export const weapons = createSlice({
     }),
     builder.addCase(fillUserWeapons.fulfilled, (state, action) => {
       state.userWeapons = action.payload;
+    }),
+    builder.addCase(refreshOwnedTokenMetadata.fulfilled, (state, action) => {
+      if (action.payload.newWeaponData)
+        state.userWeapons[action.payload.weaponIndex] = action.payload.newWeaponData;
     })
   }
 });

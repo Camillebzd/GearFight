@@ -1,6 +1,5 @@
 import { Badge } from "@chakra-ui/react";
 
-
 const DifficultyBadge = ({difficulty}: {difficulty: number}) => {
   const difficultyColor = () => {
     switch (difficulty) {

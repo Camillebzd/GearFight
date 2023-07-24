@@ -1,7 +1,7 @@
 import { Ability, AbilityData } from "@/scripts/abilities";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import abilitiesData from '@/data/abilities/weapons.json';
+import abilitiesData from '@/data/abilities/abilities.json';
 
 import { store } from '@/redux/store';
 

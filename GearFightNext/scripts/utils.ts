@@ -3,7 +3,6 @@ import { ethers } from 'ethers';
 import contractABI from "@/abi/GearFactory.json";
 
 import { Ability } from './abilities';
-// import { store } from '@/redux/store';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
@@ -26,7 +25,31 @@ export function createContract(walletAddress: string) {
   return contract;
 }
 
-// export const getAbilityFromName = (name: string): Ability | undefined  => {
-//   let abilities = store.getState().abilityReducer?.abilities;
-//   return abilities == undefined || name === "" ? undefined : abilities.find((abilitie) => abilitie.name === name);
-// };
+export async function getWeaponStatsForLevelUp(weaponType: string) {
+  weaponType = weaponType.toLowerCase();
+  let stats = (await import(`@/data/weapons/${weaponType}/stats.json`)).default["levelUp"];
+  // round for the moment bc blockchain doesn't accept float...
+  for (const key in stats)
+    if (stats.hasOwnProperty(key))
+      stats[key] = Math.round(stats[key]);
+  let formatedStats = {
+    health: stats.health as number,
+    speed: stats.speed as number,
+    mind: stats.mind as number,
+    offensiveStats: {
+      sharpDamage: stats.sharpDmg as number,
+      bluntDamage: stats.bluntDmg as number,
+      burnDamage: stats.burnDmg as number,
+      pierce: stats.pierce as number,
+      lethality: stats.lethality as number
+    },
+    defensiveStats: {
+      sharpResistance: stats.sharpRes as number,
+      bluntResistance: stats.bluntRes as number,
+      burnResistance: stats.burnRes as number,
+      guard: stats.guard as number,
+    },
+    handling: stats.handling as number,
+  }
+  return formatedStats;
+}

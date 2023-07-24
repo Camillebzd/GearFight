@@ -3,7 +3,7 @@
 import styles from '../page.module.css';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useEffect } from 'react';
-import WeaponList from '@/components/weaponList';
+import WeaponList from '@/components/WeaponList';
 
 import { fillUserWeapons } from '@/redux/features/weaponSlice';
 
@@ -11,9 +11,10 @@ export default function Page() {
   const dispatch = useAppDispatch();
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const userWeapons = useAppSelector((state) => state.weaponReducer.userWeapons);
+  console.log(userWeapons);
 
   useEffect(() => {
-    dispatch(fillUserWeapons(""));
+    dispatch(fillUserWeapons(true));
   }, [isConnected]);
 
   return (

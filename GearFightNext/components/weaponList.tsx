@@ -1,5 +1,5 @@
 import { Weapon } from "@/scripts/entities";
-import WeaponCard from "./weaponCard";
+import WeaponCard from "./WeaponCard";
 
 import styles from './List.module.css'
 
