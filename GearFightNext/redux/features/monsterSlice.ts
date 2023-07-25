@@ -4,7 +4,7 @@ import { RootState } from "../store";
 import { Ability } from "@/scripts/abilities";
 
 import monstersData from '@/data/monsters/base.json';
-import { fillStoreAbilities } from "./abilitySlice";
+import { fillStoreAbilitiesPromised } from "./abilitySlice";
 
 type MonsterState = {
   monstersData: Monster[];  // All the data for monsters
@@ -44,7 +44,7 @@ export const fillMonsterWorld = createAsyncThunk<Monster[], boolean, {state: Roo
   async (forceReaload: boolean, thunkAPI) => {
     if (thunkAPI.getState().monsterReducer.monstersWorld.length > 0 && !forceReaload)
       return thunkAPI.getState().monsterReducer.monstersWorld;
-    thunkAPI.dispatch(fillStoreAbilities);
+    await fillStoreAbilitiesPromised(forceReaload, thunkAPI.dispatch);
     let monstersWorld: Monster[] = [];
     let monstersWorldData: MonsterData[] = JSON.parse(JSON.stringify(monstersData)); // type this 
     let abilities = thunkAPI.getState().abilityReducer.abilities;
@@ -98,7 +98,7 @@ export const monsters = createSlice({
     fillMonsterData: (state, action: PayloadAction<boolean>) => {
       if (state.monstersData.length > 0 && !action.payload)
         return;
-      state.monstersData = JSON.parse(JSON.stringify(monstersData));
+      state.monstersData = JSON.parse(JSON.stringify(monstersData)); // TODO Remove the class and add directly the JS object 
     },
   },
   extraReducers(builder) {

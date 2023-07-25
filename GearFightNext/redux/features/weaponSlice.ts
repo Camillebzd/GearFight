@@ -1,7 +1,7 @@
 import { Weapon, WeaponData, WeaponType } from "@/scripts/entities";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-import { fillStoreAbilities } from "./abilitySlice";
+import { fillStoreAbilities, fillStoreAbilitiesPromised } from "./abilitySlice";
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 import { createContract } from "@/scripts/utils";
 import { Ability } from "@/scripts/abilities";
@@ -88,8 +88,7 @@ export const fillUserWeapons = createAsyncThunk<Weapon[], boolean, {state: RootS
     const alchemy = new Alchemy(settings);
     const nfts = await alchemy.nft.getNftsForOwner(address, {omitMetadata: true});
     const contract = createContract(address);
-
-    thunkAPI.dispatch(fillStoreAbilities(false)); // dispatch from reducer is anti pattern
+    await fillStoreAbilitiesPromised(forceReaload, thunkAPI.dispatch);
     await Promise.all(nfts.ownedNfts.map(async (nft) => {
       if (nft.contract.address.toLowerCase() == CONTRACT_ADDRESS) {
         let weaponURI = await contract.uri(nft.tokenId);
@@ -144,11 +143,11 @@ export const weapons = createSlice({
     builder.addCase(fillUserWeapons.pending, (state, action) => {
     }),
     builder.addCase(fillUserWeapons.fulfilled, (state, action) => {
-      state.userWeapons = action.payload;
+      state.userWeapons = action.payload; // TODO Remove the class and add directly the JS object 
     }),
     builder.addCase(refreshOwnedTokenMetadata.fulfilled, (state, action) => {
       if (action.payload.newWeaponData)
-        state.userWeapons[action.payload.weaponIndex] = action.payload.newWeaponData;
+        state.userWeapons[action.payload.weaponIndex] = action.payload.newWeaponData; // TODO Remove the class and add directly the JS object 
     })
   }
 });

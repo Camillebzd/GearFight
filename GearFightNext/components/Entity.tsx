@@ -2,7 +2,9 @@ import { Monster, Weapon } from "@/scripts/entities";
 import styles from "./Entity.module.css";
 import { Badge, Image } from "@chakra-ui/react";
 
-const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster, isModifiersOnRight: boolean}) => {
+const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster | null, isModifiersOnRight: boolean}) => {
+  if (!entity)
+    return <div>Entity is empty...</div>;
 
   const fluxes = () => {
     const orbs: JSX.Element[] = [];
@@ -32,7 +34,7 @@ const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster, isModif
 
   return (
     <div className={styles.entityContainer}>
-      {isModifiersOnRight && displayModifiers()}
+      {!isModifiersOnRight && displayModifiers()}
       <div className={styles.mainInfoContainer}>
         <div className={styles.topContainer}>
           <div className={styles.nameContainer}>
@@ -55,7 +57,7 @@ const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster, isModif
           <Image src={entity.image.slice(0, 5) === "https" ? entity.image : `/img/monsters/${entity.image}`} alt="..." className={styles.imageEntity} />
         </div>
       </div>
-      {!isModifiersOnRight && displayModifiers()}
+      {isModifiersOnRight && displayModifiers()}
     </div>
   );
 }

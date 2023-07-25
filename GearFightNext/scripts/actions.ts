@@ -1,39 +1,52 @@
-/*import effects from "../data/spells/effects.json";
-import conditions from "../data/spells/conditions.json";
-import targets from "../data/spells/targets.json"
-import rules from "../data/spells/rules.json";
-import modifiers from "../data/spells/modifiers.json";
-import orders from "../data/spells/orders.json";
+import effects from "../data/abilities/effects.json";
+import conditions from "../data/abilities/conditions.json";
+import targets from "../data/abilities/targets.json"
+import rules from "../data/abilities/rules.json";
+import modifiers from "../data/abilities/modifiers.json";
+import orders from "../data/abilities/orders.json";
 import { getRandomInt } from "./utils";
 import { 
   TARGET_ABILITY,
   CONDITIONS
 } from "./systemValues";
+import { Monster, Weapon } from "./entities";
+import { Ability, AftermathType, Rule, Modifier, Condition, EffectValue, Effect, Target } from "./abilities";
+import { SetStateAction, Dispatch } from "react";
 
-export const END_OF_TURN = {"NORMAL": 0, "TARGET_BLOCKED": 1, "PLAYER_COMBO": 2, "MONSTER_COMBO": 3, "PLAYER_DIED": 4, "MONSTER_DIED": 5};
+export enum END_OF_TURN {NORMAL, TARGET_BLOCKED, PLAYER_COMBO, MONSTER_COMBO, PLAYER_DIED, MONSTER_DIED};
 
-export const RULE_ORDER = {
-  "VERY_BEGINNING": 1,
-  "BEFORE_SPECIAL_CHECK": 2,
-  "BEFORE_PARRY_CHECK": 3,
-  "BEFORE_DAMAGE_CALCULATION": 4,
-  "BEFORE_CRIT_CALCULATION": 5,
-  "BEFORE_DAMAGE_APPLICATION": 6,
-  "BEFORE_MODIFIER_APPLICATION": 7,
-  "BEFORE_DEATHS_CHECK": 8,
-  "BEFORE_COMBO_CHECK": 9,
-  "VERY_END": 10,
-  "END_RESOLVE_ACTION": 11
+export enum RULE_ORDER {
+  VERY_BEGINNING = 1,
+  BEFORE_SPECIAL_CHECK = 2,
+  BEFORE_PARRY_CHECK = 3,
+  BEFORE_DAMAGE_CALCULATION = 4,
+  BEFORE_CRIT_CALCULATION = 5,
+  BEFORE_DAMAGE_APPLICATION = 6,
+  BEFORE_MODIFIER_APPLICATION = 7,
+  BEFORE_DEATHS_CHECK = 8,
+  BEFORE_COMBO_CHECK = 9,
+  VERY_END = 10,
+  END_RESOLVE_ACTION = 11
+};
+
+export type ActionData = {
+  caster: Weapon | Monster;
+  target: Weapon | Monster;
+  ability: Ability;
+  isCombo: boolean;
+  hasBeenDone: boolean;
+  fluxesUsed: number;
+  info: Dispatch<SetStateAction<string[]>>;
 };
 
 export class Action {
-  caster = undefined;
-  target = undefined;
-  spell = undefined; // TODO Rename ability
+  caster: Weapon | Monster;
+  target: Weapon | Monster;
+  ability: Ability;
   isCombo = false;
   hasBeenDone = false;
   fluxesUsed = 0;
-  info = undefined;
+  info: Dispatch<SetStateAction<string[]>> | undefined = undefined;
   abilityWasCrit = false;
   abilityWasBlocked = false;
   triggeredCombo = false;
@@ -42,33 +55,33 @@ export class Action {
   modifiersCleansed = 0;
   modifiersPurged = 0;
 
-  constructor(data) {
-    this.caster = data.caster || undefined;
-    this.target = data.target || undefined;
-    this.spell = data.spell || undefined;
+  constructor(data: ActionData) {
+    this.caster = data.caster;
+    this.target = data.target;
+    this.ability = data.ability;
     this.isCombo = data.isCombo || false;
     this.hasBeenDone = data.hasBeenDone || false;
     this.fluxesUsed = data.fluxesUsed || 0;
-    this.info = data.info || undefined;
+    this.info = data.info;
   }
 
   // Used to add log in log obj
-  log(message) {
+  log(message: string) {
     if (!this.info)
       return;
-    this.info.push(message);
+    this.info((currentInfo) => [...currentInfo, message]);
   }
 
   // Main fct that resolve the action
   resolve() {
     this.applyRule(RULE_ORDER.VERY_BEGINNING);
-    this.log(`${this.caster.name} launch ${this.spell.name}.`);
+    this.log(`${this.caster.name} launch ${this.ability.name}.`);
     if (this.caster.isConfused()) {
       this.endOfResolve();
       return END_OF_TURN.NORMAL;
     }
     this.applyRule(RULE_ORDER.BEFORE_SPECIAL_CHECK);
-    if (this.spell.type != "SPECIAL") {
+    if (this.ability.type != "SPECIAL") {
       this.applyRule(RULE_ORDER.BEFORE_PARRY_CHECK);
       // 3. & 4. Parry
       if (this.target.isBlocking() && this.caster.allowTargetToBlock()) {
@@ -78,7 +91,7 @@ export class Action {
       }
       this.applyRule(RULE_ORDER.BEFORE_DAMAGE_CALCULATION);
       // 5., 6., 7. & 8. Calc dmg + crit + modifiers
-      this.finalDamage = this.caster.calculateFinalDamage(this.spell.id, this.target);
+      this.finalDamage = this.caster.calculateFinalDamage(this.ability.id, this.target);
       this.applyRule(RULE_ORDER.BEFORE_CRIT_CALCULATION);
       if (this.caster.isAddingCrit()) {
         this.abilityWasCrit = true;
@@ -121,9 +134,9 @@ export class Action {
 
   // Add all modifiers from the action
   addModifiers() {
-    this.spell.effects.forEach((actionEffect) => {
+    this.ability.effects.forEach((actionEffect) => {
       let effect = effects.find((effect) => effect.id == actionEffect);
-      if (effect == undefined) {
+      if (!effect) {
         console.log("Error: this effect is not supported");
         return;
       }
@@ -132,7 +145,7 @@ export class Action {
         return;
       }
       // Condition
-      let condition = conditions.find((condition) => condition.id === effect.conditionId);
+      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
       if (condition == undefined) {
         console.log("Error: this condition is not supported");
         return;
@@ -147,7 +160,7 @@ export class Action {
         return;
       }
       // Target
-      let targetObj = targets.find((target) => target.id === effect.targetId);
+      let targetObj = targets.find((target) => target.id === effect!.targetId);
       if (targetObj == undefined) {
         console.log("Error: this target is not supported");
         return;
@@ -157,19 +170,19 @@ export class Action {
         console.log("Error: this target is not supported");
         return;
       }
-      let modifier = this.getAftermath(effect.aftermathId, "MODIFIER");
+      let modifier = this.getAftermath(effect.aftermathId, "MODIFIER") as Modifier;
       if (modifier == undefined || !Object.keys(modifier).length) {
         console.log("Error: modifier empty or not supported");
         return;
       }
       // Modifier stack
-      let modifierStack = this.getAftermathValue(effect.id, this.spell.effectsValue);
+      let modifierStack = this.getAftermathValue(effect.id, this.ability.effectsValue);
       if (modifierStack == -1) {
         console.log("Error: modifier stack is not set on effect");
         return;
       }
       // Flux quantity
-      let fluxQuantity = this.spell.isMagical ? this.fluxesUsed : 1;
+      let fluxQuantity = this.ability.isMagical ? this.fluxesUsed : 1;
       for (let i = 0; i < fluxQuantity; i++) {
         target.addModifier(modifier, modifierStack, this.caster);
       }
@@ -177,8 +190,8 @@ export class Action {
   }
 
   // Try to apply all the rules that respect the orderId call
-  applyRule(orderId) {
-    this.spell.effects.forEach((actionEffect) => {
+  applyRule(orderId: number) {
+    this.ability.effects.forEach((actionEffect) => {
       let effect = effects.find((effect) => effect.id == actionEffect);
       if (effect == undefined) {
         console.log("Error: this effect is not supported");
@@ -189,7 +202,7 @@ export class Action {
         // console.log("This is not a rule");
         return;
       }
-      let rule = this.getAftermath(effect.aftermathId, "RULE");
+      let rule = this.getAftermath(effect.aftermathId, "RULE") as Rule;
       if (!rule) {
         console.log("Error: rule unknown.");
         return;
@@ -203,7 +216,7 @@ export class Action {
       if (order.id != orderId)
         return;
       // Condition
-      let condition = conditions.find((condition) => condition.id === effect.conditionId);
+      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
       if (condition == undefined) {
         console.log("Error: this condition is not supported");
         return;
@@ -218,7 +231,7 @@ export class Action {
         return;
       }
       // Target
-      let targetObj = targets.find((target) => target.id === effect.targetId);
+      let targetObj = targets.find((target) => target.id === effect!.targetId);
       if (targetObj == undefined) {
         console.log("Error: this target is not supported");
         return;
@@ -229,19 +242,19 @@ export class Action {
         return;
       }
       // Rule value
-      let ruleValue = this.getAftermathValue(effect.id, this.spell.effectsValue);
+      let ruleValue = this.getAftermathValue(effect.id, this.ability.effectsValue);
       if (ruleValue == -1) {
         console.log("Error: rule value is not set on effect");
         return;
       }
       // Flux quantity
-      let fluxQuantity = this.spell.isMagical ? this.fluxesUsed : 1;
+      let fluxQuantity = this.ability.isMagical ? this.fluxesUsed : 1;
       this.executeRule(rule, ruleValue, target, fluxQuantity);
     });
   }
 
   // Execute the rule with the value given on the target
-  executeRule(rule, ruleValue, target, fluxQuantity) {
+  executeRule(rule: Rule, ruleValue: number, target: Weapon | Monster, fluxQuantity: number) {
     switch (rule.id) {
       // Gain X fluxes
       case 1:
@@ -251,9 +264,9 @@ export class Action {
       case 2:
         this.log("NOTHING HAPPEN");
         break;
-      // Random spell launch
+      // Random ability launch
       case 3:
-        console.log("TODO: the random spell launch...");
+        console.log("TODO: the random ability launch...");
         break;
       // Heal the target from the damage of the ability
       case 4:
@@ -324,7 +337,7 @@ export class Action {
   }
 
   // return true or false if the effect condition is valid or not
-  checkCondition(condition) {
+  checkCondition(condition: Condition) {
     switch (condition.id) {
       // no condition
       case CONDITIONS.NO_CONDITION:
@@ -366,7 +379,7 @@ export class Action {
   }
 
   // return the entity obj targeted by the target input obj
-  getTarget(target) {
+  getTarget(target: Target) {
     switch(target.id) {
       case TARGET_ABILITY.TARGET_OF_ABILITY:
         return this.target;
@@ -379,17 +392,17 @@ export class Action {
   }
 
   // Get the aftermath obj from id and type, empty if no aftermath found
-  getAftermath(aftermathId, aftermathType) {
+  getAftermath(aftermathId: number, aftermathType: AftermathType) {
     if (aftermathType == "RULE")
-      return rules.find(rule => rule.id === aftermathId);
+      return rules.find(rule => rule.id === aftermathId) as Rule;
     else if (aftermathType == "MODIFIER")
-      return modifiers.find(modifier => modifier.id === aftermathId);
+      return modifiers.find(modifier => modifier.id === aftermathId) as Modifier;
     console.log("Error: aftermath type not supported yet");
     return undefined;
   }
 
   // Get the value for the effect on effectsValue on ability, -1 if empty
-  getAftermathValue(effectId, effectsValue) {
+  getAftermathValue(effectId: number, effectsValue: EffectValue[]) {
     let effectValue = effectsValue.find((effectValue) => effectValue.id === effectId);
 
     if (effectValue == undefined) {
@@ -399,31 +412,34 @@ export class Action {
     return effectValue.value;
   }
 
-  // return the list of effect on the spell
-  getEffectsOnSpell() {
-    let effectOnSpell = [];
+  // return the list of effect on the ability
+  getEffectsOnAbility() {
+    let effectOnAbility: Effect[] = [];
 
-    for (let effect of this.spell.effects)
-      effectOnSpell.push(effects.find(elem => elem.id == effect));
-    return effectOnSpell;
+    for (let effectId of this.ability.effects) {
+      let effect = effects.find(elem => elem.id == effectId) as Effect;
+      if (!effect)
+        effectOnAbility.push(effect);
+    }
+    return effectOnAbility;
   }
 
-  // Check if the spell of action contain a specific rule
-  isRulePresent(ruleId) {
-    let effectOnSpell = this.getEffectsOnSpell();
+  // Check if the ability of action contain a specific rule
+  isRulePresent(ruleId: number) {
+    let effectOnAbility = this.getEffectsOnAbility();
 
-    if (effectOnSpell.length == 0)
+    if (!effectOnAbility || effectOnAbility.length == 0)
       return false;
-    return effectOnSpell.findIndex(effect => effect.aftermathType === "RULE" && effect.aftermathId === ruleId) != -1;
+    return effectOnAbility.findIndex(effect => effect.aftermathType === "RULE" && effect.aftermathId === ruleId) != -1;
   }
 
-  // Check if the spell of action contain a specific modifier
-  isModifierPresent(modifierId) {
-    let effectOnSpell = this.getEffectsOnSpell();
+  // Check if the ability of action contain a specific modifier
+  isModifierPresent(modifierId: number) {
+    let effectOnAbility = this.getEffectsOnAbility();
 
-    if (effectOnSpell.length == 0)
+    if (effectOnAbility.length == 0)
       return false;
-    return effectOnSpell.findIndex(effect => effect.aftermathType === "MODIFIER" && effect.aftermathId === modifierId) != -1;
+    return effectOnAbility.findIndex(effect => effect.aftermathType === "MODIFIER" && effect.aftermathId === modifierId) != -1;
   }
 
   // Return a 0 if ability is normal, 1 if ability should play first
@@ -432,4 +448,4 @@ export class Action {
       return 1;
     return 0;
   }
-}*/
+}

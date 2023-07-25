@@ -23,16 +23,16 @@ export const abilities = createSlice({
         return;
       let data: AbilityData[] = JSON.parse(JSON.stringify(abilitiesData));
       for (let i = 0; i < data.length; i++)
-        state.abilities.push(new Ability(data[i]));
+        state.abilities.push(new Ability(data[i])); // TODO Remove the class and add directly the JS object 
       console.log("abilities pulled");
     },
   },
 });
 
-// export const getAbilityFromName = (name: string): Ability | undefined  => {
-//   let abilities = store.getState()?.abilityReducer?.abilities;
-//   return abilities == undefined || name === "" ? undefined : abilities.find((abilitie) => abilitie.name === name);
-// };
+export const fillStoreAbilitiesPromised = (forceFill: boolean, dispatch: any) => new Promise<void>((resolve, reject) => {
+  dispatch(fillStoreAbilities(forceFill));
+  resolve();
+});
 
 export const {
   reset,

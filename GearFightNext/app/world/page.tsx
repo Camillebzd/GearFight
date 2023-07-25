@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fillMonsterWorld } from '@/redux/features/monsterSlice';
 
 import MonsterList from '@/components/MonsterList';
+import { fillStoreAbilitiesPromised } from '@/redux/features/abilitySlice';
 
 export default function Page() {
   // const [monsters, setMonsters] = useState<Monster[]>([]);

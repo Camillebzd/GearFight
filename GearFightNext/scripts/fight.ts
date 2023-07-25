@@ -1,11 +1,11 @@
-/*import {
+import {
   ATTACKER_SPEED_WEIGHT
 } from "./systemValues";
 import { getRandomInt } from "./utils";
-import { END_OF_TURN } from "./actions";
+import { Action, END_OF_TURN } from "./actions";
 
 // Main loop for resolves actions
-export function resolveActions(actions) {
+export function resolveActions(actions: Action[]) {
   // TODO Apply some rules here ?
   // 2. Calculate the order
   sortActionOrder(actions);
@@ -19,13 +19,13 @@ export function resolveActions(actions) {
   }
 }
 
-function sortActionOrder(actions) {
+function sortActionOrder(actions: Action[]) {
   actions.sort((a, b) => {
     let prioDif = (b.caster.getSpeedState() + b.getSpeedRule()) - (a.caster.getSpeedState() + a.getSpeedRule());
     if (prioDif == 0) {
-      let speedDif = (b.spell.initiative * ((b.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000)) - (a.spell.initiative * ((a.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000));
+      let speedDif = (b.ability.initiative * ((b.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000)) - (a.ability.initiative * ((a.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000));
       return speedDif == 0 ? (getRandomInt(1) == 0 ? -1 : 1) : speedDif;
     } else
       return prioDif;
   });
-}*/
+}

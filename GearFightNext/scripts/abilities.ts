@@ -3,25 +3,7 @@ export type EffectValue = {
   value: number;
 };
 
-export type ModifierType = "PERMANENT" | "DECAYING";
-
-export type ModifierDirection = "BUFF" | "DEBUFF";
-
-export type ModifierTimeframe = "CONTINUOUS" | "PERIODIC";
-
-export type Modifier = {
-  id: number;
-  name: string;
-  type: ModifierType;
-  direction: ModifierDirection;
-  timeframe: ModifierTimeframe;
-  value: number;
-  stack: number;
-  targetedStat: string;
-  description: string;
-};
-
-export type AbilityType = "SHARP" | "BLUNT" | "BURN";
+export type AbilityType = "SHARP" | "BLUNT" | "BURN" | "SPECIAL";
 
 export type AbilityData = {
   id: number;
@@ -56,14 +38,48 @@ export class Ability {
   }
 };
 
+export type AftermathType = "MODIFIER" | "RULE";
+
 export type Effect = {
-  
+  id: number;
+  conditionId: number;
+  targetId: number;
+  applyChance: number;
+  aftermathType: AftermathType;
+  aftermathId: number;
 };
 
-export type Order = {
-  
+export type ModifierType = "PERMANENT" | "DECAYING";
+
+export type ModifierDirection = "BUFF" | "DEBUFF";
+
+export type ModifierTimeframe = "NONE" | "CONTINUOUS" | "PERIODIC";
+
+export type Modifier = {
+  id: number;
+  name: string;
+  type: ModifierType;
+  direction: ModifierDirection;
+  timeframe: ModifierTimeframe;
+  value: number;
+  stack: number;
+  targetedStat: string;
+  description: string;
+};
+
+export type Condition = {
+  id: number;
 };
 
 export type Rule = {
+  id: number;
+  orderId: number;
+};
+
+export type Target = {
+  id: number;
+}
+
+export type Order = {
   
 };

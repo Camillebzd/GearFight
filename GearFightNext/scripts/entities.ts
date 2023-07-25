@@ -17,6 +17,8 @@ import {
 } from "./systemValues";
 // import { Action } from "./actions";
 import { Ability, Modifier, ModifierDirection } from "./abilities";
+import { Action } from "./actions";
+import { Dispatch, SetStateAction } from "react";
 
 export const SPEED_STATE = {"SLOW": -1, "NORMAL": 1, "FAST": 1};
 
@@ -116,7 +118,7 @@ export class Entity {
   played = false;
   action = {};  // TODO Type this
   side = false; // TODO manage group on front !
-  info: string[] | undefined = undefined; // the logger
+  info: Dispatch<SetStateAction<string[]>>  | undefined = undefined; // the logger
   // TODO handle with 2 type of variables, reset each turn and effect will not triggered
   forceCombo = false;
   forceComboOnAction = false;
@@ -126,7 +128,7 @@ export class Entity {
   preventBlockingOnAction = false;
 
   // data should be an object created from store
-  constructor (data: EntityData) {
+  constructor (data: EntityData, logger: Dispatch<SetStateAction<string[]>>  | undefined = undefined) {
     this.id = data.id;
     this.name = data.name;
     this.image = data.image;
@@ -162,13 +164,19 @@ export class Entity {
     this.stats.lethalityBase = data.lethality;
     this.setFluxesFromMind();
     this.abilities = data.abilities;
+    this.info = logger;
+  }
+
+  // Set the logger
+  setLogger(logger: Dispatch<SetStateAction<string[]>> | undefined) {
+    this.info = logger;
   }
 
   // Used to add log in log obj
   log(message: string) {
     if (!this.info)
       return;
-    this.info.push(message);
+    this.info((currentInfo) => [...currentInfo, message]);
   }
 
   // return a ability of the entity or undefined
@@ -310,7 +318,7 @@ export class Entity {
     let immunityBuff = this.modifiers.find(modifier => modifier.id === 27);
     if (immunityBuff) {
       this.log(`${this.name} is immune`);
-      return;
+      return 0;
     }
     // Fortitude
     let fortitudeBuff = this.modifiers.find(modifier => modifier.id === 23);
@@ -551,8 +559,8 @@ export class Weapon extends Entity {
   weaponType: WeaponType = "none";
   xp = 0;
 
-  constructor(data: WeaponData) {
-    super(data);
+  constructor(data: WeaponData, logger: Dispatch<SetStateAction<string[]>>  | undefined = undefined) {
+    super(data, logger);
     this.weaponType = data.weaponType;
     this.isNPC = false; // TODO handle when pvp again offline friends
     this.xp = data.xp;
@@ -597,8 +605,8 @@ export type MonsterData = EntityData & MonsterDataAddition;
 export class Monster extends Entity {
   difficulty = 0;
 
-  constructor(data: MonsterData) {
-    super(data);
+  constructor(data: MonsterData, logger: Dispatch<SetStateAction<string[]>>  | undefined = undefined) {
+    super(data, logger);
     this.isNPC = true;
     this.difficulty = data.difficulty;
   }
@@ -630,7 +638,7 @@ export class Monster extends Entity {
   }
 
   launchRandomAbility(target: Monster | Weapon, isCombo: boolean) {
-    let monsterAbility = null;
+    let monsterAbility: Ability = this.abilities[getRandomInt(this.abilities.length)];
     let fluxesUsed = 0;
 
     while (1) {
@@ -645,11 +653,13 @@ export class Monster extends Entity {
         // check if monster is blocked -> only fluxes ability with 0 fluxes
         if (!this.isEntityAbleToPlay()) {
           console.log("monster can't play, action skipped");
-          return;
+          return undefined;
         }
       }
     }
     this.useFluxes(fluxesUsed);
-    // return new Action({caster: this, ability: monsterAbility, target: target, hasBeenDone: false, isCombo: isCombo, fluxesUsed: fluxesUsed, info: this.info});
+    if (!this.info)
+      return undefined;
+    return new Action({caster: this, ability: monsterAbility, target: target, hasBeenDone: false, isCombo: isCombo, fluxesUsed: fluxesUsed, info: this.info});
   }
 }
