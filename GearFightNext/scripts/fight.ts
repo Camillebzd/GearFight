@@ -17,6 +17,7 @@ export function resolveActions(actions: Action[]) {
     // latter get the id here if there is a combo so handle easily multiple entities
     return resultOfAction;
   }
+  return END_OF_TURN.NORMAL;
 }
 
 function sortActionOrder(actions: Action[]) {

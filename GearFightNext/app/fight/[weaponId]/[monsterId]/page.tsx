@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react';
+import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import styles from '../../../page.module.css'
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -12,7 +12,7 @@ import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
 import { Ability } from '@/scripts/abilities';
 import { Monster, Weapon } from '@/scripts/entities';
-import { Action } from '@/scripts/actions';
+import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
 
 export enum PHASES {
@@ -31,9 +31,9 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
   const [info, setInfo] = useState<string[]>([]);
   const [phase, setPhase] = useState<PHASES>(PHASES.PLAYER_CHOOSE_ABILITY);
   const [turn, setTurn] = useState(1);
-  let isMonsterCombo = false;
-  let isPlayerCombo = false;
-  let actions: Action[] = [];
+  let isMonsterCombo = useRef(false);
+  let isPlayerCombo = useRef(false);
+  let actions: MutableRefObject<Action[]> = useRef([]);
 
   // retrieve data of entities
   useEffect(() => {
@@ -65,14 +65,15 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
     if (!monster || !weapon) {
       return;
     }
+    setInfo((currentInfo) => [...currentInfo, `--------- TURN ${turn} ---------`]);
     if (monster.isEntityAbleToPlay()) {
-      let monsterAction = monster.launchRandomAbility(weapon, isMonsterCombo);
+      let monsterAction = monster.launchRandomAbility(weapon, isMonsterCombo.current);
       if (monsterAction)
-        actions.push(monsterAction);
+        actions.current.push(monsterAction);
     }
     if (!weapon.isEntityAbleToPlay())
       console.log("Resolve Actions");
-    return () => {actions = [];}
+    return () => {actions.current = []; }
   }, [monster, weapon, turn]);
 
   // #region Loading returns
@@ -102,11 +103,38 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
   const useAbility = (ability: Ability) => {
     if (phase !== PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
       return;
-    actions.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo, fluxesUsed: 0, info: setInfo}));
+    actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: 0, info: setInfo}));
     console.log(actions);
     // resolve
-    resolveActions(actions);
-    actions = [];
+    while (actions.current.length > 0) {
+      setPhase(PHASES.RESOLUTION);
+      let ret = resolveActions(actions.current);
+      switch (ret) {
+        case END_OF_TURN.PLAYER_COMBO:
+          isPlayerCombo.current = true;
+          actions.current = actions.current.filter((action) => {return action.hasBeenDone === false});
+          setPhase(PHASES.PLAYER_CHOOSE_ABILITY_COMBO);
+          return;
+        case END_OF_TURN.MONSTER_COMBO:
+          let monsterAction = monster!.launchRandomAbility(weapon!, isMonsterCombo.current);
+          if (monsterAction)
+            actions.current.push(monsterAction);
+          break;
+        case END_OF_TURN.PLAYER_DIED:
+          console.log("PLAYER died");
+          return;
+        case END_OF_TURN.MONSTER_DIED:
+          console.log("MONSTER died");
+          return;
+        case END_OF_TURN.NORMAL:
+        default:
+          setPhase(PHASES.PLAYER_CHOOSE_ABILITY);
+          isMonsterCombo.current = false;
+          isPlayerCombo.current = false;
+          break;
+      }
+      actions.current = actions.current.filter((action) => {return action.hasBeenDone === false});
+    }
     setTurn((actualTurn) => actualTurn + 1);
   };
 
