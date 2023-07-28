@@ -4,9 +4,9 @@ import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import styles from '../../../page.module.css'
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fillMonsterWorld } from '@/redux/features/monsterSlice';
+// import { fillMonsterWorld } from '@/redux/features/monsterSlice';
 
-import { fillUserWeapons } from '@/redux/features/weaponSlice';
+// import { fillUserWeapons } from '@/redux/features/weaponSlice';
 import Entity from '@/components/Entity';
 import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
@@ -16,6 +16,7 @@ import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
 import { useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
+import { useMonstersWorld, useUserWeapons } from '@/scripts/customHooks';
 
 export enum PHASES {
   PLAYER_CHOOSE_ABILITY,
@@ -24,8 +25,8 @@ export enum PHASES {
 }
 
 export default function Page({params}: {params: {weaponId: string, monsterId: string}}) {
-  const monsterData = useAppSelector((state) => state.monsterReducer.monstersWorld).find(monster => monster.id === parseInt(params.monsterId))?.clone();
-  const weaponData = useAppSelector((state) => state.weaponReducer.userWeapons).find(weapon => weapon.id === parseInt(params.weaponId))?.clone();
+  const monsterData = useMonstersWorld(false).find(monster => monster.id === parseInt(params.monsterId))?.clone();
+  const weaponData = useUserWeapons(false).find(weapon => weapon.id === parseInt(params.weaponId))?.clone();
   const [monster, setMonster] = useState<Monster | null>(null);
   const [weapon, setWeapon] = useState<Weapon | null>(null);
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
@@ -33,7 +34,7 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
   const { isOpen, onOpen, onClose } = useDisclosure();
   let won = useRef(false);
   
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const [info, setInfo] = useState<string[]>([]);
   const [phase, setPhase] = useState<PHASES>(PHASES.PLAYER_CHOOSE_ABILITY);
   const [turn, setTurn] = useState(1);
@@ -42,10 +43,10 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
   let actions: MutableRefObject<Action[]> = useRef([]);
 
   // retrieve data of entities
-  useEffect(() => {
-    dispatch(fillMonsterWorld(false));
-    dispatch(fillUserWeapons(false));
-  }, [isConnected]);
+  // useEffect(() => {
+  //   dispatch(fillMonsterWorld(false));
+  //   dispatch(fillUserWeapons(false));
+  // }, [isConnected]);
 
   // set entities
   useEffect(() => {
@@ -188,7 +189,7 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
             <p>Actual turn: {turn}</p>
           </div>
           <div className={styles.abilitiesCointainer}>
-            {weapon?.abilities.map(ability => <AbilityCard onClick={() => useAbility(ability)} ability={ability}/>)}
+            {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => useAbility(ability)} ability={ability}/>)}
           </div>
         </div>
       </div>

@@ -3,10 +3,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import abilitiesData from '@/data/abilities/abilities.json';
 
-import { store } from '@/redux/store';
-
 type AbilityState = {
-  abilities: Ability[];
+  abilities: AbilityData[];
 };
 
 const initialState = {
@@ -21,9 +19,7 @@ export const abilities = createSlice({
     fillStoreAbilities: (state, action: PayloadAction<boolean>) => {
       if (state.abilities.length > 0 && !action.payload)
         return;
-      let data: AbilityData[] = JSON.parse(JSON.stringify(abilitiesData));
-      for (let i = 0; i < data.length; i++)
-        state.abilities.push(new Ability(data[i])); // TODO Remove the class and add directly the JS object 
+      state.abilities = JSON.parse(JSON.stringify(abilitiesData));
       console.log("abilities pulled");
     },
   },

@@ -2,24 +2,18 @@
 
 import styles from '@/app/page.module.css'
 
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { useAppSelector } from '@/redux/hooks';
 import { useParams } from 'next/navigation'
-import { useEffect } from 'react';
-import { fillMonsterWorld } from '@/redux/features/monsterSlice';
 import { Box, Button, Image, useDisclosure } from '@chakra-ui/react'
 import DifficultyBadge from '@/components/DifficultyBadge';
 import WeaponSelectionModal from '@/components/WeaponSelectionModal';
+import { useMonstersWorld } from '@/scripts/customHooks';
 
 export default function Page() {
   const route = useParams();
-  const monster = useAppSelector((state) => state.monsterReducer.monstersWorld).find(monster => monster.id === parseInt(route.id));
+  const monster = useMonstersWorld(false).find(monster => monster.id === parseInt(route.id));
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(fillMonsterWorld(false));
-  }, []);
 
   if (monster === undefined)
     return (

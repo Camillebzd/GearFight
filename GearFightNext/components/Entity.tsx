@@ -10,9 +10,9 @@ const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster | null, 
     const orbs: JSX.Element[] = [];
 
     for(let i = 0; i < entity.fluxes; i++)
-      orbs.push(<div className={`${styles.fluxeCircle} ${styles.fluxeFull}`}></div>);
+      orbs.push(<div key={`fullFluxes${i}`} className={`${styles.fluxeCircle} ${styles.fluxeFull}`}></div>);
     for(let i = entity.fluxes; i < 6; i++)
-      orbs.push(<div className={`${styles.fluxeCircle} ${styles.fluxeEmpty}`}></div>);
+      orbs.push(<div key={`emptyFluxes${i}`} className={`${styles.fluxeCircle} ${styles.fluxeEmpty}`}></div>);
     return orbs;
   }
 
@@ -26,7 +26,7 @@ const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster | null, 
             color = "green"
           else
             color = "red";
-          return <Badge style={{height: "fit-content", marginBottom: "5px"}} colorScheme={color}>{modifier.name} {modifier.stack}</Badge>
+          return <Badge key={modifier.id} style={{height: "fit-content", marginBottom: "5px"}} colorScheme={color}>{modifier.name} {modifier.stack}</Badge>
         })}
       </div>
     );

@@ -1,21 +1,13 @@
 'use client'
 
 import styles from '../page.module.css';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { useEffect } from 'react';
+import { useAppSelector } from '@/redux/hooks';
 import WeaponList from '@/components/WeaponList';
-
-import { fillUserWeapons } from '@/redux/features/weaponSlice';
+import { useUserWeapons } from '@/scripts/customHooks';
 
 export default function Page() {
-  const dispatch = useAppDispatch();
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
-  const userWeapons = useAppSelector((state) => state.weaponReducer.userWeapons);
-  console.log(userWeapons);
-
-  useEffect(() => {
-    dispatch(fillUserWeapons(true));
-  }, [isConnected]);
+  const userWeapons = useUserWeapons(false);
 
   return (
     <main className={styles.main}>

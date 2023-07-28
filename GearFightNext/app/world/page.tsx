@@ -1,28 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react';
 import styles from '../page.module.css'
 
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fillMonsterWorld } from '@/redux/features/monsterSlice';
-
 import MonsterList from '@/components/MonsterList';
-import { fillStoreAbilitiesPromised } from '@/redux/features/abilitySlice';
+import { useMonstersWorld } from '@/scripts/customHooks';
 
 export default function Page() {
-  // const [monsters, setMonsters] = useState<Monster[]>([]);
-  const monsters = useAppSelector((state) => state.monsterReducer.monstersWorld);
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    // async function setup() {
-    //   let jsonData: MonsterData[] = JSON.parse(JSON.stringify((await import('@/data/monsters/base.json')).default));
-    //   let monstersData: Monster[] = jsonData.map((monster: MonsterData) => new Monster(monster));
-    //   setMonsters(monstersData);
-    // }
-    // setup();
-    dispatch(fillMonsterWorld(true));
-  }, []);
+  const monsters = useMonstersWorld(true);
 
   return (
     <main className={styles.main}>

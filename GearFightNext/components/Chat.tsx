@@ -13,7 +13,7 @@ const Chat = ({lignes}: {lignes: string[]}) => {
   return (
     <div className={styles.chatContainer}>
       {lignes.map((lign, index) => {
-        return <p id={index.toString()}>{lign}</p>;
+        return <p id={index.toString()} key={index.toString()}>{lign}</p>;
       })}
     </div>
   );

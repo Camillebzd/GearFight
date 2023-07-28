@@ -61,7 +61,7 @@ const Navbar = () => {
           {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection}/>)}
         </Flex>
 
-        <ConnectButton showBalance={{ smallScreen: false, largeScreen: true }} />
+        <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} />
 
         {/* Mobile */}
         <IconButton

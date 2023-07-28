@@ -4,21 +4,17 @@ import styles from '@/app/page.module.css'
 
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { useParams } from 'next/navigation'
-import { useEffect } from 'react';
 import { Box, Button, ButtonGroup, Image } from '@chakra-ui/react'
-import { fillUserWeapons, refreshOwnedTokenMetadata } from '@/redux/features/weaponSlice';
+import { refreshOwnedTokenMetadata } from '@/redux/features/weaponSlice';
 import { createContract, getWeaponStatsForLevelUp } from '@/scripts/utils';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { useUserWeapons } from '@/scripts/customHooks';
 
 export default function Page() {
   const route = useParams();
-  const weapon = useAppSelector((state) => state.weaponReducer.userWeapons).find(weapon => weapon.id === parseInt(route.id));
+  const weapon = useUserWeapons(false).find(weapon => weapon.id === parseInt(route.id));
   const address = useAppSelector((state) => state.authReducer.address);
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(fillUserWeapons(false));
-  }, [address]);
 
   const levelUp = async () => {
     if (address.length < 0 || !weapon)
@@ -40,8 +36,7 @@ export default function Page() {
 
   const manualRefresh = async () => {
     if (weapon)
-      dispatch(refreshOwnedTokenMetadata(weapon.id));
-    Notify.success('Weapon metadata refreshed, wait a minute and refresh the page!');
+      dispatch(refreshOwnedTokenMetadata(weapon.id.toString()));
   };
 
   if (weapon === undefined)
