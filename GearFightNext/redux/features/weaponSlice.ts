@@ -135,9 +135,9 @@ export const weapons = createSlice({
   initialState,
   reducers: {
     reset: () => initialState,
-    fillStore: (state) => {
+    // fillStore: (state) => {
 
-    },
+    // },
   },
   extraReducers: (builder) => {
     builder.addCase(fillUserWeapons.pending, (state, action) => {
@@ -154,6 +154,6 @@ export const weapons = createSlice({
 
 export const {
   reset,
-  fillStore,
+  // fillStore,
 } = weapons.actions;
 export default weapons.reducer;

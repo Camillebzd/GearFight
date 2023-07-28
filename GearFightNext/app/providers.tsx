@@ -31,10 +31,10 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [publicProvider()]
 );
 
-const projectId = 'YOUR_PROJECT_ID';
+const projectId = (process.env.NEXT_PUBLIC_WALLECTCONNECT_PROJECTID) as string;
 
 const { wallets } = getDefaultWallets({
-  appName: 'RainbowKit demo',
+  appName: 'GearFight',
   projectId,
   chains,
 });

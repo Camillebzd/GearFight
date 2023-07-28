@@ -14,6 +14,8 @@ import { Ability } from '@/scripts/abilities';
 import { Monster, Weapon } from '@/scripts/entities';
 import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
+import { useDisclosure } from '@chakra-ui/react';
+import EndOfFightModal from '@/components/EndOfFightModal';
 
 export enum PHASES {
   PLAYER_CHOOSE_ABILITY,
@@ -27,6 +29,10 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
   const [monster, setMonster] = useState<Monster | null>(null);
   const [weapon, setWeapon] = useState<Weapon | null>(null);
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
+  
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  let won = useRef(false);
+  
   const dispatch = useAppDispatch();
   const [info, setInfo] = useState<string[]>([]);
   const [phase, setPhase] = useState<PHASES>(PHASES.PLAYER_CHOOSE_ABILITY);
@@ -122,9 +128,13 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
           break;
         case END_OF_TURN.PLAYER_DIED:
           console.log("PLAYER died");
+          won.current = false;
+          onOpen();
           return;
         case END_OF_TURN.MONSTER_DIED:
           console.log("MONSTER died");
+          won.current = true;
+          onOpen();
           return;
         case END_OF_TURN.NORMAL:
         default:
@@ -182,6 +192,7 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
           </div>
         </div>
       </div>
+      {monster && weapon && <EndOfFightModal isOpen={isOpen} onClose={onClose} weaponId={weapon!.id} xpQuantity={monster!.difficulty} isWinner={won.current}/>}
     </main>
   );
 };

@@ -41,6 +41,7 @@ export default function Page() {
   const manualRefresh = async () => {
     if (weapon)
       dispatch(refreshOwnedTokenMetadata(weapon.id));
+    Notify.success('Weapon metadata refreshed, wait a minute and refresh the page!');
   };
 
   if (weapon === undefined)

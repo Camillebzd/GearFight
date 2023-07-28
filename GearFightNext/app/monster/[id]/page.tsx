@@ -14,7 +14,7 @@ export default function Page() {
   const route = useParams();
   const monster = useAppSelector((state) => state.monsterReducer.monstersWorld).find(monster => monster.id === parseInt(route.id));
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const dispatch = useAppDispatch();
 
   useEffect(() => {

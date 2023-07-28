@@ -19,6 +19,10 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
     dispatch(fillUserWeapons(false));
   }, []);
 
+  useEffect(() => {
+    setWeaponSelectedID(-1);
+  }, [isOpen]);
+
   const goFight = () => {
     if (weaponSelectedID < 0)
       return;
@@ -37,7 +41,7 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
           })}
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme='red' mr={3} onClick={onClose}>
+          <Button mr={3} onClick={onClose}>
             Close
           </Button>
           <Button colorScheme='blue' onClick={goFight}>Fight</Button>

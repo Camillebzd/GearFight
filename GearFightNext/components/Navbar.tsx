@@ -58,7 +58,7 @@ const Navbar = () => {
           display={['none', 'none', 'flex','flex']}
           gap={'10px'}
         >
-          {MENU_LIST.map(elem => <NavItem text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection}/>)}
+          {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection}/>)}
         </Flex>
 
         <ConnectButton showBalance={{ smallScreen: false, largeScreen: true }} />
@@ -106,7 +106,7 @@ const Navbar = () => {
           flexDir="column"
           align="center"
         >
-          {MENU_LIST.map(elem => <NavItem text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection}/>)}
+          {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection}/>)}
         </Flex>
       </Flex>
     </Flex>
