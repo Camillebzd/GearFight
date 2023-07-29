@@ -12,6 +12,8 @@ export const MAX_FLUXES = 6;
 export const PERMANENT_MODIFIER_TIER_MULTIPLIER = 10; // percentage
 export const MAX_PERMANENT_MODIFIER_TIER = 6;
 export const MAX_DECAYING_MODIFIER_COUNTER = 6;
+export const HAND_SIZE = 4;
+export const DECK_MAX_SIZE = 10;
 
 // enum for the target system
 export enum TARGET_ABILITY {TARGET_OF_ABILITY = 1, CASTER_OF_ABILITY, ABILITY_ITSELF, COMBO_ABILITY_TRIGGERED}

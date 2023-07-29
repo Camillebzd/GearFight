@@ -85,17 +85,19 @@ export default function Page() {
         <p>Level: {weapon.level}</p>
         <p>Stage: {weapon.stage}</p>
       </div>
-      <ButtonGroup>
-        <Button onClick={levelUp}>
-          Level up
-        </Button>
-        <Button onClick={stageUp}>
-          Stage up
-        </Button>
-        <Button onClick={manualRefresh}>
-          Refresh Metadata
-        </Button>
-      </ButtonGroup>
+      {route.type === "classic" &&
+        <ButtonGroup>
+          <Button onClick={levelUp}>
+            Level up
+          </Button>
+          <Button onClick={stageUp}>
+            Stage up
+          </Button>
+          <Button onClick={manualRefresh}>
+            Refresh Metadata
+          </Button>
+        </ButtonGroup>
+      }
     </main>
   );
 }

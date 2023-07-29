@@ -3,10 +3,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import styles from '../../../page.module.css'
 
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-// import { fillMonsterWorld } from '@/redux/features/monsterSlice';
-
-// import { fillUserWeapons } from '@/redux/features/weaponSlice';
+import { useAppSelector } from "@/redux/hooks";
 import Entity from '@/components/Entity';
 import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
@@ -17,6 +14,7 @@ import { resolveActions } from '@/scripts/fight';
 import { useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
 import { useMonstersWorld, useUserWeapons } from '@/scripts/customHooks';
+import SelectFluxesModal from '@/components/SelectFluxesModal';
 
 export enum PHASES {
   PLAYER_CHOOSE_ABILITY,
@@ -31,22 +29,17 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
   const [weapon, setWeapon] = useState<Weapon | null>(null);
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const endOfFightModal = useDisclosure();
+  const fluxeModal = useDisclosure();
+  let abilitySelected = useRef<Ability | null>(null);
   let won = useRef(false);
-  
-  // const dispatch = useAppDispatch();
+
   const [info, setInfo] = useState<string[]>([]);
   const [phase, setPhase] = useState<PHASES>(PHASES.PLAYER_CHOOSE_ABILITY);
   const [turn, setTurn] = useState(1);
   let isMonsterCombo = useRef(false);
   let isPlayerCombo = useRef(false);
   let actions: MutableRefObject<Action[]> = useRef([]);
-
-  // retrieve data of entities
-  // useEffect(() => {
-  //   dispatch(fillMonsterWorld(false));
-  //   dispatch(fillUserWeapons(false));
-  // }, [isConnected]);
 
   // set entities
   useEffect(() => {
@@ -79,7 +72,7 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
         actions.current.push(monsterAction);
     }
     if (!weapon.isEntityAbleToPlay())
-      console.log("Resolve Actions");
+      resolveLoop();
     return () => {actions.current = []; }
   }, [monster, weapon, turn]);
 
@@ -107,12 +100,7 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
     );
   // #endregion  
 
-  const useAbility = (ability: Ability) => {
-    if (phase !== PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
-      return;
-    actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: 0, info: setInfo}));
-    console.log(actions);
-    // resolve
+  const resolveLoop = () => {
     while (actions.current.length > 0) {
       setPhase(PHASES.RESOLUTION);
       let ret = resolveActions(actions.current);
@@ -130,12 +118,12 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
         case END_OF_TURN.PLAYER_DIED:
           console.log("PLAYER died");
           won.current = false;
-          onOpen();
+          endOfFightModal.onOpen();
           return;
         case END_OF_TURN.MONSTER_DIED:
           console.log("MONSTER died");
           won.current = true;
-          onOpen();
+          endOfFightModal.onOpen();
           return;
         case END_OF_TURN.NORMAL:
         default:
@@ -147,6 +135,35 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
       actions.current = actions.current.filter((action) => {return action.hasBeenDone === false});
     }
     setTurn((actualTurn) => actualTurn + 1);
+  };
+
+  const useAbility = (ability: Ability, fluxesUsed: number = 0) => {
+    if (phase !== PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
+      return;
+    actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo}));
+    console.log(actions);
+    // resolve
+    resolveLoop();
+  };
+
+  const useAbilityModal = (fluxeSelected: number) => {
+    if (abilitySelected.current) {
+      weapon?.useFluxes(fluxeSelected);
+      useAbility(abilitySelected.current, fluxeSelected);
+      abilitySelected.current = null;
+    }
+    fluxeModal.onClose();
+  };
+
+  const onAbilityClick = (abilityClicked: Ability) => {
+    if (abilityClicked.isMagical) {
+      if (weapon!.fluxes < 1)
+        return;
+      abilitySelected.current = abilityClicked;
+      fluxeModal.onOpen();
+    }
+    else 
+      useAbility(abilityClicked, 0);
   };
 
   const phasePrinter = () => {
@@ -189,11 +206,12 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
             <p>Actual turn: {turn}</p>
           </div>
           <div className={styles.abilitiesCointainer}>
-            {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => useAbility(ability)} ability={ability}/>)}
+            {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => onAbilityClick(ability)} ability={ability}/>)}
           </div>
         </div>
       </div>
-      {monster && weapon && <EndOfFightModal isOpen={isOpen} onClose={onClose} weaponId={weapon!.id} xpQuantity={monster!.difficulty} isWinner={won.current}/>}
+      {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} xpQuantity={monster!.difficulty} isWinner={won.current}/>}
+      {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} useAbility={useAbilityModal} fluxesAvailables={weapon.fluxes}/>}
     </main>
   );
 };
