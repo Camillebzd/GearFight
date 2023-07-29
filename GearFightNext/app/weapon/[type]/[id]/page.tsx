@@ -8,11 +8,16 @@ import { Box, Button, ButtonGroup, Image } from '@chakra-ui/react'
 import { refreshOwnedTokenMetadata } from '@/redux/features/weaponSlice';
 import { createContract, getWeaponStatsForLevelUp } from '@/scripts/utils';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import { useUserWeapons } from '@/scripts/customHooks';
+import { useStarter, useUserWeapons } from '@/scripts/customHooks';
+import { Weapon } from '@/scripts/entities';
 
 export default function Page() {
   const route = useParams();
-  const weapon = useUserWeapons(false).find(weapon => weapon.id === parseInt(route.id));
+  let weapon: Weapon | undefined = undefined;
+  if (route.type === "classic")
+    weapon = useUserWeapons(false).find(weapon => weapon.id === parseInt(route.id));
+  else if (route.type === "starter")
+    weapon = useStarter().find(weapon => weapon.id === parseInt(route.id));
   const address = useAppSelector((state) => state.authReducer.address);
   const dispatch = useAppDispatch();
 

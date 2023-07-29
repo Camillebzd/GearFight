@@ -3,9 +3,11 @@ import WeaponCard from "./WeaponCard";
 
 import styles from './List.module.css'
 
-const WeaponList = ({weapons}: {weapons: Weapon[]}) => {
+export type WeaponGeneralType = "classic" | "starter";
+
+const WeaponList = ({weapons, type}: {weapons: Weapon[], type: WeaponGeneralType}) => {
   const weaponList = weapons.map(weapon =>
-    <WeaponCard weapon={weapon} key={weapon.id} />
+    <WeaponCard weapon={weapon} key={weapon.id} type={type}/>
   );
 
   return (

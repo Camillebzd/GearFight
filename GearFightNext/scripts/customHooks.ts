@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Monster, MonsterData, Weapon, WeaponData, WeaponType } from "./entities";
+import { Monster, Weapon, WeaponData, WeaponType } from "./entities";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/monsterSlice";
-import { fillStoreAbilities, fillStoreAbilitiesPromised } from "@/redux/features/abilitySlice";
+import { fillStoreAbilities } from "@/redux/features/abilitySlice";
 import { Ability } from "./abilities";
-import { AttributeOnNFT, WeaponNFT, fillUserWeapons } from "@/redux/features/weaponSlice";
+import { AttributeOnNFT, WeaponNFT, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
+import { createContract } from "./utils";
 
 function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Ability[]) {
   let monsters: Monster[] = [];
@@ -147,4 +148,61 @@ export function useAbilities(forceFill: boolean = false) {
   }, [abilitiesData]);
 
   return abilities;
+}
+
+export function useStarter() {
+  const [weaponsStarter, setWeaponsStarter] = useState<Weapon[]>([]);
+  const abilities = useAbilities(false);
+
+  useEffect(() => {
+    const createStarter = async () => {
+      const weaponsAvailables = ["sword", "waraxe", "spear", "warhammer"]; // TODO put this in env
+      let starters: Weapon[] = [];
+      for (let i = 0; i < weaponsAvailables.length; i++) {
+        let starterWeapon: WeaponData = (await import(`@/data/weapons/${weaponsAvailables[i]}/stats.json`)).default["base"];
+        starterWeapon["level"] = 1;
+        starterWeapon["stage"] = 1;
+        starterWeapon["name"] = "Basic " + weaponsAvailables[i].charAt(0).toUpperCase() + weaponsAvailables[i].slice(1);
+        starterWeapon["description"] = "This is a starter weapon.";
+        starterWeapon["image"] = (await import(`@/data/weapons/${weaponsAvailables[i]}/images.json`)).default["1"];
+        let abilitiesId: number[] = (await import(`@/data/weapons/${weaponsAvailables[i]}/abilities.json`)).default["base"];
+        let weaponAbilities: (Ability | undefined)[] = [];
+        abilitiesId.forEach((abilityId) => {
+          weaponAbilities.push(abilities.find((ability) => ability.id === abilityId));
+        });
+        starterWeapon["abilities"] = weaponAbilities as Ability[];
+        starterWeapon["xp"] = 0;
+        const gearType: WeaponType[] = ["None", "Sword", "Waraxe", "Spear", "Warhammer"];
+        starterWeapon["weaponType"] = gearType[i + 1]; // TODO check with Simon if needed and how to use it
+        starterWeapon["id"] = i;
+        starters.push(new Weapon(starterWeapon));
+      }
+      console.log("starter weapons pulled");
+      console.log(starters);
+      setWeaponsStarter(starters);
+    };
+    if (abilities.length > 0 && weaponsStarter.length < 1)
+      createStarter();
+  }, [abilities]);
+
+  return weaponsStarter;
+}
+
+export function useRequestAvailable() {
+  const [requestAvailable, setRequestAvailable] = useState(0);
+  const address = useAppSelector((state) => state.authReducer.address);
+
+  useEffect(() => {
+    if (address.length < 42)
+    return;
+    const updateRequestCount = async () => {
+      const contract = createContract(address);
+      const maxWeaponsRequest = await contract.maxWeaponsRequest();
+      const weaponsRequested = await contract.weaponsRequested(address);
+      setRequestAvailable(maxWeaponsRequest - weaponsRequested);
+    }
+    updateRequestCount();
+  }, [address]);
+
+  return requestAvailable;
 }

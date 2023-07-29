@@ -1,4 +1,4 @@
-import { Ability, AbilityData } from "@/scripts/abilities";
+import { AbilityData } from "@/scripts/abilities";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import abilitiesData from '@/data/abilities/abilities.json';
@@ -23,11 +23,6 @@ export const abilities = createSlice({
       console.log("abilities pulled");
     },
   },
-});
-
-export const fillStoreAbilitiesPromised = (forceFill: boolean, dispatch: any) => new Promise<void>((resolve, reject) => {
-  dispatch(fillStoreAbilities(forceFill));
-  resolve();
 });
 
 export const {

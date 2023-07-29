@@ -1,10 +1,5 @@
-import { Monster } from "@/scripts/entities";
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "../store";
-import { Ability } from "@/scripts/abilities";
-
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import monstersData from '@/data/monsters/base.json';
-import { fillStoreAbilitiesPromised } from "./abilitySlice";
 
 export type MonsterDataSerilizable = {
   id: number;
@@ -39,52 +34,6 @@ const initialState = {
   monstersWorld: [],
 } as MonsterState;
 
-// export const fillMonsterWorld = createAsyncThunk<Monster[], boolean, {state: RootState} >(
-//   'monsters/fillMonsterWorld',
-//   async (forceReaload: boolean, thunkAPI) => {
-//     if (thunkAPI.getState().monsterReducer.monstersWorld.length > 0 && !forceReaload)
-//       return thunkAPI.getState().monsterReducer.monstersWorld;
-//     await fillStoreAbilitiesPromised(forceReaload, thunkAPI.dispatch);
-//     let monstersWorld: Monster[] = [];
-//     let monstersWorldData: MonsterData[] = JSON.parse(JSON.stringify(monstersData)); // type this 
-//     let abilities = thunkAPI.getState().abilityReducer.abilities;
-//     monstersWorldData.forEach(monsterWorldData => {
-//       let monsterAbilities: Ability[] = [];
-//       monsterWorldData.abilities.forEach(abilityId => {
-//         let realAbility = abilities.find(ability => ability.id === abilityId);
-//         if (realAbility)
-//           monsterAbilities.push(realAbility);
-//         else
-//           console.log("Error: a monster data id doesn't have a supported ability.");
-//       });
-//       monstersWorld.push(new Monster({
-//         id: monsterWorldData.id,
-//         name: monsterWorldData.name,
-//         image: monsterWorldData.image,
-//         description: monsterWorldData.description,
-//         difficulty: monsterWorldData.difficulty,
-//         level: monsterWorldData.level,
-//         health: monsterWorldData.health,
-//         speed: monsterWorldData.speed,
-//         mind: monsterWorldData.mind,
-//         sharpDmg: monsterWorldData.sharpDmg,
-//         bluntDmg: monsterWorldData.bluntDmg,
-//         burnDmg: monsterWorldData.burnDmg,
-//         sharpRes: monsterWorldData.sharpRes,
-//         bluntRes: monsterWorldData.bluntRes,
-//         burnRes: monsterWorldData.burnRes,
-//         handling: monsterWorldData.handling,
-//         pierce: monsterWorldData.pierce,
-//         guard: monsterWorldData.guard,
-//         lethality: monsterWorldData.lethality,
-//         stage: 1,
-//         abilities: monsterAbilities
-//       }));
-//     });
-//     return monstersWorld;
-//   }
-// );
-
 export const monsters = createSlice({
   name: "monsters",
   initialState,
@@ -101,11 +50,6 @@ export const monsters = createSlice({
       console.log("monsters pulled");
     },
   },
-  // extraReducers(builder) {
-  //   builder.addCase(fillMonsterWorld.fulfilled, (state, action) => {
-  //     state.monstersWorld = action.payload;
-  //   })
-  // },
 });
 
 export const {

@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import contractABI from "@/abi/GearFactory.json";
 
 import { Ability } from './abilities';
+import { WeaponType } from './entities';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
@@ -52,4 +53,13 @@ export async function getWeaponStatsForLevelUp(weaponType: string) {
     handling: stats.handling as number,
   }
   return formatedStats;
+}
+
+export function getIntFromGearType(weaponType: WeaponType) {
+  const weaponTypeTab: WeaponType[] = ["None", "Sword", "Waraxe", "Spear", "Warhammer"];
+
+  for (let i = 0; i < weaponTypeTab.length; i++)
+    if (weaponType == weaponTypeTab[i])
+      return i;
+  return 0;
 }

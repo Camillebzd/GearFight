@@ -546,7 +546,37 @@ export class Entity {
 
 // ------------------------------------ Weapon ------------------------------------
 
-export type WeaponType = "none" | "sword" | "warhammer" | "waraxe" | "spear";
+export type WeaponMint = {
+  name: string,
+  description: string,
+  image: string,
+  level: number,
+  stage: number,
+  weaponStats: {
+    health: number,
+    speed: number,
+    mind: number,
+    offensiveStats: {
+        sharpDamage: number,
+        bluntDamage: number,
+        burnDamage: number,
+        pierce: number,
+        lethality: number,
+    },
+    defensiveStats: {
+        sharpResistance: number,
+        bluntResistance: number,
+        burnResistance: number,
+        guard: number,
+    },
+    handling: number,
+  },
+  xp: number,
+  weaponType: number, // TODO change this to string directly ?
+  spells: string[], // TODO change this to abilities
+}
+
+export type WeaponType = "None" | "Sword" | "Warhammer" | "Waraxe" | "Spear";
 
 export type WeaponDataAddition = {
   weaponType: WeaponType,
@@ -556,7 +586,7 @@ export type WeaponDataAddition = {
 export type WeaponData = EntityData & WeaponDataAddition;
 
 export class Weapon extends Entity {
-  weaponType: WeaponType = "none";
+  weaponType: WeaponType = "None";
   xp = 0;
 
   constructor(data: WeaponData, logger: Dispatch<SetStateAction<string[]>>  | undefined = undefined) {
