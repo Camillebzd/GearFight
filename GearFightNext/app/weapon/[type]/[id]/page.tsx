@@ -15,17 +15,17 @@ export default function Page() {
   const route = useParams();
   let weapon: Weapon | undefined = undefined;
   if (route.type === "classic")
-    weapon = useUserWeapons(false).find(weapon => weapon.id === parseInt(route.id));
+    weapon = useUserWeapons(false).find(weapon => weapon.id === parseInt(route.id as string));
   else if (route.type === "starter")
-    weapon = useStarter().find(weapon => weapon.id === parseInt(route.id));
+    weapon = useStarter().find(weapon => weapon.id === parseInt(route.id as string));
   const address = useAppSelector((state) => state.authReducer.address);
   const dispatch = useAppDispatch();
 
   const levelUp = async () => {
     if (address.length < 0 || !weapon)
       return;
-    const contract = createContract(address);
-    let weaponStats = await getWeaponStatsForLevelUp(weapon.weaponType);
+    const contract = await createContract(address);
+    let weaponStats = await getWeaponStatsForLevelUp(weapon.identity);
     console.log(weaponStats);
     try {
       await contract.levelUp(weapon.id, weaponStats);
@@ -84,6 +84,7 @@ export default function Page() {
         <p>XP: {weapon.xp}</p>
         <p>Level: {weapon.level}</p>
         <p>Stage: {weapon.stage}</p>
+        <p>Identity: {weapon.identity}</p>
       </div>
       {route.type === "classic" &&
         <ButtonGroup>

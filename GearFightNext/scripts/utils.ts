@@ -1,9 +1,8 @@
-// TODO upgrade ethers in v6.0
 import { ethers } from 'ethers';
-import contractABI from "@/abi/GearFactory.json";
+import contractABI from "@/abi/GearFight.json";
 
 import { Ability } from './abilities';
-import { WeaponType } from './entities';
+import { Identity } from './entities';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
@@ -18,17 +17,17 @@ export function randomIntFromInterval(min: number, max: number) {
 }
 
 // function to create a contract ethers.js of gearFactory
-export function createContract(walletAddress: string) {
+export async function createContract(walletAddress: string) {
   const ethereum: any  = window.ethereum;
-  const provider = new ethers.providers.Web3Provider(ethereum);
-  const signer = provider.getSigner(walletAddress);
+  const provider = new ethers.BrowserProvider(ethereum);
+  const signer = await provider.getSigner(walletAddress);
   const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
   return contract;
 }
 
-export async function getWeaponStatsForLevelUp(weaponType: string) {
-  weaponType = weaponType.toLowerCase();
-  let stats = (await import(`@/data/weapons/${weaponType}/stats.json`)).default["levelUp"];
+export async function getWeaponStatsForLevelUp(identity: Identity) {
+  let directoryName = identity.toLowerCase();
+  let stats = (await import(`@/data/weapons/${directoryName}/stats.json`)).default["levelUp"];
   // round for the moment bc blockchain doesn't accept float...
   for (const key in stats)
     if (stats.hasOwnProperty(key))
@@ -53,13 +52,4 @@ export async function getWeaponStatsForLevelUp(weaponType: string) {
     handling: stats.handling as number,
   }
   return formatedStats;
-}
-
-export function getIntFromGearType(weaponType: WeaponType) {
-  const weaponTypeTab: WeaponType[] = ["None", "Sword", "Waraxe", "Spear", "Warhammer"];
-
-  for (let i = 0; i < weaponTypeTab.length; i++)
-    if (weaponType == weaponTypeTab[i])
-      return i;
-  return 0;
 }

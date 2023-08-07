@@ -83,8 +83,9 @@ describe('GearFight', function () {
                 guard: 2,
             },
             handling: 2,
-        };    
-        return { gearFight, basicSword, lvlUpStats };
+        };
+        let newAbilities: string[] = ["Ability5", "Ability6"];
+        return { gearFight, basicSword, lvlUpStats, newAbilities };
     }
 
     it("Should request weapon with valid URI", async function () {
@@ -115,6 +116,9 @@ describe('GearFight', function () {
         expect(getDataFromMetadata(swordObj.attributes, "Stage")).to.be.equal(basicSword.stage.toString());
         expect(getDataFromMetadata(swordObj.attributes, "Experience")).to.be.equal(basicSword.xp.toString());
         expect(getDataFromMetadata(swordObj.attributes, "Identity")).to.be.equal(basicSword.identity);
+        let abilities: string[] = getDataFromMetadata(swordObj.attributes, "Abilities") as string[];
+        for (let i = 0; i < basicSword.abilities.length; i++)
+            expect(abilities[i]).to.be.equal(basicSword.abilities[i]);
     });
 
     it("Should prevent from requesting to many weapon", async function () {
@@ -176,13 +180,13 @@ describe('GearFight', function () {
 
 
     it("Should gain a level and set xp", async function() {
-        const { gearFight, basicSword, lvlUpStats }: 
-        {gearFight: GearFight, basicSword: GearFactory.WeaponStruct, lvlUpStats: GearFactory.WeaponStatsStruct } = await loadFixture(deployFixture);
+        const { gearFight, basicSword, lvlUpStats, newAbilities }: 
+        {gearFight: GearFight, basicSword: GearFactory.WeaponStruct, lvlUpStats: GearFactory.WeaponStatsStruct, newAbilities: string[] } = await loadFixture(deployFixture);
 
         await gearFight.requestWeapon(basicSword);
         let weapon = await gearFight.weapons(0);
         expect(weapon.level).to.be.equal(1);
-        await gearFight.levelUp(0, lvlUpStats, 1);
+        await gearFight.levelUp(0, lvlUpStats, newAbilities, 1);
         weapon = await gearFight.weapons(0);
         expect(weapon.level).to.be.equal(2);
         expect(weapon.xp).to.be.equal(1);
@@ -207,5 +211,16 @@ describe('GearFight', function () {
         expect(getDataFromMetadata(swordObj.attributes, "Pierce")).to.be.equal(((basicSword.weaponStats.offensiveStats.pierce as number) + (lvlUpStats.offensiveStats.pierce as number)).toString());
         expect(getDataFromMetadata(swordObj.attributes, "Lethality")).to.be.equal(((basicSword.weaponStats.offensiveStats.lethality as number) + (lvlUpStats.offensiveStats.lethality as number)).toString());
         expect(getDataFromMetadata(swordObj.attributes, "Handling")).to.be.equal(((basicSword.weaponStats.handling as number) + (lvlUpStats.handling as number)).toString());
+        let abilities: string[] = getDataFromMetadata(swordObj.attributes, "Abilities") as string[];
+        let abilitiesToCompare: string[] = basicSword.abilities.concat(newAbilities);
+        for (let i = 0; i < abilitiesToCompare.length; i++)
+            expect(abilities[i]).to.be.equal(abilitiesToCompare[i]);
+    });
+
+    it("Should revert if gain level up on non-existing weapon", async function() {
+        const { gearFight, lvlUpStats, newAbilities }: 
+        {gearFight: GearFight, lvlUpStats: GearFactory.WeaponStatsStruct, newAbilities: string[] } = await loadFixture(deployFixture);
+
+        await expect(gearFight.levelUp(0, lvlUpStats, newAbilities, 1)).to.be.reverted;
     });
 });

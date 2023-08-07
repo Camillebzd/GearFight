@@ -32,7 +32,6 @@ library GearFactory {
         uint16 handling;
     }
 
-    // ["Sword", "description", "image", 1, 1, [1, 1, 1, [1, 1, 1, 1, 1], [1, 1, 1, 1], 1], ["spell1", "spell2", "spell3", "spell4"], 0, "excalibur"]
     struct Weapon {
         string name;
         string description;
@@ -42,7 +41,7 @@ library GearFactory {
         WeaponStats weaponStats;
         uint16 xp;
         string identity;
-        string[] abilities;        // TODO Simon: 25 but try with dynamic system
+        string[] abilities;
     }
 
     function createTokenURI(Weapon memory _weapon) external pure returns (string memory) {
@@ -75,8 +74,8 @@ library GearFactory {
                 '}, ',
                 formatStats(_weapon),
                 '{', 
-                    '"trait_type" : "Spells", ',
-                    '"value" : ', formatSpells(_weapon),
+                    '"trait_type" : "Abilities", ',
+                    '"value" : ', formatAbilities(_weapon),
                 '}, ',
                 '{', 
                     '"trait_type" : "Experience", ',
@@ -159,7 +158,7 @@ library GearFactory {
         ));
     }
 
-    function formatSpells(Weapon memory _weapon) private pure returns (string memory) {
+    function formatAbilities(Weapon memory _weapon) private pure returns (string memory) {
         string memory abilitiesFormated = '[';
         for (uint i = 0; i < _weapon.abilities.length; i++) {
             abilitiesFormated = string.concat(abilitiesFormated, '"');
@@ -175,7 +174,7 @@ library GearFactory {
         _weapon.xp += _xp;
     }
 
-    function levelUp(Weapon storage _weapon, WeaponStats memory _upgradeStats, uint16 xpLeft) external  {
+    function levelUp(Weapon storage _weapon, WeaponStats memory _upgradeStats, string[] memory newAbilities, uint16 xpLeft) external  {
         _weapon.weaponStats.health += _upgradeStats.health;
         _weapon.weaponStats.speed += _upgradeStats.speed;
         _weapon.weaponStats.mind += _upgradeStats.mind;
@@ -190,15 +189,9 @@ library GearFactory {
         _weapon.weaponStats.defensiveStats.guard += _upgradeStats.defensiveStats.guard;
         _weapon.weaponStats.handling += _upgradeStats.handling;
         _weapon.level++;
+        if (newAbilities.length > 0)
+            for (uint i = 0; i < newAbilities.length; i++)
+                _weapon.abilities.push(newAbilities[i]);
         _weapon.xp = xpLeft;
     }
-
-    // no protection from spamming and no protection from upgrade by other than owner
-    // what is the requirement for the xp ? -> 1 for the moment
-    // function upgradeWeapon(Weapon storage _weapon, string memory newImage) external {
-    //     require(_weapon.level > 1 * _weapon.stage);
-    //     _weapon.stage++;
-    //     if (bytes(newImage).length > 0)
-    //         _weapon.image = newImage;
-    // }
 }

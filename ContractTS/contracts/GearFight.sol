@@ -51,12 +51,9 @@ contract GearFight is ERC721URIStorage, Ownable {
     }
 
     // no protection from spamming and no protection for call by other than owner
-    function levelUp(uint256 tokenId, GearFactory.WeaponStats memory _upgradeStats, uint16 xpLeft) external notEmptyWeapon(weapons[tokenId]) {
-        GearFactory.levelUp(weapons[tokenId], _upgradeStats, xpLeft);
+    function levelUp(uint256 tokenId, GearFactory.WeaponStats memory _upgradeStats, string[] memory newAbilities, uint16 xpLeft) external notEmptyWeapon(weapons[tokenId]) {
+        GearFactory.levelUp(weapons[tokenId], _upgradeStats, newAbilities, xpLeft);
         _setTokenURI(tokenId, GearFactory.createTokenURI(weapons[tokenId]));
     }
 
-    // function upgradeWeapon(uint256 tokenId, string memory newImage) external notEmptyWeapon(weapons[tokenId]) {
-    //     GearFactory.upgradeWeapon(weapons[tokenId], newImage);
-    // }
 }

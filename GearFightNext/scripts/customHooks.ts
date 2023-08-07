@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Monster, Weapon, WeaponData, WeaponType } from "./entities";
+import { Monster, Weapon, WeaponData, Identity } from "./entities";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/monsterSlice";
 import { fillStoreAbilities } from "@/redux/features/abilitySlice";
@@ -65,7 +65,7 @@ export function useMonstersWorld(forceFill: boolean = false) {
   return monsters;
 }
 
-function getGearAttributeInfo(attributes: AttributeOnNFT[], trait_type: string): string | string[] | WeaponType {
+function getGearAttributeInfo(attributes: AttributeOnNFT[], trait_type: string): string | string[] | Identity {
   for (let i = 0; i < attributes.length; i++) {
     if (attributes[i].trait_type === trait_type)
       return attributes[i].value;
@@ -75,7 +75,7 @@ function getGearAttributeInfo(attributes: AttributeOnNFT[], trait_type: string):
 
 function createWeapon(weaponsDataNFT: WeaponNFT, abilities: Ability[]) {
   let weaponAbilities: (Ability | undefined)[] = [];
-  let weaponAbilitiesNames = getGearAttributeInfo(weaponsDataNFT.attributes, "Spells");
+  let weaponAbilitiesNames = getGearAttributeInfo(weaponsDataNFT.attributes, "Abilities");
   if (Array.isArray(weaponAbilitiesNames))
     weaponAbilitiesNames.forEach((abilityName) => {
       weaponAbilities.push(abilities.find((abilitie) => abilitie.name === abilityName));
@@ -102,7 +102,7 @@ function createWeapon(weaponsDataNFT: WeaponNFT, abilities: Ability[]) {
     lethality: parseInt(getGearAttributeInfo(weaponsDataNFT.attributes, "Lethality") as string),
     abilities: weaponAbilities as Ability[],
     xp: parseInt(getGearAttributeInfo(weaponsDataNFT.attributes, "Experience") as string),
-    weaponType: getGearAttributeInfo(weaponsDataNFT.attributes, "Weapon Type") as WeaponType,
+    identity: getGearAttributeInfo(weaponsDataNFT.attributes, "Identity") as Identity,
   };
   return new Weapon(data);
 }
@@ -115,11 +115,11 @@ export function useUserWeapons(forceFill: boolean = false) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!isConnected || (weaponsDataNFT.length > 0 && !forceFill)) {
+    if (!isConnected) {
       return;
     }
     dispatch(fillUserWeapons(forceFill));
-  }, [isConnected, weaponsDataNFT]);
+  }, [isConnected]);
 
   useEffect(() => {
     if (weaponsDataNFT.length < 1 || abilities.length < 1)
@@ -172,8 +172,8 @@ export function useStarter() {
         });
         starterWeapon["abilities"] = weaponAbilities as Ability[];
         starterWeapon["xp"] = 0;
-        const gearType: WeaponType[] = ["None", "Sword", "Waraxe", "Spear", "Warhammer"];
-        starterWeapon["weaponType"] = gearType[i + 1]; // TODO check with Simon if needed and how to use it
+        const gearIdentity: Identity[] = ["None", "Sword", "Waraxe", "Spear", "Warhammer"];
+        starterWeapon["identity"] = gearIdentity[i + 1];
         starterWeapon["id"] = i;
         starters.push(new Weapon(starterWeapon));
       }
@@ -196,7 +196,7 @@ export function useRequestAvailable() {
     if (address.length < 42)
     return;
     const updateRequestCount = async () => {
-      const contract = createContract(address);
+      const contract = await createContract(address);
       const maxWeaponsRequest = await contract.maxWeaponsRequest();
       const weaponsRequested = await contract.weaponsRequested(address);
       setRequestAvailable(maxWeaponsRequest - weaponsRequested);

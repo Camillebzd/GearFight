@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 
 import Link from 'next/link'
 import { WeaponGeneralType } from "./WeaponList";
-import { createContract, getIntFromGearType } from "@/scripts/utils";
+import { createContract } from "@/scripts/utils";
 import { useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
@@ -53,16 +53,14 @@ const WeaponCard = ({weapon, type}: {weapon: Weapon, type: WeaponGeneralType}) =
         handling: weapon.stats.handling,
       },
       xp: weapon.xp,
-      spells: [],
-      weaponType: 0
+      abilities: [],
+      identity: weapon.identity
     };
-    weaponToMint.weaponType = getIntFromGearType(weapon.weaponType);
-    weaponToMint.spells = [];
-    weapon.abilities.forEach((spell) => {weaponToMint.spells.push(spell.name)});
+    weapon.abilities.forEach((ability) => {weaponToMint.abilities.push(ability.name)});
     console.log(weaponToMint);
     if (!address)
       return;
-    const contract = createContract(address)
+    const contract = await createContract(address)
     try {
       await contract.requestWeapon(weaponToMint);
       Notify.success("Your weapon was created, wait a minute and you will see it appear!");

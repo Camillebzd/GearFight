@@ -572,26 +572,26 @@ export type WeaponMint = {
     handling: number,
   },
   xp: number,
-  weaponType: number, // TODO change this to string directly ?
-  spells: string[], // TODO change this to abilities
+  identity: string,
+  abilities: string[],
 }
 
-export type WeaponType = "None" | "Sword" | "Warhammer" | "Waraxe" | "Spear";
+export type Identity = "None" | "Sword" | "Warhammer" | "Waraxe" | "Spear";
 
 export type WeaponDataAddition = {
-  weaponType: WeaponType,
+  identity: Identity,
   xp: number
 }
 
 export type WeaponData = EntityData & WeaponDataAddition;
 
 export class Weapon extends Entity {
-  weaponType: WeaponType = "None";
+  identity: Identity = "None";
   xp = 0;
 
   constructor(data: WeaponData, logger: Dispatch<SetStateAction<string[]>>  | undefined = undefined) {
     super(data, logger);
-    this.weaponType = data.weaponType;
+    this.identity = data.identity;
     this.isNPC = false; // TODO handle when pvp again offline friends
     this.xp = data.xp;
   }
@@ -619,7 +619,7 @@ export class Weapon extends Entity {
       guard: this.stats.guard,
       lethality: this.stats.lethality,
       abilities: this.abilities,
-      weaponType: this.weaponType
+      identity: this.identity
     });
   }
 }

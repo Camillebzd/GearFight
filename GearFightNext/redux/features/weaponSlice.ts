@@ -40,11 +40,11 @@ export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, {state: Ro
       };
       const alchemy = new Alchemy(settings);
       const nfts = await alchemy.nft.getNftsForOwner(address, {omitMetadata: true});
-      const contract = createContract(address);
+      const contract = await createContract(address);
       let weapons: WeaponNFT[] = [];
       await Promise.all(nfts.ownedNfts.map(async (nft) => {
         if (nft.contract.address.toLowerCase() == CONTRACT_ADDRESS) {
-          let weaponURI = await contract.uri(nft.tokenId);
+          let weaponURI = await contract.tokenURI(nft.tokenId);
           let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
           weaponObj.tokenId = nft.tokenId;
           weapons.push(weaponObj);
@@ -67,7 +67,7 @@ export const refreshOwnedTokenMetadata = createAsyncThunk<{weaponIndex: number, 
       console.log("Error:can't refresh metadata on non existant or non possessed weapon.");
       return {weaponIndex, newWeaponData: undefined};
     }
-    const contract = createContract(thunkAPI.getState().authReducer.address);
+    const contract = await createContract(thunkAPI.getState().authReducer.address);
     try {
       let weaponURI = await contract.uri(tokenId);
       let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));

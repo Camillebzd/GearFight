@@ -1,17 +1,23 @@
 import { ethers, run, network } from "hardhat"
 
 async function main() {
-  const GearFightFactory = await ethers.getContractFactory("GearFight");
-  console.log("Deploying contract...");
-  const gearFight = await GearFightFactory.deploy();
-  await gearFight.deployed();
+  const GearFactory = await ethers.getContractFactory("GearFactory");
+  const gearFactory = await GearFactory.deploy();
+  const libAddress = await gearFactory.getAddress();
+  const GearFight = await ethers.getContractFactory("GearFight", {
+      libraries: {
+          GearFactory: libAddress,
+      }
+  });
+  const gearFight = await GearFight.deploy();
 
   // We only verify on a testnet!
-  // if (network.config.chainId === 80001 && process.env.POLYGONSCAN_API_KEY) {
-  //   // 6 blocks is sort of a guess
-  //   await gearFight.deployTransaction.wait(6);
-  //   await verify(gearFight.address, []);
-  // }
+  if (network.config.chainId === 80001 && process.env.POLYGONSCAN_API_KEY) {
+    await gearFight.deploymentTransaction()!.wait(6);
+    await verify(await gearFactory.getAddress(), []);
+    await verify(await gearFight.getAddress(), []);
+  }
+  console.log("GearFactory deployed to:", await gearFight.getAddress());
   console.log("GearFight deployed to:", await gearFight.getAddress());
 }
 
