@@ -546,31 +546,33 @@ export class Entity {
 
 // ------------------------------------ Weapon ------------------------------------
 
+export type WeaponMintStats = {
+  health: number,
+  speed: number,
+  mind: number,
+  offensiveStats: {
+    sharpDamage: number,
+    bluntDamage: number,
+    burnDamage: number,
+    pierce: number,
+    lethality: number,
+  },
+  defensiveStats: {
+    sharpResistance: number,
+    bluntResistance: number,
+    burnResistance: number,
+    guard: number,
+  },
+  handling: number
+}
+
 export type WeaponMint = {
   name: string,
   description: string,
   image: string,
   level: number,
   stage: number,
-  weaponStats: {
-    health: number,
-    speed: number,
-    mind: number,
-    offensiveStats: {
-        sharpDamage: number,
-        bluntDamage: number,
-        burnDamage: number,
-        pierce: number,
-        lethality: number,
-    },
-    defensiveStats: {
-        sharpResistance: number,
-        bluntResistance: number,
-        burnResistance: number,
-        guard: number,
-    },
-    handling: number,
-  },
+  weaponStats: WeaponMintStats,
   xp: number,
   identity: string,
   abilities: string[],

@@ -17,7 +17,7 @@ async function main() {
     await verify(await gearFactory.getAddress(), []);
     await verify(await gearFight.getAddress(), []);
   }
-  console.log("GearFactory deployed to:", await gearFight.getAddress());
+  console.log("GearFactory deployed to:", await gearFactory.getAddress());
   console.log("GearFight deployed to:", await gearFight.getAddress());
 }
 

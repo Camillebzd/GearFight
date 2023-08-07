@@ -69,7 +69,7 @@ export const refreshOwnedTokenMetadata = createAsyncThunk<{weaponIndex: number, 
     }
     const contract = await createContract(thunkAPI.getState().authReducer.address);
     try {
-      let weaponURI = await contract.uri(tokenId);
+      let weaponURI = await contract.TokenURI(tokenId);
       let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
       weaponObj.tokenId = tokenId;
       console.log(`token with id: ${tokenId} refreshed!`);

@@ -174,7 +174,7 @@ library GearFactory {
         _weapon.xp += _xp;
     }
 
-    function levelUp(Weapon storage _weapon, WeaponStats memory _upgradeStats, string[] memory newAbilities, uint16 xpLeft) external  {
+    function levelUp(Weapon storage _weapon, uint16 _newLevel, WeaponStats memory _upgradeStats, string[] memory newAbilities, uint16 xpLeft) external  {
         _weapon.weaponStats.health += _upgradeStats.health;
         _weapon.weaponStats.speed += _upgradeStats.speed;
         _weapon.weaponStats.mind += _upgradeStats.mind;
@@ -188,7 +188,7 @@ library GearFactory {
         _weapon.weaponStats.defensiveStats.burnResistance += _upgradeStats.defensiveStats.burnResistance;
         _weapon.weaponStats.defensiveStats.guard += _upgradeStats.defensiveStats.guard;
         _weapon.weaponStats.handling += _upgradeStats.handling;
-        _weapon.level++;
+        _weapon.level = _newLevel;
         if (newAbilities.length > 0)
             for (uint i = 0; i < newAbilities.length; i++)
                 _weapon.abilities.push(newAbilities[i]);

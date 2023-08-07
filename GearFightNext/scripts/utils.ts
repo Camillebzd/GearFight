@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import contractABI from "@/abi/GearFight.json";
 
 import { Ability } from './abilities';
-import { Identity } from './entities';
+import { Identity, WeaponMintStats } from './entities';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
@@ -32,7 +32,7 @@ export async function getWeaponStatsForLevelUp(identity: Identity) {
   for (const key in stats)
     if (stats.hasOwnProperty(key))
       stats[key] = Math.round(stats[key]);
-  let formatedStats = {
+  let formatedStats: WeaponMintStats = {
     health: stats.health as number,
     speed: stats.speed as number,
     mind: stats.mind as number,
@@ -52,4 +52,30 @@ export async function getWeaponStatsForLevelUp(identity: Identity) {
     handling: stats.handling as number,
   }
   return formatedStats;
+}
+
+export function multiplyStatsForLevelUp(stats: WeaponMintStats, coef: number) {
+  stats.health *= coef;
+  stats.speed *= coef;
+  stats.mind *= coef;
+  stats.offensiveStats.sharpDamage *= coef;
+  stats.offensiveStats.bluntDamage *= coef;
+  stats.offensiveStats.burnDamage *= coef;
+  stats.offensiveStats.pierce *= coef;
+  stats.offensiveStats.lethality *= coef;
+  stats.defensiveStats.sharpResistance *= coef;
+  stats.defensiveStats.bluntResistance *= coef;
+  stats.defensiveStats.burnResistance *= coef;
+  stats.defensiveStats.guard *= coef;
+  stats.handling *= coef;
+}
+
+export async function getAllAbilitiesIdForWeapon(identity: Identity, levelToSet: number) {
+  let allAbilities = (await import(`@/data/weapons/${identity.toLocaleLowerCase()}/abilities.json`));
+  let wantedAbilities: number[] = [];
+  for (const key in allAbilities) {
+    if (key == "base" || parseInt(key) <= levelToSet)
+      wantedAbilities = wantedAbilities.concat(allAbilities[key]);
+  }
+  return wantedAbilities;
 }

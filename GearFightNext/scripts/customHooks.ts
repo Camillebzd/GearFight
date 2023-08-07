@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Monster, Weapon, WeaponData, Identity } from "./entities";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/monsterSlice";
@@ -205,4 +205,33 @@ export function useRequestAvailable() {
   }, [address]);
 
   return requestAvailable;
+}
+
+// Local storage system
+
+function getStorageValue<Type>(key: string, defaultValue: Type) {
+  // getting stored value
+  const saved = localStorage.getItem(key);
+  let initial: Type = defaultValue;
+  if (saved)
+    initial = JSON.parse(saved);
+  return initial || defaultValue;
+}
+
+export const useLocalStorage = <Type>(key: string, defaultValue: Type): [Type, Dispatch<SetStateAction<Type>>] => {
+  const [value, setValue] = useState(() => {
+    return getStorageValue(key, defaultValue);
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+
+  return [value, setValue];
+};
+
+export const useXpStorage = (nftId: number): [number, Dispatch<SetStateAction<number>>] => {
+  const [xp, setXp] = useLocalStorage<number>(`xp-${nftId}`, 0);
+
+  return [xp, setXp];
 }

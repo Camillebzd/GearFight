@@ -179,16 +179,16 @@ describe('GearFight', function () {
     });
 
 
-    it("Should gain a level and set xp", async function() {
+    it("Should gain 2 levels and set xp", async function() {
         const { gearFight, basicSword, lvlUpStats, newAbilities }: 
         {gearFight: GearFight, basicSword: GearFactory.WeaponStruct, lvlUpStats: GearFactory.WeaponStatsStruct, newAbilities: string[] } = await loadFixture(deployFixture);
 
         await gearFight.requestWeapon(basicSword);
         let weapon = await gearFight.weapons(0);
         expect(weapon.level).to.be.equal(1);
-        await gearFight.levelUp(0, lvlUpStats, newAbilities, 1);
+        await gearFight.levelUp(0, 3, lvlUpStats, newAbilities, 1);
         weapon = await gearFight.weapons(0);
-        expect(weapon.level).to.be.equal(2);
+        expect(weapon.level).to.be.equal(3);
         expect(weapon.xp).to.be.equal(1);
 
         // Check the upgrade stats from URI
@@ -197,7 +197,8 @@ describe('GearFight', function () {
         expect(swordObj.name).to.be.equal(basicSword.name);
         expect(swordObj.description).to.be.equal(basicSword.description);
         expect(swordObj.image).to.be.equal(basicSword.image);
-        expect(getDataFromMetadata(swordObj.attributes, "Level")).to.be.equal((basicSword.level as number + 1).toString());
+        expect(getDataFromMetadata(swordObj.attributes, "Level")).to.be.equal("3");
+        expect(getDataFromMetadata(swordObj.attributes, "Experience")).to.be.equal("1");
         expect(getDataFromMetadata(swordObj.attributes, "Health")).to.be.equal(((basicSword.weaponStats.health as number) + (lvlUpStats.health as number)).toString());
         expect(getDataFromMetadata(swordObj.attributes, "Speed")).to.be.equal(((basicSword.weaponStats.speed as number) + (lvlUpStats.speed as number)).toString());
         expect(getDataFromMetadata(swordObj.attributes, "Mind")).to.be.equal(((basicSword.weaponStats.mind as number) + (lvlUpStats.mind as number)).toString());
@@ -221,6 +222,6 @@ describe('GearFight', function () {
         const { gearFight, lvlUpStats, newAbilities }: 
         {gearFight: GearFight, lvlUpStats: GearFactory.WeaponStatsStruct, newAbilities: string[] } = await loadFixture(deployFixture);
 
-        await expect(gearFight.levelUp(0, lvlUpStats, newAbilities, 1)).to.be.reverted;
+        await expect(gearFight.levelUp(0, 2, lvlUpStats, newAbilities, 1)).to.be.reverted;
     });
 });

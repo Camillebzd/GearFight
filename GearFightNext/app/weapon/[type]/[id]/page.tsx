@@ -6,10 +6,12 @@ import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { useParams } from 'next/navigation'
 import { Box, Button, ButtonGroup, Image } from '@chakra-ui/react'
 import { refreshOwnedTokenMetadata } from '@/redux/features/weaponSlice';
-import { createContract, getWeaponStatsForLevelUp } from '@/scripts/utils';
+import { createContract, getWeaponStatsForLevelUp, multiplyStatsForLevelUp } from '@/scripts/utils';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { useStarter, useUserWeapons } from '@/scripts/customHooks';
 import { Weapon } from '@/scripts/entities';
+
+import RetrieveXpButton from '@/components/RetriveXpButton';
 
 export default function Page() {
   const route = useParams();
@@ -20,24 +22,6 @@ export default function Page() {
     weapon = useStarter().find(weapon => weapon.id === parseInt(route.id as string));
   const address = useAppSelector((state) => state.authReducer.address);
   const dispatch = useAppDispatch();
-
-  const levelUp = async () => {
-    if (address.length < 0 || !weapon)
-      return;
-    const contract = await createContract(address);
-    let weaponStats = await getWeaponStatsForLevelUp(weapon.identity);
-    console.log(weaponStats);
-    try {
-      await contract.levelUp(weapon.id, weaponStats);
-      Notify.success('Your weapon gained a level, wait a minute and click on refresh to see it!');
-    } catch {
-      Notify.failure('An error happened during the level up process...');
-    }
-  };
-
-  const stageUp = async () => {
-
-  };
 
   const manualRefresh = async () => {
     if (weapon)
@@ -88,12 +72,7 @@ export default function Page() {
       </div>
       {route.type === "classic" &&
         <ButtonGroup>
-          <Button onClick={levelUp}>
-            Level up
-          </Button>
-          <Button onClick={stageUp}>
-            Stage up
-          </Button>
+          {(weapon && address) && <RetrieveXpButton weapon={weapon} address={address}/> }
           <Button onClick={manualRefresh}>
             Refresh Metadata
           </Button>
