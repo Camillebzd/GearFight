@@ -79,3 +79,16 @@ export async function getAllAbilitiesIdForWeapon(identity: Identity, levelToSet:
   }
   return wantedAbilities;
 }
+
+// get the specify element from the arr1, remove it and add it in arr2, return true on success, false otherwise
+export function getFromArrayToArray<Type>(arr1: Type[], arr2: Type[], element: Type) {
+  const index = arr1.indexOf(element);
+
+  if (index != -1) {
+    arr2.push(element);
+    arr1.splice(index, 1);
+    return true;
+  }
+  console.log("Error: getFromArrayToArray on element that doesn't exist in array.");
+  return false;
+}

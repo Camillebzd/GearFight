@@ -4,6 +4,7 @@ import authReducer from "./features/authSlice";
 import abilityReducer from "./features/abilitySlice";
 import monsterReducer from "./features/monsterSlice";
 import weaponReducer from "./features/weaponSlice";
+import weaponDeckReducer from "./features/weaponDeckSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     monsterReducer,
     abilityReducer,
     weaponReducer,
+    weaponDeckReducer
   },
   devTools: process.env.NODE_ENV !== "production",
 });

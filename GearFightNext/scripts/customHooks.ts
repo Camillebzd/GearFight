@@ -3,9 +3,10 @@ import { Monster, Weapon, WeaponData, Identity } from "./entities";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/monsterSlice";
 import { fillStoreAbilities } from "@/redux/features/abilitySlice";
-import { Ability } from "./abilities";
+import { Ability, AbilityData } from "./abilities";
 import { AttributeOnNFT, WeaponNFT, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
 import { createContract } from "./utils";
+import { Draft } from "immer";
 
 function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Ability[]) {
   let monsters: Monster[] = [];
@@ -205,6 +206,46 @@ export function useRequestAvailable() {
   }, [address]);
 
   return requestAvailable;
+}
+
+// get the deck of a specific weapon in redux storage 
+export function useWeaponDeck(weaponId: number) {
+  const [weaponDeck, setWeaponDeck] = useState<Ability[]>([]);
+  const weaponDeckData = useAppSelector((state) => state.weaponDeckReducer.decks[weaponId]);
+  const abilities = useAbilities(false); // care to not update from monster slice or this will trigger here
+
+  useEffect(() => {
+    if (weaponDeckData.length < 1 || abilities.length < 1)
+      return;
+    let dataToSet: Ability[] = weaponDeckData.map(abilityData => new Ability(abilityData));
+    setWeaponDeck(dataToSet);
+  }, [weaponDeckData, abilities]);
+
+  return weaponDeck;
+}
+
+export const deckBuildingInitialState: AbilityData[] = [];
+
+export type DeckBuildingAction = { type: 'add', abilityData: AbilityData} | { type: 'remove', abilityData: AbilityData}
+
+export function deckBuildingReducer(draft: Draft<AbilityData[]>, action: DeckBuildingAction) {
+  switch(action.type) {
+    case "add": {
+      if (draft.filter(ability => ability.id == action.abilityData.id).length + 1 > action.abilityData.tier)
+        break;
+      draft.push(action.abilityData);
+      draft.sort((ability1, ability2) => ability1.id - ability2.id);
+      break;
+    }
+    case "remove": {
+      const index = draft.findIndex(ability => ability.id == action.abilityData.id);
+      if (index < 0)
+        break;
+      draft.splice(index, 1);
+      draft.sort((ability1, ability2) => ability1.id - ability2.id);
+      break;
+    }
+  }
 }
 
 // Local storage system

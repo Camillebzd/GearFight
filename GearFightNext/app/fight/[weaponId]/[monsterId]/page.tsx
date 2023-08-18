@@ -15,6 +15,7 @@ import { useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
 import { useMonstersWorld, useUserWeapons } from '@/scripts/customHooks';
 import SelectFluxesModal from '@/components/SelectFluxesModal';
+import { HAND_SIZE } from '@/scripts/systemValues';
 
 export enum PHASES {
   PLAYER_CHOOSE_ABILITY,
@@ -56,6 +57,16 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
       return;
     if (!weapon) {
       weaponData.setLogger(setInfo);
+      // ------ TEST TO REMOVE ------
+      const deck: Ability[] = [];
+      for (let i = 0; i < weaponData.abilities.length; i++) {
+        const objectToCopy = weaponData.abilities[i];
+        for (let j = 0; j < 3; j++) {
+          deck.push(objectToCopy.clone());
+        }
+      }
+      weaponData.fillDeck(deck);
+      // ----------------------------
       setWeapon(weaponData);
     }
   }, [weaponData, weapon]);
@@ -66,6 +77,13 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
       return;
     }
     setInfo((currentInfo) => [...currentInfo, `--------- TURN ${turn} ---------`]);
+    // draw card if needed
+    if (weapon?.deck != null && weapon.deck.length === 0)
+      weapon.refillDeckFromDiscard();
+    while (weapon.hand.length < HAND_SIZE) {
+      weapon.drawOneRandomFromDeck();
+      setInfo((currentInfo) => [...currentInfo, `player draw 1 ability.`]);
+    }
     if (monster.isEntityAbleToPlay()) {
       let monsterAction = monster.launchRandomAbility(weapon, isMonsterCombo.current);
       if (monsterAction)
@@ -141,6 +159,7 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
     if (phase !== PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
       return;
     actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo}));
+    weapon?.discardFromHand(ability);
     console.log(actions);
     // resolve
     resolveLoop();
@@ -204,9 +223,12 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
           <div className={styles.phasePrinter}>
             <p>{phasePrinter()}</p>
             <p>Actual turn: {turn}</p>
+            <p>deck: {weapon?.deck.length}</p>
+            <p>discard: {weapon?.discard.length}</p>
           </div>
           <div className={styles.abilitiesCointainer}>
-            {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => onAbilityClick(ability)} ability={ability}/>)}
+            {/* {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => onAbilityClick(ability)} ability={ability}/>)} */}
+            {weapon?.hand.map(ability => <AbilityCard key={ability.idInDeck} onClick={() => onAbilityClick(ability)} ability={ability}/>)}
           </div>
         </div>
       </div>

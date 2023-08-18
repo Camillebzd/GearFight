@@ -8,15 +8,15 @@ export type AbilityType = "SHARP" | "BLUNT" | "BURN" | "SPECIAL";
 export type Tier = 1 | 2 | 3;
 
 export type AbilityData = {
-  id: number;
-  name: string;
-  damage: number;
-  initiative: number;
-  type: AbilityType;
-  isMagical: boolean;
-  effects: number[];
-  effectsValue: EffectValue[];
-  tier: Tier;
+  id: number,
+  name: string,
+  damage: number,
+  initiative: number,
+  type: AbilityType,
+  isMagical: boolean,
+  effects: number[],
+  effectsValue: EffectValue[],
+  tier: Tier,
 };
 
 export class Ability {
@@ -29,6 +29,7 @@ export class Ability {
   effects: number[] = [];
   effectsValue: EffectValue[] = [];
   tier: Tier = 3;
+  idInDeck = 0;
 
   constructor(data: AbilityData) {
     this.id = data.id;
@@ -40,6 +41,34 @@ export class Ability {
     this.effects = data.effects;
     this.effectsValue = data.effectsValue;
     this.tier = data.tier || 3;
+  }
+
+  extractData() {
+    return {
+      id: this.id,
+      name: this.name,
+      damage: this.damage,
+      initiative: this.initiative,
+      type: this.type,
+      isMagical: this.isMagical,
+      effects: this.effects,
+      effectsValue: this.effectsValue,
+      tier: this.tier,
+    } as AbilityData;
+  }
+
+  clone() {
+    return new Ability({
+      id: this.id, 
+      name: this.name,
+      damage: this.damage,
+      initiative: this.initiative,
+      type: this.type,
+      isMagical: this.isMagical,
+      effects: this.effects,
+      effectsValue: this.effectsValue,
+      tier: this.tier
+    });
   }
 };
 

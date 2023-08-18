@@ -1,4 +1,4 @@
-import { getRandomInt, randomIntFromInterval } from "./utils";
+import { getFromArrayToArray, getRandomInt, randomIntFromInterval } from "./utils";
 import {
   ATTACKER_SPEED_WEIGHT,
   DEFENDER_GUARD_WEIGHT,
@@ -590,6 +590,9 @@ export type WeaponData = EntityData & WeaponDataAddition;
 export class Weapon extends Entity {
   identity: Identity = "None";
   xp = 0;
+  deck: Ability[] = [];     // only on weapon for the moment... (replace abilities on Entity)
+  discard: Ability[] = [];  // only on weapon for the moment...
+  hand: Ability[] = [];     // only on weapon for the moment...
 
   constructor(data: WeaponData, logger: Dispatch<SetStateAction<string[]>>  | undefined = undefined) {
     super(data, logger);
@@ -623,6 +626,31 @@ export class Weapon extends Entity {
       abilities: this.abilities,
       identity: this.identity
     });
+  }
+
+  // fill the deck with all the abilities
+  fillDeck(abilities: Ability[]) {
+    this.deck = abilities;
+    // set new idDeck base on index
+    for (let i = 0; i < this.deck.length; i++)
+      this.deck[i].idInDeck = i;
+  }
+
+  // draw a random ability from deck and add it in the hand
+  drawOneRandomFromDeck() {
+    getFromArrayToArray(this.deck, this.hand, this.deck[getRandomInt(this.deck.length)]);
+  }
+
+  // remove an ability from the hand and add it in the discard
+  discardFromHand(ability: Ability) {
+    getFromArrayToArray(this.hand, this.discard, ability);
+  }
+
+  // refill the deck with the discard
+  refillDeckFromDiscard() {
+    while (this.discard.length > 0)
+      this.deck.push(this.discard.pop() as Ability);
+    console.log("end of refill deck");
   }
 }
 
