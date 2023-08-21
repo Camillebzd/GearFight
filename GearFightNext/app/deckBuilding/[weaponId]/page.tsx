@@ -1,7 +1,7 @@
 'use client'
 
 import styles from '../../page.module.css';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import WeaponList from '@/components/WeaponList';
 import { deckBuildingInitialState, deckBuildingReducer, useUserWeapons } from '@/scripts/customHooks';
 import { Button, ButtonGroup } from '@chakra-ui/react';
@@ -10,6 +10,8 @@ import { useImmerReducer } from 'use-immer';
 import { MouseEvent } from 'react';
 import { AbilityData } from '@/scripts/abilities';
 import { DECK_MAX_SIZE } from '@/scripts/systemValues';
+import { setDeck } from '@/redux/features/weaponDeckSlice';
+import { Notify } from 'notiflix';
 
 type decklistElem = {
   num: number, 
@@ -20,6 +22,7 @@ export default function Page({params}: {params: {weaponId: string}}) {
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const userWeapon = useUserWeapons(false).find(weapon => weapon.id == parseInt(params.weaponId));
   const [deck, dispatchDeck] = useImmerReducer(deckBuildingReducer, deckBuildingInitialState);
+  const dispatch = useAppDispatch();
   const list: decklistElem[] = deck.reduce((acc: decklistElem[], curr) => {
     for (let i = 0; i < acc.length; i++) {
       if (acc[i].abilityData.id == curr.id) {
@@ -52,7 +55,8 @@ export default function Page({params}: {params: {weaponId: string}}) {
   };
 
   const saveDeck = () => {
-
+    dispatch(setDeck({weaponId: userWeapon.id, abilities: deck}));
+    Notify.success('Deck saved.');
   };
 
   return (

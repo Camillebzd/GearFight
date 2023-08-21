@@ -210,12 +210,14 @@ export function useRequestAvailable() {
 
 // get the deck of a specific weapon in redux storage 
 export function useWeaponDeck(weaponId: number) {
+  // if (weaponId == undefined || weaponId < 0)
+  //   return undefined;
   const [weaponDeck, setWeaponDeck] = useState<Ability[]>([]);
   const weaponDeckData = useAppSelector((state) => state.weaponDeckReducer.decks[weaponId]);
   const abilities = useAbilities(false); // care to not update from monster slice or this will trigger here
 
   useEffect(() => {
-    if (weaponDeckData.length < 1 || abilities.length < 1)
+    if (!weaponDeckData || weaponDeckData?.length < 1 || abilities.length < 1)
       return;
     let dataToSet: Ability[] = weaponDeckData.map(abilityData => new Ability(abilityData));
     setWeaponDeck(dataToSet);

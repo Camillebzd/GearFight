@@ -2,18 +2,17 @@
 
 import styles from '@/app/page.module.css'
 
-import { useAppSelector } from '@/redux/hooks';
 import { useParams } from 'next/navigation'
-import { Box, Button, Image, useDisclosure } from '@chakra-ui/react'
+import { Box, Image } from '@chakra-ui/react'
 import DifficultyBadge from '@/components/DifficultyBadge';
-import WeaponSelectionModal from '@/components/WeaponSelectionModal';
 import { useMonstersWorld } from '@/scripts/customHooks';
+import FightButton from '@/components/FightButton';
+import { useAppSelector } from '@/redux/hooks';
 
 export default function Page() {
   const route = useParams();
-  const monster = useMonstersWorld(false).find(monster => monster.id === parseInt(route.id));
-  const isConnected = useAppSelector((state) => state.authReducer.isConnected);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const isConnected = useAppSelector(state => state.authReducer.isConnected);
+  const monster = useMonstersWorld(false).find(monster => monster.id === parseInt(route.id as string));
 
   if (monster === undefined)
     return (
@@ -21,19 +20,6 @@ export default function Page() {
         <p>Loading data... If it takes too much time it means the monster doesn't exist.</p>
       </main>
     );
-
-  const fightButton = () => {
-    if (isConnected) 
-      return (
-        <>
-          <Button onClick={onOpen}>Fight</Button>
-          <WeaponSelectionModal isOpen={isOpen} onClose={onClose} monsterId={monster.id}/>
-        </>
-      );
-    return (
-      <p>You can connect your wallet if you want fight this monster.</p>
-    );
-  }
 
   return (
     <main className={styles.main}>
@@ -60,7 +46,7 @@ export default function Page() {
         <p>Mind: {monster.stats.mind}</p>
         <p>Guard: {monster.stats.guard}</p>
         <p>Handling: {monster.stats.handling}</p>
-        {fightButton()}
+        {isConnected && <FightButton monsterId={monster.id}/>}
       </div>
     </main>
   );

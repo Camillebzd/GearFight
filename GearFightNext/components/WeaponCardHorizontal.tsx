@@ -1,4 +1,6 @@
+import { useWeaponDeck } from "@/scripts/customHooks";
 import { Weapon } from "@/scripts/entities";
+import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { 
   Card,
   Image,
@@ -11,6 +13,8 @@ import {
 } from "@chakra-ui/react";
 
 const WeaponCardHorizontal = ({weapon, onClick, isSelected}: {weapon: Weapon, onClick: () => void, isSelected: boolean}) => {
+  const deck = useWeaponDeck(weapon.id);
+
   return (
     <Card
       direction={{ base: 'column', sm: 'row' }}
@@ -34,11 +38,9 @@ const WeaponCardHorizontal = ({weapon, onClick, isSelected}: {weapon: Weapon, on
           </Text>
         </CardBody>
 
-        {/* <CardFooter>
-          <Button variant='solid' colorScheme='blue'>
-            Buy Latte
-          </Button>
-        </CardFooter> */}
+        <CardFooter>
+          <p>Deck: {deck && deck.length > 0 ? <CheckIcon/> : <CloseIcon /> }</p>
+        </CardFooter>
       </Stack>
     </Card>
   );

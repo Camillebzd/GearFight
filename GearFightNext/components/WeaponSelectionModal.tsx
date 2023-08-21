@@ -6,6 +6,7 @@ import WeaponCardHorizontal from "./WeaponCardHorizontal";
 import { useRouter } from "next/navigation";
 import { useUserWeapons } from "@/scripts/customHooks";
 
+// TODO La modal elle explose quand je click sur fight et que rien selectionné
 const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, onClose: () => void, monsterId: number}) => {
   const userWeapons = useUserWeapons(false);
   const [weaponSelectedID, setWeaponSelectedID] = useState(-1);
@@ -18,7 +19,7 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
   const goFight = () => {
     if (weaponSelectedID < 0)
       return;
-    router.push(`/fight/${weaponSelectedID}/${monsterId}`);
+    router.push(`/fight?weaponid=${weaponSelectedID}&monsterid=${monsterId}`);
   };
 
   return (
@@ -41,6 +42,6 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
       </ModalContent>
     </Modal>
   );
-  }
+}
   
   export default WeaponSelectionModal;

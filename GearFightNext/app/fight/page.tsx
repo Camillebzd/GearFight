@@ -1,7 +1,7 @@
 'use client'
 
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
-import styles from '../../../page.module.css'
+import styles from '@/app/page.module.css';
 
 import { useAppSelector } from "@/redux/hooks";
 import Entity from '@/components/Entity';
@@ -13,9 +13,10 @@ import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
 import { useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
-import { useMonstersWorld, useUserWeapons } from '@/scripts/customHooks';
+import { useMonstersWorld, useUserWeapons, useWeaponDeck } from '@/scripts/customHooks';
 import SelectFluxesModal from '@/components/SelectFluxesModal';
 import { HAND_SIZE } from '@/scripts/systemValues';
+import { useSearchParams } from 'next/navigation'
 
 export enum PHASES {
   PLAYER_CHOOSE_ABILITY,
@@ -23,9 +24,11 @@ export enum PHASES {
   RESOLUTION,
 }
 
-export default function Page({params}: {params: {weaponId: string, monsterId: string}}) {
-  const monsterData = useMonstersWorld(false).find(monster => monster.id === parseInt(params.monsterId))?.clone();
-  const weaponData = useUserWeapons(false).find(weapon => weapon.id === parseInt(params.weaponId))?.clone();
+export default function Page() {
+  const searchParams = useSearchParams()
+  const monsterData = useMonstersWorld(false).find(monster => monster.id === parseInt(searchParams.get('monsterid') as string))?.clone();
+  const weaponData = useUserWeapons(false).find(weapon => weapon.id === parseInt(searchParams.get('weaponid') as string))?.clone();
+  const weaponDeck = useWeaponDeck(parseInt(searchParams.get('weaponid') as string));
   const [monster, setMonster] = useState<Monster | null>(null);
   const [weapon, setWeapon] = useState<Weapon | null>(null);
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
@@ -53,23 +56,24 @@ export default function Page({params}: {params: {weaponId: string, monsterId: st
   }, [monsterData, monster]);
 
   useEffect(() => {
-    if (!weaponData)
+    if (!weaponData || !weaponDeck || weaponDeck.length < 1)
       return;
     if (!weapon) {
       weaponData.setLogger(setInfo);
       // ------ TEST TO REMOVE ------
-      const deck: Ability[] = [];
-      for (let i = 0; i < weaponData.abilities.length; i++) {
-        const objectToCopy = weaponData.abilities[i];
-        for (let j = 0; j < 3; j++) {
-          deck.push(objectToCopy.clone());
-        }
-      }
-      weaponData.fillDeck(deck);
+      // const deck: Ability[] = [];
+      // for (let i = 0; i < weaponData.abilities.length; i++) {
+      //   const objectToCopy = weaponData.abilities[i];
+      //   for (let j = 0; j < 3; j++) {
+      //     deck.push(objectToCopy.clone());
+      //   }
+      // }
+      // weaponData.fillDeck(deck);
+      weaponData.fillDeck(weaponDeck);
       // ----------------------------
       setWeapon(weaponData);
     }
-  }, [weaponData, weapon]);
+  }, [weaponData, weapon, weaponDeck]);
 
   // gameLoop (local)
   useEffect(() => {
