@@ -7,6 +7,7 @@ import { Ability, AbilityData } from "./abilities";
 import { AttributeOnNFT, WeaponNFT, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
 import { createContract } from "./utils";
 import { Draft } from "immer";
+import { Notify } from "notiflix";
 
 function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Ability[]) {
   let monsters: Monster[] = [];
@@ -112,6 +113,7 @@ export function useUserWeapons(forceFill: boolean = false) {
   const [weapons, setWeapons] = useState<Weapon[]>([]);
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const weaponsDataNFT = useAppSelector((state) => state.weaponReducer.userWeapons);
+  const isLoading = useAppSelector((state) => state.weaponReducer.isLoading);
   const abilities = useAbilities(false); // care to not update from monster slice or this will trigger here
   const dispatch = useAppDispatch();
 
@@ -119,7 +121,8 @@ export function useUserWeapons(forceFill: boolean = false) {
     if (!isConnected) {
       return;
     }
-    dispatch(fillUserWeapons(forceFill));
+    if (!isLoading)
+      dispatch(fillUserWeapons(forceFill));
   }, [isConnected]);
 
   useEffect(() => {
@@ -151,30 +154,47 @@ export function useAbilities(forceFill: boolean = false) {
   return abilities;
 }
 
+// TODO put the base name without uppercase
 export function useStarter() {
   const [weaponsStarter, setWeaponsStarter] = useState<Weapon[]>([]);
   const abilities = useAbilities(false);
 
   useEffect(() => {
     const createStarter = async () => {
-      const weaponsAvailables = ["sword", "waraxe", "spear", "warhammer"]; // TODO put this in env
+      const weaponsAvailables = ["Excalibur"];
       let starters: Weapon[] = [];
       for (let i = 0; i < weaponsAvailables.length; i++) {
-        let starterWeapon: WeaponData = (await import(`@/data/weapons/${weaponsAvailables[i]}/stats.json`)).default["base"];
+        let starterWeapon: WeaponData = JSON.parse(JSON.stringify((await import(`@/data/weapons/baseStats.json`)).default.find(weapon => weapon.name == weaponsAvailables[i]))) as WeaponData;
+        if (!starterWeapon) {
+          console.log(`Error: can't find starter weapon: ${weaponsAvailables[i]}.`);
+          continue;
+        }
         starterWeapon["level"] = 1;
         starterWeapon["stage"] = 1;
         starterWeapon["name"] = "Basic " + weaponsAvailables[i].charAt(0).toUpperCase() + weaponsAvailables[i].slice(1);
         starterWeapon["description"] = "This is a starter weapon.";
-        starterWeapon["image"] = (await import(`@/data/weapons/${weaponsAvailables[i]}/images.json`)).default["1"];
-        let abilitiesId: number[] = (await import(`@/data/weapons/${weaponsAvailables[i]}/abilities.json`)).default["base"];
-        let weaponAbilities: (Ability | undefined)[] = [];
+        const image = (await import(`@/data/weapons/images.json`)).default.find(weapon => weapon.name == weaponsAvailables[i])?.image;
+        if (!image) {
+          console.log(`Error: can't find weapon image: ${weaponsAvailables[i]}.`);
+          continue;
+        }
+        starterWeapon["image"] = image;
+        const abilitiesId: number[] |undefined = (await import(`@/data/weapons/abilities.json`)).default.find(weapon => weapon.name == weaponsAvailables[i])?.base;
+        if (!abilitiesId) {
+          console.log(`Error: can't find weapon abilities: ${weaponsAvailables[i]}.`);
+          continue;
+        }
+        let weaponAbilities: Ability[] = [];
         abilitiesId.forEach((abilityId) => {
-          weaponAbilities.push(abilities.find((ability) => ability.id === abilityId));
+          const ability = abilities.find((ability) => ability.id === abilityId);
+          if (!ability)
+            console.log(`Error: can't find weapon ability with id: ${abilityId}.`);
+          else
+            weaponAbilities.push(ability);
         });
-        starterWeapon["abilities"] = weaponAbilities as Ability[];
+        starterWeapon["abilities"] = weaponAbilities;
         starterWeapon["xp"] = 0;
-        const gearIdentity: Identity[] = ["None", "Sword", "Waraxe", "Spear", "Warhammer"];
-        starterWeapon["identity"] = gearIdentity[i + 1];
+        starterWeapon["identity"] = weaponsAvailables[i];
         starterWeapon["id"] = i;
         starters.push(new Weapon(starterWeapon));
       }
@@ -197,10 +217,15 @@ export function useRequestAvailable() {
     if (address.length < 42)
     return;
     const updateRequestCount = async () => {
-      const contract = await createContract(address);
-      const maxWeaponsRequest = await contract.maxWeaponsRequest();
-      const weaponsRequested = await contract.weaponsRequested(address);
-      setRequestAvailable(maxWeaponsRequest - weaponsRequested);
+      try {
+        const contract = await createContract(address);
+        const maxWeaponsRequest: BigInt = await contract.maxWeaponsRequest();
+        const weaponsRequested: BigInt = await contract.weaponsRequested(address);
+        setRequestAvailable(Number(maxWeaponsRequest) - Number(weaponsRequested));
+      } catch (e) {
+        console.log(e);
+        Notify.failure("Failed to retrieve free request available.");
+      }
     }
     updateRequestCount();
   }, [address]);
@@ -208,12 +233,13 @@ export function useRequestAvailable() {
   return requestAvailable;
 }
 
-// get the deck of a specific weapon in redux storage 
+// get the deck of a specific weapon in local storage
 export function useWeaponDeck(weaponId: number) {
-  // if (weaponId == undefined || weaponId < 0)
-  //   return undefined;
   const [weaponDeck, setWeaponDeck] = useState<Ability[]>([]);
-  const weaponDeckData = useAppSelector((state) => state.weaponDeckReducer.decks[weaponId]);
+  // Redux
+  // const weaponDeckData = useAppSelector((state) => state.weaponDeckReducer.decks[weaponId]);
+  // Local storage
+  const [weaponDeckData, setWeaponDeckData] = useDeckDataStorage(weaponId);
   const abilities = useAbilities(false); // care to not update from monster slice or this will trigger here
 
   useEffect(() => {
@@ -277,4 +303,10 @@ export const useXpStorage = (nftId: number): [number, Dispatch<SetStateAction<nu
   const [xp, setXp] = useLocalStorage<number>(`xp-${nftId}`, 0);
 
   return [xp, setXp];
+}
+
+export const useDeckDataStorage = (weaponId: number): [AbilityData[], Dispatch<SetStateAction<AbilityData[]>>] => {
+  const [deck, setDeck] = useLocalStorage<AbilityData[]>(`deck-${weaponId}`, []);
+
+  return [deck, setDeck];
 }

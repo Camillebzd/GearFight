@@ -331,7 +331,7 @@ export class Action {
         target.applyHeal(Math.round(ruleValue * fluxQuantity * target.stats.healthMax / 100));
         break;
       default:
-        console.log("Error: rule not supported for the moment.");
+        console.log(`Error: rule not supported for the moment with id: ${rule.id}.`);
         return;
     }
   }

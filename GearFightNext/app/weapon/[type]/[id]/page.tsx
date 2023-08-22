@@ -12,6 +12,7 @@ import { useStarter, useUserWeapons } from '@/scripts/customHooks';
 import { Weapon } from '@/scripts/entities';
 
 import RetrieveXpButton from '@/components/RetriveXpButton';
+import CreateDeckButton from '@/components/CreateDeckButton';
 
 export default function Page() {
   const route = useParams();
@@ -76,6 +77,7 @@ export default function Page() {
           <Button onClick={manualRefresh}>
             Refresh Metadata
           </Button>
+          <CreateDeckButton weaponId={weapon.id} />
         </ButtonGroup>
       }
     </main>

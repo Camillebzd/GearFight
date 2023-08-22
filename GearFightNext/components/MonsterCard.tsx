@@ -47,13 +47,13 @@ const MonsterCard = ({monster}: {monster: Monster}) => {
                 <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='blue' onClick={e => {e.preventDefault(); onOpen();}}>
                   Fight
                 </Button>
-                <WeaponSelectionModal isOpen={isOpen} onClose={onClose} monsterId={monster.id}/>
+                {/* <WeaponSelectionModal isOpen={isOpen} onClose={onClose} monsterId={monster.id}/> */}
               </>)
             }
           </CardFooter>
         </Card>
       </Link>
-      {/* <WeaponSelectionModal isOpen={isOpen} onClose={onClose} monsterId={monster.id}/> */}
+      <WeaponSelectionModal isOpen={isOpen} onClose={onClose} monsterId={monster.id}/>
     </>
   );
 }

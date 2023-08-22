@@ -11,6 +11,7 @@ import {
   CardFooter,
   Button
 } from "@chakra-ui/react";
+import CreateDeckButton from "./CreateDeckButton";
 
 const WeaponCardHorizontal = ({weapon, onClick, isSelected}: {weapon: Weapon, onClick: () => void, isSelected: boolean}) => {
   const deck = useWeaponDeck(weapon.id);
@@ -39,7 +40,8 @@ const WeaponCardHorizontal = ({weapon, onClick, isSelected}: {weapon: Weapon, on
         </CardBody>
 
         <CardFooter>
-          <p>Deck: {deck && deck.length > 0 ? <CheckIcon/> : <CloseIcon /> }</p>
+          {/* <p>Deck: {deck && deck.length > 0 ? <CheckIcon/> : <CloseIcon /> }</p> */}
+          <CreateDeckButton weaponId={weapon.id} />
         </CardFooter>
       </Stack>
     </Card>

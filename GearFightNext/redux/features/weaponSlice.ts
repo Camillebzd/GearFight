@@ -85,11 +85,13 @@ export const refreshOwnedTokenMetadata = createAsyncThunk<{weaponIndex: number, 
 );
 
 type WeaponState = {
-  userWeapons: WeaponNFT[];  // User weapons data
+  userWeapons: WeaponNFT[], // User weapons data
+  isLoading: boolean        // protection to prevent multiple call
 };
 
 const initialState = {
-  userWeapons: []
+  userWeapons: [],
+  isLoading: false
 } as WeaponState;
 
 export const weapons = createSlice({
@@ -99,8 +101,15 @@ export const weapons = createSlice({
     reset: () => initialState,
   },
   extraReducers: (builder) => {
+    builder.addCase(fillUserWeapons.pending, (state, action) => {
+      state.isLoading = true;
+    }),
     builder.addCase(fillUserWeapons.fulfilled, (state, action) => {
       state.userWeapons = action.payload;
+      state.isLoading = false;
+    }),
+    builder.addCase(fillUserWeapons.rejected, (state, action) => {
+      state.isLoading = false;
     }),
     builder.addCase(refreshOwnedTokenMetadata.fulfilled, (state, action) => {
       if (action.payload.newWeaponData)

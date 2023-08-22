@@ -578,7 +578,7 @@ export type WeaponMint = {
   abilities: string[],
 }
 
-export type Identity = "None" | "Sword" | "Warhammer" | "Waraxe" | "Spear";
+export type Identity = "None" | string;
 
 export type WeaponDataAddition = {
   identity: Identity,

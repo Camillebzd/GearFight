@@ -19,8 +19,8 @@ const RetrieveXpButton = ({weapon, address}: {weapon: Weapon, address: `0x${stri
     let totalXp = weapon.xp + xp;
     if (xpAmountRequired[nextLevel] > totalXp) {
       try {
-        // await contract.gainXP(weapon.id, xp);
-        console.log(`gain xp on weapon id: ${weapon.id}, xp amout to add: ${xp}`);
+        await contract.gainXP(weapon.id, xp);
+        // console.log(`gain xp on weapon id: ${weapon.id}, xp amout to add: ${xp}`);
         Notify.success('Your weapon gained xp, wait a minute and click on refresh to see it!');
         setXp(0);
       } catch(e) {
@@ -41,15 +41,15 @@ const RetrieveXpButton = ({weapon, address}: {weapon: Weapon, address: `0x${stri
       levelToSet -= 1;
       try {
         let weaponStats = await getWeaponStatsForLevelUp(weapon.identity);
-        console.log("avant coef", weaponStats);
+        // console.log("avant coef", weaponStats);
         multiplyStatsForLevelUp(weaponStats, levelToSet - weapon.level);
-        console.log("apres coef", weaponStats);
+        // console.log("apres coef", weaponStats);
         // abilities
         let alreadyKnownAbilities = weapon.abilities.map(ability => ability.id);
         let allAbilities = await getAllAbilitiesIdForWeapon(weapon.identity, levelToSet);
         let abilitiesToAdd = allAbilities.filter(abilityId => !alreadyKnownAbilities.includes(abilityId));
-        console.log("abilities to add: ", abilitiesToAdd);
-        // await contract
+        // console.log("abilities to add: ", abilitiesToAdd);
+        await contract.levelUp(weapon.id, levelToSet, weaponStats, abilitiesToAdd, rest);
         console.log(`levelup on weapon id: ${weapon.id}, level: ${levelToSet}, xp left: ${rest}`);
         Notify.success(`Your weapon gained ${levelToSet - weapon.level} level(s), wait a minute and click on refresh to see it!`);
         setXp(0);

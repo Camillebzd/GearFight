@@ -26,12 +26,13 @@ export async function createContract(walletAddress: string) {
 }
 
 export async function getWeaponStatsForLevelUp(identity: Identity) {
-  let directoryName = identity.toLowerCase();
-  let stats = (await import(`@/data/weapons/${directoryName}/stats.json`)).default["levelUp"];
+  let stats = JSON.parse(JSON.stringify((await import(`@/data/weapons/statsGrowth.json`)).default.find(weapon => weapon.name == identity)));
+  if (!stats)
+    console.log(`Error: no level up data for: ${identity}`);
   // round for the moment bc blockchain doesn't accept float...
   for (const key in stats)
     if (stats.hasOwnProperty(key))
-      stats[key] = Math.round(stats[key]);
+      stats[key] = Math.floor(stats[key]);
   let formatedStats: WeaponMintStats = {
     health: stats.health as number,
     speed: stats.speed as number,
