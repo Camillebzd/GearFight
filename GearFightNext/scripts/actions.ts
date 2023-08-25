@@ -1,17 +1,43 @@
-import effects from "../data/abilities/effects.json";
-import conditions from "../data/abilities/conditions.json";
-import targets from "../data/abilities/targets.json"
-import rules from "../data/abilities/rules.json";
-import modifiers from "../data/abilities/modifiers.json";
-import orders from "../data/abilities/orders.json";
-import { getRandomInt } from "./utils";
+import { fetchFromDB, getRandomInt } from "./utils";
 import { 
   TARGET_ABILITY,
   CONDITIONS
 } from "./systemValues";
 import { Monster, Weapon } from "./entities";
-import { Ability, AftermathType, Rule, Modifier, Condition, EffectValue, Effect, Target } from "./abilities";
+import { Ability, AftermathType, Rule, Modifier, Condition, EffectValue, Effect, Target, Order } from "./abilities";
 import { SetStateAction, Dispatch } from "react";
+
+import targets from "../data/abilities/targets.json" // constant
+import conditions from "../data/abilities/conditions.json"; // constant
+import orders from "../data/abilities/orders.json"; // constant
+
+// import effects from "../data/abilities/effects.json";
+// import rules from "../data/abilities/rules.json";
+// import modifiers from "../data/abilities/modifiers.json";
+
+// Unstable...
+let effects: Effect[] = [];
+let rules: Rule[] = [];
+let modifiers: Modifier[] = [];
+
+const initData = async () => {
+  const effectsData: Effect[] | undefined = await fetchFromDB("abilities/effects");
+  if (effectsData)
+    effects = effectsData;
+  else
+    console.log("Error: can't fetch abilities' effects.");
+  const rulesData: Rule[] | undefined = await fetchFromDB("abilities/rules");
+  if (rulesData)
+    rules = rulesData;
+  else
+    console.log("Error: can't fetch rules for abilities.");
+  const modifiersData: Modifier[] | undefined = await fetchFromDB("abilities/modifiers");
+  if (modifiersData)
+    modifiers = modifiersData;
+  else
+    console.log("Error: can't fetch modifiers for abilities.");
+}
+initData();
 
 export enum END_OF_TURN {NORMAL, TARGET_BLOCKED, PLAYER_COMBO, MONSTER_COMBO, PLAYER_DIED, MONSTER_DIED};
 
@@ -167,7 +193,7 @@ export class Action {
       }
       let target = this.getTarget(targetObj);
       if (target == undefined) {
-        console.log("Error: this target is not supported");
+        console.log("Error: this target type is not supported: ", targetObj.id);
         return;
       }
       let modifier = this.getAftermath(effect.aftermathId, "MODIFIER") as Modifier;
@@ -194,7 +220,7 @@ export class Action {
     this.ability.effects.forEach((actionEffect) => {
       let effect = effects.find((effect) => effect.id == actionEffect);
       if (effect == undefined) {
-        console.log("Error: this effect is not supported");
+        console.log("Error: this effect is not supported on ability ", this.ability.name);
         return;
       }
       // Rule
@@ -204,13 +230,13 @@ export class Action {
       }
       let rule = this.getAftermath(effect.aftermathId, "RULE") as Rule;
       if (!rule) {
-        console.log("Error: rule unknown.");
+        console.log("Error: rule unknown on ability ", this.ability.name);
         return;
       }
       // Order
       let order = orders.find(order => order.id == rule.orderId);
       if (!order) {
-        console.log("Error: order not supported.");
+        console.log("Error: order not supported on ability ", this.ability.name);
         return;
       }
       if (order.id != orderId)
@@ -218,7 +244,7 @@ export class Action {
       // Condition
       let condition = conditions.find((condition) => condition.id === effect!.conditionId);
       if (condition == undefined) {
-        console.log("Error: this condition is not supported");
+        console.log("Error: this condition is not supported on ability ", this.ability.name);
         return;
       }
       if (!this.checkCondition(condition)) {
@@ -233,18 +259,18 @@ export class Action {
       // Target
       let targetObj = targets.find((target) => target.id === effect!.targetId);
       if (targetObj == undefined) {
-        console.log("Error: this target is not supported");
+        console.log("Error: this target is not supported on ability ", this.ability.name);
         return;
       }
       let target = this.getTarget(targetObj);
-      if (target == undefined) {
-        console.log("Error: this target is not supported");
+      if (target === undefined) {
+        console.log("Error: this target type is not supported: ", targetObj.id);
         return;
       }
       // Rule value
       let ruleValue = this.getAftermathValue(effect.id, this.ability.effectsValue);
       if (ruleValue == -1) {
-        console.log("Error: rule value is not set on effect");
+        console.log("Error: rule value is not set on effect on ability ", this.ability.name);
         return;
       }
       // Flux quantity
@@ -254,7 +280,9 @@ export class Action {
   }
 
   // Execute the rule with the value given on the target
-  executeRule(rule: Rule, ruleValue: number, target: Weapon | Monster, fluxQuantity: number) {
+  executeRule(rule: Rule, ruleValue: number, target: Weapon | Monster | null, fluxQuantity: number) {
+    if (target == null)
+      return;
     switch (rule.id) {
       // Gain X fluxes
       case 1:
@@ -311,7 +339,7 @@ export class Action {
         break;
       // Purge the target (remove positive modifiers)
       case 15:
-        target.purge();
+        this.modifiersPurged = target.purge();
         break;
       // Add additional damage for each flux on the target of action
       case 16:
@@ -329,6 +357,10 @@ export class Action {
       // Heal % of maximum hp
       case 20:
         target.applyHeal(Math.round(ruleValue * fluxQuantity * target.stats.healthMax / 100));
+        break;
+      // Removes fluxes
+      case 23:
+        target.removeFluxes(ruleValue * fluxQuantity);
         break;
       default:
         console.log(`Error: rule not supported for the moment with id: ${rule.id}.`);
@@ -378,13 +410,15 @@ export class Action {
     }
   }
 
-  // return the entity obj targeted by the target input obj
+  // return the entity obj targeted by the target input obj, null if no target selected and undefined if not supported
   getTarget(target: Target) {
     switch(target.id) {
       case TARGET_ABILITY.TARGET_OF_ABILITY:
         return this.target;
       case TARGET_ABILITY.CASTER_OF_ABILITY:
         return this.caster;
+      case TARGET_ABILITY.NONE:
+        return null;
       default:
         console.log("WARNING: maybe the target is not supported yet");
         return undefined;
@@ -406,7 +440,7 @@ export class Action {
     let effectValue = effectsValue.find((effectValue) => effectValue.id === effectId);
 
     if (effectValue == undefined) {
-      console.log("Error: effectValue not found");
+      console.log(`Error: effectValue not found for effectId ${effectId}`);
       return -1;
     }
     return effectValue.value;
@@ -417,9 +451,9 @@ export class Action {
     let effectOnAbility: Effect[] = [];
 
     for (let effectId of this.ability.effects) {
-      let effect = effects.find(elem => elem.id == effectId) as Effect;
-      if (!effect)
-        effectOnAbility.push(effect);
+      let effect = effects.find(elem => elem.id == effectId);
+      if (effect)
+        effectOnAbility.push(effect as Effect);
     }
     return effectOnAbility;
   }

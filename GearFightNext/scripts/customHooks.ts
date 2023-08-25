@@ -5,9 +5,10 @@ import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/
 import { fillStoreAbilities } from "@/redux/features/abilitySlice";
 import { Ability, AbilityData } from "./abilities";
 import { AttributeOnNFT, WeaponNFT, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
-import { createContract } from "./utils";
+import { createContract, fetchFromDB, getAllAbilitiesIdForWeapon } from "./utils";
 import { Draft } from "immer";
 import { Notify } from "notiflix";
+import { STARTERS_NAME } from "./systemValues";
 
 function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Ability[]) {
   let monsters: Monster[] = [];
@@ -47,6 +48,7 @@ function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Abili
   return monsters;
 }
 
+// TODO Create the same but directly with specific ID in order to avoid full creation monsters...
 export function useMonstersWorld(forceFill: boolean = false) {
   const [monsters, setMonsters] = useState<Monster[]>([]);
   const monstersData = useAppSelector((state) => state.monsterReducer.monstersWorld);
@@ -61,6 +63,7 @@ export function useMonstersWorld(forceFill: boolean = false) {
     if (monstersData.length < 1 || abilities.length < 1)
       return;
     let dataToSet: Monster[] = createMonsters(monstersData, abilities);
+    dataToSet.sort((a, b) => a.difficulty - b.difficulty);
     setMonsters(dataToSet);
   }, [monstersData, abilities]);
 
@@ -76,11 +79,15 @@ function getGearAttributeInfo(attributes: AttributeOnNFT[], trait_type: string):
 }
 
 function createWeapon(weaponsDataNFT: WeaponNFT, abilities: Ability[]) {
-  let weaponAbilities: (Ability | undefined)[] = [];
+  let weaponAbilities: Ability[] = [];
   let weaponAbilitiesNames = getGearAttributeInfo(weaponsDataNFT.attributes, "Abilities");
   if (Array.isArray(weaponAbilitiesNames))
     weaponAbilitiesNames.forEach((abilityName) => {
-      weaponAbilities.push(abilities.find((abilitie) => abilitie.name === abilityName));
+      const ability = abilities.find((abilitie) => abilitie.name === abilityName);
+      if (ability)
+        weaponAbilities.push(ability);
+      else
+        console.log("Warning an ability on a weapon is not a valid ability: ", abilityName);
     });
   let data: WeaponData = {
     name: weaponsDataNFT.name,
@@ -129,6 +136,7 @@ export function useUserWeapons(forceFill: boolean = false) {
     if (weaponsDataNFT.length < 1 || abilities.length < 1)
       return;
     let dataToSet: Weapon[] = weaponsDataNFT.map(weaponDataNFT => createWeapon(weaponDataNFT, abilities));
+    dataToSet.sort((a, b) => a.id - b.id);
     setWeapons(dataToSet);
   }, [weaponsDataNFT, abilities]);
 
@@ -154,17 +162,31 @@ export function useAbilities(forceFill: boolean = false) {
   return abilities;
 }
 
-// TODO put the base name without uppercase
 export function useStarter() {
   const [weaponsStarter, setWeaponsStarter] = useState<Weapon[]>([]);
   const abilities = useAbilities(false);
 
   useEffect(() => {
     const createStarter = async () => {
-      const weaponsAvailables = ["Excalibur"];
+      const weaponsAvailables = STARTERS_NAME;
       let starters: Weapon[] = [];
+      let starterDataBaseStats: WeaponData[] = [];
+      let starterDataImages: {id: number, name: string, image: string}[] = [];
+      let abilitiesId: number[] = [];
+
+      starterDataBaseStats = await fetchFromDB("weapons/baseStats");
+      if (starterDataBaseStats === undefined) {
+        console.log("Failed to fetch baseStats from db.")
+        return;
+      }
+      starterDataImages = await fetchFromDB("weapons/images");
+      if (starterDataImages === undefined) {
+        console.log("Failed to fetch images of weapons from db.")
+        return;
+      }
       for (let i = 0; i < weaponsAvailables.length; i++) {
-        let starterWeapon: WeaponData = JSON.parse(JSON.stringify((await import(`@/data/weapons/baseStats.json`)).default.find(weapon => weapon.name == weaponsAvailables[i]))) as WeaponData;
+        // let starterWeapon: WeaponData = JSON.parse(JSON.stringify((await import(`@/data/weapons/baseStats.json`)).default.find(weapon => weapon.name == weaponsAvailables[i]))) as WeaponData;
+        let starterWeapon: WeaponData | undefined = starterDataBaseStats.find(weapon => weapon.name == weaponsAvailables[i]);
         if (!starterWeapon) {
           console.log(`Error: can't find starter weapon: ${weaponsAvailables[i]}.`);
           continue;
@@ -173,13 +195,20 @@ export function useStarter() {
         starterWeapon["stage"] = 1;
         starterWeapon["name"] = "Basic " + weaponsAvailables[i].charAt(0).toUpperCase() + weaponsAvailables[i].slice(1);
         starterWeapon["description"] = "This is a starter weapon.";
-        const image = (await import(`@/data/weapons/images.json`)).default.find(weapon => weapon.name == weaponsAvailables[i])?.image;
+        // const image = (await import(`@/data/weapons/images.json`)).default.find(weapon => weapon.name == weaponsAvailables[i])?.image;
+        const image = starterDataImages.find(weapon => weapon.name == weaponsAvailables[i])?.image;
         if (!image) {
           console.log(`Error: can't find weapon image: ${weaponsAvailables[i]}.`);
           continue;
         }
         starterWeapon["image"] = image;
-        const abilitiesId: number[] |undefined = (await import(`@/data/weapons/abilities.json`)).default.find(weapon => weapon.name == weaponsAvailables[i])?.base;
+        // const abilitiesId: number[] |undefined = (await import(`@/data/weapons/abilities.json`)).default.find(weapon => weapon.name == weaponsAvailables[i])?.base;
+        try {
+          abilitiesId = await getAllAbilitiesIdForWeapon(weaponsAvailables[i], 1);
+        } catch(e) {
+          console.log(e);
+          continue;
+        }
         if (!abilitiesId) {
           console.log(`Error: can't find weapon abilities: ${weaponsAvailables[i]}.`);
           continue;

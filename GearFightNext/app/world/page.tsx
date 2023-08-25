@@ -3,10 +3,15 @@
 import styles from '../page.module.css'
 
 import MonsterList from '@/components/MonsterList';
-import { useMonstersWorld } from '@/scripts/customHooks';
+import { useMonstersWorld, useUserWeapons } from '@/scripts/customHooks';
+import { Weapon } from '@/scripts/entities';
+import { createContext } from 'react';
+
+export const UserWeaponsContext = createContext<Weapon[]>([]);
 
 export default function Page() {
   const monsters = useMonstersWorld(true);
+  const userWeapons = useUserWeapons(true);
 
   return (
     <main className={styles.main}>
@@ -14,7 +19,9 @@ export default function Page() {
       <h2 className={styles.pageSubtitle}>Monsters</h2>
       {monsters.length === 0 ? 
         <p>Monsters loading...</p> : 
-        <MonsterList monsters={monsters}/>
+        <UserWeaponsContext.Provider value={userWeapons}>
+          <MonsterList monsters={monsters}/>
+        </UserWeaponsContext.Provider>
       }
       <h2 className={styles.pageSubtitle}>Dungeons</h2>
     </main>

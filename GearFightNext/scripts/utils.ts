@@ -5,6 +5,7 @@ import { Ability } from './abilities';
 import { Identity, WeaponMintStats } from './entities';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 // random num between 0 - max
 export function getRandomInt(max: number) {
@@ -71,12 +72,20 @@ export function multiplyStatsForLevelUp(stats: WeaponMintStats, coef: number) {
   stats.handling *= coef;
 }
 
+// get the list of abilities for a weapon for a specific level, throw an error if an error is encoutered
 export async function getAllAbilitiesIdForWeapon(identity: Identity, levelToSet: number) {
-  let allAbilities = (await import(`@/data/weapons/${identity.toLocaleLowerCase()}/abilities.json`));
+  // let allAbilities = (await import(`@/data/weapons/${identity.toLocaleLowerCase()}/abilities.json`));
+  let allAbilities: {[key: string]: number[] | number | string}[] = [];
+  allAbilities = await fetchFromDB("weapons/abilities");
+  if (allAbilities === undefined)
+    throw new Error("Failed to fetch abilities for weapons from db.");
+  const specificAbilitiesList = allAbilities.find(obj => obj.name as string === identity);
+  if (!specificAbilitiesList)
+    throw new Error(`Error can't find ${identity} as corresponding name in data.`);
   let wantedAbilities: number[] = [];
-  for (const key in allAbilities) {
+  for (const key in specificAbilitiesList) {
     if (key == "base" || parseInt(key) <= levelToSet)
-      wantedAbilities = wantedAbilities.concat(allAbilities[key]);
+      wantedAbilities = wantedAbilities.concat(specificAbilitiesList[key] as number);
   }
   return wantedAbilities;
 }
@@ -92,4 +101,20 @@ export function getFromArrayToArray<Type>(arr1: Type[], arr2: Type[], element: T
   }
   console.log("Error: getFromArrayToArray on element that doesn't exist in array.");
   return false;
+}
+
+// retreive data from the db, return undefined if an error occured
+export async function fetchFromDB(route: string) {
+  try {
+    let response = await fetch(`${SERVER_URL}/${route}`);
+    if (!response.ok) {
+      console.log(`An error occurred: ${response.statusText}`);
+      return undefined;
+    }
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    console.log(e);
+    return undefined;
+  }
 }

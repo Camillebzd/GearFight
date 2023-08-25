@@ -156,6 +156,22 @@ export default function Page() {
       }
       actions.current = actions.current.filter((action) => {return action.hasBeenDone === false});
     }
+    // TODO manage this in an "end of turn"
+    // TODO the faster apply first ?
+    if (!weapon!.applyDecayingModifier()) {
+      // die of dots
+      console.log("PLAYER died");
+      won.current = false;
+      endOfFightModal.onOpen();
+    }
+    if (!monster!.applyDecayingModifier()) {
+      // die of dots
+      console.log("MONSTER died");
+      won.current = true;
+      endOfFightModal.onOpen();
+    }
+    weapon!.resetRulesOnAction();
+    monster!.resetRulesOnAction();
     setTurn((actualTurn) => actualTurn + 1);
   };
 
@@ -236,7 +252,7 @@ export default function Page() {
           </div>
         </div>
       </div>
-      {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} xpQuantity={monster!.difficulty} isWinner={won.current}/>}
+      {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current}/>}
       {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} useAbility={useAbilityModal} fluxesAvailables={weapon.fluxes}/>}
     </main>
   );

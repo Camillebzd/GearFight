@@ -1,13 +1,15 @@
 'use client'
 
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import WeaponCardHorizontal from "./WeaponCardHorizontal";
 import { useRouter } from "next/navigation";
 import { useUserWeapons } from "@/scripts/customHooks";
+import { UserWeaponsContext } from "@/app/world/page";
 
 const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, onClose: () => void, monsterId: number}) => {
-  const userWeapons = useUserWeapons(false);
+  // const userWeapons = useUserWeapons(false);
+  const userWeapons = useContext(UserWeaponsContext);
   const [weaponSelectedID, setWeaponSelectedID] = useState(-1);
   const router = useRouter();
 

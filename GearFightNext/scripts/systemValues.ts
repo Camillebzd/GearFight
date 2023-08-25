@@ -15,8 +15,14 @@ export const MAX_DECAYING_MODIFIER_COUNTER = 6;
 export const HAND_SIZE = 4;
 export const DECK_MAX_SIZE = 10;
 
+// Change manually in code in scripts/abilities.ts
+export const TIER_ONE_COPIES = 1;
+export const TIER_TWO_COPIES = 2;
+export const TIER_THREE_COPIES = 4;
+
 // enum for the target system
-export enum TARGET_ABILITY {TARGET_OF_ABILITY = 1, CASTER_OF_ABILITY, ABILITY_ITSELF, COMBO_ABILITY_TRIGGERED}
+export enum TARGET_ABILITY {TARGET_OF_ABILITY = 1, CASTER_OF_ABILITY, ABILITY_ITSELF, COMBO_ABILITY_TRIGGERED, NONE = 13}
+
 // enum for the condition system
 export enum CONDITIONS {
     NO_CONDITION = 1, 
@@ -36,3 +42,6 @@ export enum CONDITIONS {
     CASTER_DOESNT_BEARS_ANY_MODIFIER = 15,
     CASTER_TOOK_DAMAGE_THIS_TURN_OR_LAST_ONE = 16,
 };
+
+// Names of the starters weapons allowed to create
+export const STARTERS_NAME = ["Excalibur", "Unknown axe"];

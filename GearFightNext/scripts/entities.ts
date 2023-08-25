@@ -116,7 +116,7 @@ export class Entity {
   modifiers: Modifier[] = [];
   isNPC = true;
   played = false;
-  action = {};  // TODO Type this
+  // action = {};  // TODO Type this
   side = false; // TODO manage group on front !
   info: Dispatch<SetStateAction<string[]>>  | undefined = undefined; // the logger
   // TODO handle with 2 type of variables, reset each turn and effect will not triggered
@@ -342,6 +342,10 @@ export class Entity {
     // Blight
     if (this.isModifierPresent(40))
       return;
+    // Anointed
+    if (this.isModifierPresent(43)) {
+      finalHeal += this.modifiers.find(modifier => modifier.id === 43)?.value! * finalHeal / 100;
+    }
     if (this.stats.health + finalHeal >= this.stats.healthMax)
       finalHeal = this.stats.healthMax - this.stats.health;
     this.stats.health += finalHeal;
@@ -427,14 +431,25 @@ export class Entity {
       case 26:
         this.addFluxes(modifier.value);
         break;
+      // Bleed
+      case 34:
+        // break;
+      // Shock
+      case 35:
+        // break;
+      // Scald
+      case 36:
+        // break;
       // Affliction
       case 37:
         this.applyDamage(Math.round(modifier.value * this.stats.healthMax / 100));
+        break;
       // Amnesia
       case 38:
         this.removeFluxes(modifier.value);
+        break;
       default:
-        console.log("Error: periodic modifier can't be apply bc not supported");
+        console.log("Error: periodic modifier can't be apply bc not supported: ", modifier.name, modifier.id);
         return;
     }
     modifier.stack--;

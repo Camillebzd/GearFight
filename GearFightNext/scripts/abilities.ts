@@ -5,7 +5,8 @@ export type EffectValue = {
 
 export type AbilityType = "SHARP" | "BLUNT" | "BURN" | "SPECIAL";
 
-export type Tier = 1 | 2 | 3;
+// Env var for the TIER_ONE_COPIES, TIER_TWO_COPIES, TIER_THREE_COPIES
+export type Tier = 1 | 2 | 4; 
 
 export type AbilityData = {
   id: number,
@@ -28,7 +29,7 @@ export class Ability {
   isMagical: boolean = false;
   effects: number[] = [];
   effectsValue: EffectValue[] = [];
-  tier: Tier = 3;
+  tier: Tier = 4;
   idInDeck = 0;
 
   constructor(data: AbilityData) {
@@ -40,7 +41,7 @@ export class Ability {
     this.isMagical = data.isMagical;
     this.effects = data.effects;
     this.effectsValue = data.effectsValue;
-    this.tier = data.tier || 3;
+    this.tier = data.tier || 4;
   }
 
   extractData() {

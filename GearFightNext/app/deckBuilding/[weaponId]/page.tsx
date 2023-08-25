@@ -53,6 +53,8 @@ export default function Page({params}: {params: {weaponId: string}}) {
   };
 
   const saveDeck = () => {
+    if (deck.length !== DECK_MAX_SIZE)
+      return;
     setDeckData(deck);
     Notify.success('Deck saved.');
   };
@@ -74,7 +76,7 @@ export default function Page({params}: {params: {weaponId: string}}) {
             return <Button key={i} onClick={(e) => handleClick(e, elem.abilityData)} onContextMenu={(e) => handleClick(e, elem.abilityData)}>{elem.num} {elem.abilityData.name}</Button>;
           })}
         </ButtonGroup>
-        <Button onClick={saveDeck} style={{marginTop: '1rem', width: 'fit-content'}} colorScheme={deck.length == DECK_MAX_SIZE ? 'green' : 'red'} disabled={deck.length == DECK_MAX_SIZE}>Save deck</Button>
+        <Button onClick={saveDeck} style={{marginTop: '1rem', width: 'fit-content'}} colorScheme={deck.length == DECK_MAX_SIZE ? 'green' : 'red'}>Save deck</Button>
       </div>
     </main>
   );

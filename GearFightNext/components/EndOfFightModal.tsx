@@ -3,14 +3,30 @@
 import { useAppSelector } from "@/redux/hooks";
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { createContract } from "@/scripts/utils";
+import { createContract, fetchFromDB } from "@/scripts/utils";
 import { Notify } from "notiflix";
 import { useXpStorage } from "@/scripts/customHooks";
+import { useEffect, useState } from "react";
 
-const EndOfFightModal = ({isOpen, onClose, weaponId, xpQuantity, isWinner}: {isOpen: boolean, onClose: () => void, weaponId: number, xpQuantity: number, isWinner: boolean}) => {
+const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner}: {isOpen: boolean, onClose: () => void, weaponId: number, difficulty: number, isWinner: boolean}) => {
   const address = useAppSelector((state) => state.authReducer.address);
   const router = useRouter();
   const [xp, setXp] = useXpStorage(weaponId);
+  const [xpReward, setXpReward] = useState(0);
+
+  useEffect(() => {
+    const getXpRewardData = async () => {
+      const response = await fetchFromDB("general/experiences");
+
+      if (response === undefined) {
+        console.log("An error occured during the fetch of experiences from db.");
+        Notify.failure('An error happened during the retrieve of xp data...');
+        return;
+      }
+      setXpReward(response[0][difficulty.toString()]);
+    }
+    getXpRewardData();
+  }, []);
 
   const goToWorld = () => {
     router.push('/world');
@@ -29,9 +45,11 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, xpQuantity, isWinner}: {isO
     //   console.log(e);
     //   Notify.failure('An error happened during the the process of gaining experience.');
     // }
+    if (xpReward === 0)
+      return;
     try {
-      setXp(xp + xpQuantity);
-      Notify.success(`Your weapon stocked ${xpQuantity} xp, go on the detail page to see it!`);
+      setXp(xp + xpReward);
+      Notify.success(`Your weapon stocked ${xpReward} xp, go on the detail page to see it!`);
     } catch (e) {
       console.log(e);
       Notify.failure('An error happened during the the process of gaining experience.');
@@ -41,7 +59,7 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, xpQuantity, isWinner}: {isO
 
   const resultSentence = () => {
     if (isWinner)
-      return `Congratulation for your win, you can gain ${xpQuantity}XP.`;
+      return `Congratulation for your win, you can gain ${xpReward}XP.`;
     else
       return 'You lost...';
   };
