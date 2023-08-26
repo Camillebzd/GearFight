@@ -1,16 +1,13 @@
 <template>
   <div class="entity-container">
     <div v-if="!modifiersOnRight" class="modifiers-container" style="margin-right: 10px">
-      <div v-for="buff in entity.buffs" class="modifier-container">
-        <div style="margin-right;: 5px">{{ buff.turns }}</div>
-        <MDBBadge badge="success"  style="height: fit-content;">
-          {{ buff.data.displayName }}
+      <div v-for="modifier in entity.modifiers" class="modifier-container">
+        <div style="margin-right;: 5px">{{ modifier.turns }}</div>
+        <MDBBadge v-if="modifier.direction == 'BUFF'" badge="success"  style="height: fit-content; margin-bottom: 5px;">
+          {{ modifier.name }} {{ modifier.stack }}
         </MDBBadge>
-      </div>
-      <div v-for="debuff in entity.debuffs" class="modifier-container">
-        <div style="margin-right: 5px">{{ debuff.turns }}</div>
-        <MDBBadge badge="danger"  style="height: fit-content;">
-          {{ debuff.data.displayName }}
+        <MDBBadge v-else badge="danger"  style="height: fit-content; margin-bottom: 5px;">
+          {{ modifier.name }} {{ modifier.stack }}
         </MDBBadge>
       </div>
     </div>
@@ -25,8 +22,15 @@
             </div>
             <div class="health-container">
               <div style="margin-right: 7px">Health: </div>
-              <progress :max="entity.healthBase" :value="entity.health" style="background-color:green; margin-right: 5px;"></progress>
-              <div style="width: 40px">{{ Math.round(entity.health * 100 / entity.healthBase) }}%</div>
+              <progress :max="entity.stats.healthMax" :value="entity.stats.health" style="background-color:green; margin-right: 5px;"></progress>
+              <div style="width: 40px">{{ Math.round(entity.stats.health * 100 / entity.stats.healthMax) }}%</div>
+            </div>
+            <div class="fluxes-container">
+              <div style="margin-right: 7px">Fluxes: </div>
+              <div class="fluxes-circles-container">
+                <div class="fluxe-circle fluxe-full" v-for="n in entity.fluxes"></div>
+                <div class="fluxe-circle fluxe-empty" v-for="n in 6 - entity.fluxes"></div>
+              </div>
             </div>
           </div>
           <div class="image-container" >
@@ -39,17 +43,14 @@
       </template> -->
     <!-- </MDBTooltip> -->
     <div v-if="modifiersOnRight" class="modifiers-container" style="margin-left: 10px">
-      <div v-for="buff in entity.buffs" class="modifier-container">
-        <MDBBadge badge="success"  style="height: fit-content;">
-          {{ buff.data.displayName }}
-        </MDBBadge>
-        <div style="margin-left: 5px">{{ buff.turns }}</div>
-      </div>
-      <div v-for="debuff in entity.debuffs" class="modifier-container">
-        <MDBBadge badge="danger"  style="height: fit-content;">
-          {{ debuff.data.displayName }}
-        </MDBBadge>
-        <div style="margin-left: 5px">{{ debuff.turns }}</div>
+      <div v-for="modifier in entity.modifiers" class="modifier-container">
+        <div style="margin-right;: 5px">{{ modifier.turns }}</div>
+          <MDBBadge v-if="modifier.direction == 'BUFF'" badge="success"  style="height: fit-content; margin-bottom: 5px;">
+            {{ modifier.name }} {{ modifier.stack }}
+          </MDBBadge>
+          <MDBBadge v-else badge="danger"  style="height: fit-content; margin-bottom: 5px;">
+            {{ modifier.name }} {{ modifier.stack }}
+          </MDBBadge>
       </div>
     </div>
   </div>
@@ -160,6 +161,35 @@ export default {
 }
 .health-bar {
   color: green;
+}
+.fluxes-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 5px;
+}
+.fluxes-circles-container {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  /* background-color: red; */
+  justify-content: space-around;
+  /* align-items: center; */
+
+}
+.fluxe-circle {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+}
+.fluxe-full {
+  background-color: #d518db;
+}
+.fluxe-empty {
+  background-color: #525252;
 }
 .top-container {
   border-style: solid;

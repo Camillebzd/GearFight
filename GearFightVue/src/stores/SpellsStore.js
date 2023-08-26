@@ -8,7 +8,11 @@ export const useSpellsStore  = defineStore('SpellsStore', {
       debuffs: [],
       // new
       weaponsSpells: [],
-      monstersSpells: []
+      monstersSpells: [],
+      effects: [],
+      conditions: [],
+      targets: [],
+      modifiers: [] // buff and debuff
     }
   },
   getters: {
@@ -68,7 +72,7 @@ export const useSpellsStore  = defineStore('SpellsStore', {
           spell.data.debuffs[i] = {...this.getDebuff(spell.data.debuffs[i].name)};
       }
     },
-    // new
+    // new ---------------------------------------
     // add condition to stop pulling for nothing ?
     async fillWeaponsSpells() {
       this.weaponsSpells = (await import("@/data/spells/weapons.json")).default;

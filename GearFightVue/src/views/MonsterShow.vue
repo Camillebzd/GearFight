@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="monsters.length > 0">
+    <div v-if="monster != undefined">
       <h1>{{monster.name}}</h1>
       <div class="flex-div">
         <img :src="'/img/monsters/' + monster.image" alt="..." style="width: 64; height: 64;" class="img-fluid shadow-2-strong nft-img" />
@@ -8,16 +8,20 @@
           <MDBBadge :badge="getBadgeColor" style="margin-bottom: 1rem;">{{ getDifficultyName }}</MDBBadge>
           <div>Health: {{monster.health}}</div>
           <div>Speed: {{monster.speed}}</div>
+          <div>Mind: {{monster.mind}}</div>
           <div>Sharp Damage: {{monster.sharpDmg}}</div>
           <div>Blunt Damage: {{monster.bluntDmg}}</div>
+          <div>Burn Damage: {{monster.burnDmg}}</div>
           <div>Sharp Resistance: {{monster.sharpRes}}</div>
           <div>Blunt Resistance: {{monster.bluntRes}}</div>
-          <div>Penetration Resistance: {{monster.penRes}}</div>
+        </div>
+        <div style="margin-left: 15px;">
+          <div>Burn Resistance: {{monster.burnRes}}</div>
+          <div>Pierce: {{monster.pierce}}</div>
           <div>Handling: {{monster.handling}}</div>
           <div>Guard: {{monster.guard}}</div>
           <div>Lethality: {{monster.lethality}}</div>
-        </div>
-        <div>
+          <div>Level: {{ monster.level }}</div>
           <div>Spells: {{ monster.spells[0]?.name }}, {{ monster.spells[1]?.name }}, {{ monster.spells[2]?.name }}, {{ monster.spells[3]?.name }}</div>
         </div>
       </div>
@@ -106,12 +110,12 @@ export default {
     GearCardHorizontal
   },
   computed: {
-    ...mapState(useMonstersStore, ['monsters', 'fillMonstersData', 'getFightFormMonster']),
+    ...mapState(useMonstersStore, ['getMonster', 'fillMonstersData', 'getFightFormMonster']),
     ...mapState(useUserStore, ['isConnected']),
-    ...mapState(useGearsStore, ['ownedGearsFormatted', 'fillMyGears', 'getFightFormGear', 'getMyGear']),
-    monster() {
-      return this.monsters[this.$route.params.id];
-    },
+    ...mapState(useGearsStore, ['ownedGearsFormatted', 'fillMyGears', 'getMyGear']),
+    // monster() {
+    //   return this.monsters[this.$route.params.id];
+    // },
     getBadgeColor() {
       if (this.monster.difficulty === 1)
         return "secondary";
@@ -158,7 +162,7 @@ export default {
       // fightData.group2.push(monster);
       fightData.group2.push(this.getFightFormMonster(this.$route.params.id));
       // fightData.allies.push(this.ownedGearsFormatted.find(gear => gear.tokenId == this.gearSelected));
-      fightData.group1.push(this.getFightFormGear(this.getMyGear(this.gearSelected)));
+      // fightData.group1.push(this.getFightFormGear(this.getMyGear(this.gearSelected))); // getFightFormGear deprecated
       fightData.roomLeader = this.gearSelected;
       socket.emit("initFight", fightData);
     },
@@ -180,6 +184,7 @@ export default {
   },
   data() {
     return {
+      monster: undefined,
       exampleModalScrollable: false,
       gearSelected: -1,
       socket: {},
@@ -187,8 +192,8 @@ export default {
   },
   async created() {
     console.log("created");
-    await this.fillMonstersData();
     await this.fillMyGears(false);
+    this.monster = await this.getMonster(this.$route.params.id);
   },
   unmounted() {
     socket.off("connect_error");

@@ -4,9 +4,10 @@ import { useSpellsStore } from './SpellsStore';
 import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
 
 import { ethers } from 'ethers';
-import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+import contractABI from "@/abi/GearFactory.json";
 
 import { Buffer } from 'buffer';
+import { Weapon } from '@/scripts/entities';
 
 const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY_MATIC;
 const CONTRACT_ADDRESS = (import.meta.env.VITE_NEW_CONTRACT_ADDRESS).toLowerCase();
@@ -16,7 +17,7 @@ export const useGearsStore  = defineStore('GearStore', {
     return {
       gears: [],
       ownedGears: [],
-      ownedGearsFormatted: [],
+      ownedGearsFormatted: [], // list of Weapon
       starterGears: [],
       // really needed here and in lib ?
       gearType: ["Empty", "Sword", "Waraxe", "Spear", "Warhammer"] // NEED AN ENUM SAME AS CONTRACT / LIB
@@ -42,8 +43,7 @@ export const useGearsStore  = defineStore('GearStore', {
         this.gears.push(tokens.nfts[i]);
     },
     // get all the gear of the connected user
-    async fillMyGears(forceRefresh) {
-      console.log("contract add env var: ", CONTRACT_ADDRESS);
+    async fillMyGears(forceRefresh = false) {
       let userStore = useUserStore();
       if (!userStore.isConnected) {
         console.log("You should be connected if you want to get your Gears!");
@@ -111,22 +111,34 @@ export const useGearsStore  = defineStore('GearStore', {
       return 0;
     },
     // return a gear from all the gear
+    // /!\ DO NOT USE
     getGear(tokenId) {
       return this.gears.find(gear => gear.tokenId === tokenId);
     },
     // return a gear from the user's gear
+    // /!\ DO NOT USE
     getMyGear(tokenId) {
       return this.ownedGears.find(gear => gear.tokenId === tokenId);
     },
-    getMyGearFormatted(tokenId) {
-      return this.ownedGearsFormatted.find(gear => gear.id == tokenId);
+    async getMyGearFormatted(tokenId) {
+      let myGearFormatted = this.ownedGearsFormatted.find(gear => gear.id == tokenId);
+      if (!myGearFormatted) {
+        await this.fillMyGears(true);
+        myGearFormatted = this.ownedGearsFormatted.find(gear => gear.id == tokenId);
+        if (!myGearFormatted) {
+          console.log("Error: you requested a gear you don't own or doesn't exist");
+          return {};
+        }
+        return myGearFormatted.clone();
+      }
+      return this.ownedGearsFormatted.find(gear => gear.id == tokenId).clone();
     },
     // return a gear from the starter gear list
     getStarterGear(tokenId) {
       return this.starterGears.find(gear => gear.id == tokenId);
     },
     // format a user's gear in the good format for everything
-    // ALCHEMY VERSION WITH RAWMETADA
+    // ALCHEMY VERSION WITH RAWMETADA - deprecated
     async getClassicFormGear(token) {
       if (token == null || token == undefined || token.rawMetadata == undefined) {
         console.log("WARNING: format performed on an empty token.");
@@ -174,7 +186,7 @@ export const useGearsStore  = defineStore('GearStore', {
       this.getGearAttributeInfo(token.attributes, "Spells").forEach((spellName) => {
         weaponSpells.push(spellsStore.getWeaponsSpellFromName(spellName));
       });
-      return {
+      let data = {
         name: token.name,
         id: parseInt(tokenId),
         description: token.description,
@@ -183,11 +195,14 @@ export const useGearsStore  = defineStore('GearStore', {
         stage: parseInt(this.getGearAttributeInfo(token.attributes, "Stage")),
         health: parseInt(this.getGearAttributeInfo(token.attributes, "Health")),
         speed: parseInt(this.getGearAttributeInfo(token.attributes, "Speed")),
+        mind: parseInt(this.getGearAttributeInfo(token.attributes, "Mind")),
         sharpDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Sharp Damage")),
         bluntDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Blunt Damage")),
+        burnDmg: parseInt(this.getGearAttributeInfo(token.attributes, "Burn Damage")),
         sharpRes: parseInt(this.getGearAttributeInfo(token.attributes, "Sharp Resistance")),
         bluntRes: parseInt(this.getGearAttributeInfo(token.attributes, "Blunt Resistance")),
-        penRes: parseInt(this.getGearAttributeInfo(token.attributes, "Penetration Resistance")),
+        burnRes: parseInt(this.getGearAttributeInfo(token.attributes, "Burn Resistance")),
+        pierce: parseInt(this.getGearAttributeInfo(token.attributes, "Pierce")),
         handling: parseInt(this.getGearAttributeInfo(token.attributes, "Handling")),
         guard: parseInt(this.getGearAttributeInfo(token.attributes, "Guard")),
         lethality: parseInt(this.getGearAttributeInfo(token.attributes, "Lethality")),
@@ -195,8 +210,10 @@ export const useGearsStore  = defineStore('GearStore', {
         xp: parseInt(this.getGearAttributeInfo(token.attributes, "Experience")),
         weaponType: this.getGearAttributeInfo(token.attributes, "Weapon Type")
       };
+      return new Weapon(data);
     },
-    // format a user's gear in the good format for fight /!\ should be classic formatted 
+    // format a user's gear in the good format for fight /!\ should be classic formatted
+    // TODO Useless since obj
     getFightFormGear(token) {
       if (token == null || token == undefined) {
         console.log("WARNING: format performed on an empty token.");
@@ -206,6 +223,18 @@ export const useGearsStore  = defineStore('GearStore', {
       for (let i = 0; i < tokenFightForm.spells.length; i++)
         tokenFightForm.spells[i] = tokenFightForm.spells[i];
       tokenFightForm.healthBase = token.health;
+      tokenFightForm.speedBase = token.speed;
+      tokenFightForm.mindBase = token.mind;
+      tokenFightForm.sharpDmgBase = token.sharpDmg;
+      tokenFightForm.bluntDmgBase = token.bluntDmg;
+      tokenFightForm.burnDmgBase = token.burnDmg;
+      tokenFightForm.sharpResBase = token.sharpRes;
+      tokenFightForm.bluntResBase = token.bluntRes;
+      tokenFightForm.burnResBase = token.burnRes;
+      tokenFightForm.pierceBase = token.pierce;
+      tokenFightForm.handlingBase = token.handling;
+      tokenFightForm.guardBase = token.guard;
+      tokenFightForm.lethalityBase = token.lethality;
       tokenFightForm.buffs = [];
       tokenFightForm.debuffs = [];
       tokenFightForm.isNPC = false;
@@ -222,7 +251,9 @@ export const useGearsStore  = defineStore('GearStore', {
       return "";
     },
     // care with the form of the obj
-    isOwned(tokenId) {
+    async isOwned(tokenId) {
+      if (this.ownedGears.length < 1)
+        await this.fillMyGears(true);
       return this.ownedGears.findIndex(gear => gear.tokenId == tokenId) > -1;
     },
     async getWeaponStatsForLevelUp(weaponType) {
@@ -232,7 +263,26 @@ export const useGearsStore  = defineStore('GearStore', {
       for (const key in stats)
         if (stats.hasOwnProperty(key))
           stats[key] = Math.round(stats[key]);
-      return stats;
+      let formatedStats = {
+        health: stats.health,
+        speed: stats.speed,
+        mind: stats.mind,
+        offensiveStats: {
+          sharpDamage: stats.sharpDmg,
+          bluntDamage: stats.bluntDmg,
+          burnDamage: stats.burnDmg,
+          pierce: stats.pierce,
+          lethality: stats.lethality
+        },
+        defensiveStats: {
+          sharpResistance: stats.sharpRes,
+          bluntResistance: stats.bluntRes,
+          burnResistance: stats.burnRes,
+          guard: stats.guard,
+        },
+        handling: stats.handling,
+      }
+      return formatedStats;
     },
     async getWeaponImageForUpgrade(weaponType, stage) {
       weaponType = weaponType.toLowerCase();

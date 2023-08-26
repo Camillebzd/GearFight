@@ -29,17 +29,46 @@
         <SpellCard v-for="mySpell in mySpells" :key="mySpell.id"
           @click="launchSpell(mySpell)" 
           :spell="mySpell"
+          :playerFluxes="myGear.fluxes"
           @mouseover="spellTargetedInfo = mySpell" @mouseleave="spellTargetedInfo = {}"
         />
       </div>
       <div class="info-entity-container">
         <InfoWindow :entityInfo="entityTargetedInfo" :spellInfo="spellTargetedInfo" />
       </div>
+      <!-- Fluxes selection modal -->
       <MDBModal
-        id="showModal"
+        id="showFluxesModal"
+        tabindex="-1"
+        labelledby="showModalTitleFluxes"
+        v-model="showFluxesModal"
+        scrollable
+        staticBackdrop
+      >
+        <MDBModalHeader :close="false">
+          <MDBModalTitle id="showModalTitleFluxes">Choose how many fluxes consume for the ability:</MDBModalTitle>
+        </MDBModalHeader>
+        <MDBModalBody>
+          <MDBContainer class="fluxe-modal-container">
+            <p>{{ selectedSpell.name }}</p>
+            <div class="fluxe-selector-container">
+              <MDBBtn color="secondary" @click="fluxesSelected > 1 && modifyFluxesSelected(-1)" > - </MDBBtn>
+              <div style="margin-left: 5px; margin-right: 5px;">{{ fluxesSelected }}</div>
+              <MDBBtn color="secondary" @click="fluxesSelected < myGear.fluxes && modifyFluxesSelected(1)"> + </MDBBtn>
+            </div>
+            <div class="fluxe-buttons-container">
+              <MDBBtn color="secondary" @click="cancelSelectFluxes()"> Cancel </MDBBtn>
+              <MDBBtn color="primary" @click="selectFluxes()"> Select </MDBBtn>
+            </div>
+          </MDBContainer>
+        </MDBModalBody>
+      </MDBModal>
+      <!-- End of fight modal -->
+      <MDBModal
+        id="showEndModal"
         tabindex="-1"
         labelledby="showModalTitle"
-        v-model="showModal"
+        v-model="showEndModal"
         scrollable
         staticBackdrop
       >
@@ -83,12 +112,12 @@ import Chat from "@/components/Chat.vue";
 import SpellCard from "@/components/SpellCard.vue";
 import InfoWindow from "@/components/InfoWindow.vue";
 import { 
-  resolveTurn,
-  getRandomInt,
-  END_OF_TURN
+  resolveActions
 } from "@/scripts/fight.js";
+import { getRandomInt } from "@/scripts/utils.js";
+import { Action, END_OF_TURN } from "@/scripts/actions";
 import { ethers } from 'ethers';
-import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+import contractABI from "@/abi/GearFactory.json";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
 
@@ -123,19 +152,34 @@ export default {
       actions: [],
       isMonterCombo: false,
       isPlayerCombo: false,
-      showModal: false,
+      showEndModal: false,
       won: false,
+      showFluxesModal: false,
+      fluxesSelected: 1,
       entityTargetedInfo: {},
       spellTargetedInfo: {},
+      playerSpellPromise: null,
+      playerComboPromise: null,
+      playerFluxesPromise: null,
+      selectedSpell: null
     }
   },
   computed: {
-    ...mapState(useGearsStore, ['fillMyGears', 'isOwned', 'getFightFormGear', 'getMyGearFormatted', 'refreshTokenMetadata']),
-    ...mapState(useMonstersStore, ['monsters', 'fillMonstersData', 'getFightFormMonster']),
+    ...mapState(useGearsStore, ['isOwned', 'getMyGearFormatted']),
+    ...mapState(useMonstersStore, ['getMonster']),
   },
   methods: {
+    // https://stackoverflow.com/questions/75466751/how-to-await-a-value-being-set-asynchronously
+    deferred() {
+      let resolve, reject
+      const promise = new Promise((res,rej) => {
+        resolve = res
+        reject = rej
+      })
+      return { promise, resolve, reject }
+    },
     goBackToWorld() {
-      this.showModal = false;
+      this.showEndModal = false;
       this.$router.push({name: 'World'});
     },
     async gainXP() {
@@ -161,64 +205,134 @@ export default {
       }
       this.goBackToWorld();
     },
-    launchSpell(mySpell) {
+    async launchSpell(mySpell) {
+      if (this.isTurnRunning == true && this.isPlayerCombo != true) {
+        console.log("Error: this is not your turn to play.");
+        return;
+      }
+      this.selectedSpell = mySpell;
+      let fluxesUsed = 0;
+      // manage fluxes
+      if (mySpell.isMagical) {
+        if (this.myGear.fluxes == 0) {
+          console.log("Error: can't use this spell with no fluxes.");
+          this.selectedSpell = null;
+          return;
+        }
+        if(await this.handleFluxesSelection() == false) {
+          console.log("Player canceled");
+          this.selectedSpell = null;
+          return;
+        } else {
+          this.myGear.useFluxes(this.fluxesSelected);
+          fluxesUsed = this.fluxesSelected;
+          this.fluxesSelected = 1;
+        }
+      }
+      this.actions.push(new Action({caster: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo, fluxesUsed: fluxesUsed, info: this.info}));
+      this.selectedSpell = null; // if needed after keep it...
       if (this.isPlayerCombo == false) {
-        this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
-        // random select spell for monster
-        this.actions.push({attacker: this.monster, spell: this.monster.spells[getRandomInt(this.monster.spells.length)], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
-      }
-      this.actions.push({attacker: this.myGear, spell: mySpell, target: this.monster, hasBeenDone: false, isCombo: this.isPlayerCombo});
-      this.turn();
-    },
-    turn() {
-      // clean actions done ?
-      this.actions = this.actions.filter((action) => {return action.hasBeenDone === false});
-      let ret = resolveTurn(this.actions, this.info);
-      switch (ret) {
-        case END_OF_TURN.PLAYER_COMBO:
-          this.isPlayerCombo = true;
-          this.info.push("PLAYER COMBO!");
-          break;
-        case END_OF_TURN.MONSTER_COMBO:
-          this.isMonterCombo = true;
-          this.info.push("MONSTER COMBO!");
-          this.actions.push({attacker: this.monster, spell: this.monster.spells[getRandomInt(this.monster.spells.length)], target: this.myGear, hasBeenDone: false, isCombo: this.isMonterCombo});
-          this.turn();
-          break;
-        case END_OF_TURN.PLAYER_DIED:
-          this.won = false;
-          this.showModal = true;
-          return;
-        case END_OF_TURN.MONSTER_DIED:
-          this.won = true;
-          this.showModal = true;
-          return;
-        case END_OF_TURN.NORMAL:
-        default:
-          // end turn
-          this.info.push("-------------------------------- END OF TURN --------------------------------");
-          this.isMonterCombo = false;
-          this.isPlayerCombo = false;
-          this.actions = []; // this.actions = this.actions.filter((action) => {return action.hasBeenDone === false});
-          this.actualTurn++;
-          break;
+        this.playerSpellPromise.resolve();
+      } else {
+        this.playerComboPromise.resolve();
       }
     },
+    async resolveTurn() {
+      this.isTurnRunning = true;
+      this.info.push(`------------------------------------- TURN ${this.actualTurn} -------------------------------------`);
+      while (this.actions.length > 0) {
+        let ret = resolveActions(this.actions);
+        switch (ret) {
+          case END_OF_TURN.PLAYER_COMBO:
+            this.isPlayerCombo = true;
+            this.playerComboPromise = this.deferred();
+            await this.playerComboPromise.promise;
+            break;
+          case END_OF_TURN.MONSTER_COMBO:
+            this.isMonterCombo = true;
+            this.actions.push(this.monster.launchRandomSpell(this.myGear, this.isMonterCombo));
+            break;
+          case END_OF_TURN.PLAYER_DIED:
+            this.won = false;
+            this.showEndModal = true;
+            return;
+          case END_OF_TURN.MONSTER_DIED:
+            this.won = true;
+            this.showEndModal = true;
+            return;
+          case END_OF_TURN.NORMAL:
+          default:
+            this.isMonterCombo = false;
+            this.isPlayerCombo = false;
+            break;
+        }
+        this.actions = this.actions.filter((action) => {return action.hasBeenDone === false});
+      }
+      if (!this.myGear.applyDecayingModifier()) {
+        // die of dots
+        this.won = false;
+        this.showEndModal = true;
+      }
+      if (!this.monster.applyDecayingModifier()) {
+        // die of dots
+        this.won = true;
+        this.showEndModal = true;
+      }
+      this.myGear.resetRulesOnAction();
+      this.monster.resetRulesOnAction();
+      this.actualTurn++;
+      this.isTurnRunning = false;
+      this.info.push("-------------------------------- END OF TURN --------------------------------");
+    },
+    // in test
+    async gameLoop() {
+      while (1) {
+        // check if monster can play & select a spell
+        if (this.monster.isEntityAbleToPlay()) {
+          this.actions.push(this.monster.launchRandomSpell(this.myGear, this.isMonterCombo));
+        }
+        // check if player can play & select a spell
+        if (this.myGear.isEntityAbleToPlay()) {
+          this.playerSpellPromise = this.deferred();
+          await this.playerSpellPromise.promise;
+        }
+        await this.resolveTurn();
+      }
+    },
+    async handleFluxesSelection() {
+      this.showFluxesModal = true;
+      this.playerFluxesPromise = this.deferred();
+      let result = await this.playerFluxesPromise.promise;
+      this.showFluxesModal = false;
+      return result;
+    },
+    selectFluxes() {
+      if (!this.fluxesSelected > 0) {
+        this.playerFluxesPromise.resolve(false);
+      }
+      this.playerFluxesPromise.resolve(true);
+    },
+    cancelSelectFluxes() {
+      this.playerFluxesPromise.resolve(false);
+    },
+    modifyFluxesSelected(num) {
+      this.fluxesSelected += num;
+    }
   },
   async created() {
-    await this.fillMyGears(false);
-    if (!this.isOwned(this.gearId))
+    if (!await this.isOwned(this.gearId))
       return;
     this.ownTheGear = true;
-    await this.fillMonstersData();
-    // await this.fillAllSpellData();
-    this.myGear = this.getFightFormGear(this.getMyGearFormatted(this.gearId));
-    this.monster = this.getFightFormMonster(this.monsterId);
-    console.log(this.monster)
+    this.myGear = await this.getMyGearFormatted(this.gearId);
+    this.monster = await this.getMonster(this.monsterId);
     this.myGear.spells.forEach((spell) => {
       this.mySpells.push(JSON.parse(JSON.stringify(spell)));
     });
+    this.myGear.info = this.info;
+    this.monster.info = this.info;
+    console.log(this.monster);
     console.log(this.myGear);
+    this.gameLoop();
     this.readyToFight = true;
   }
 }
@@ -272,5 +386,24 @@ export default {
   max-width: 256px;
   max-height: 256px;
   /* border-radius: 5%; */
+}
+.fluxe-modal-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.fluxe-selector-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.fluxe-buttons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 </style>

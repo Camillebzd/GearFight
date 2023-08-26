@@ -45,7 +45,7 @@ import { mapState } from 'pinia';
 import { useUserStore } from "@/stores/UserStore.js";
 import { useGearsStore } from "@/stores/GearsStore";
 import { ethers } from 'ethers';
-import contractABI from "@/abi/GearFactory_v5.json"; // change to last version
+import contractABI from "@/abi/GearFactory.json";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_NEW_CONTRACT_ADDRESS;
 

@@ -40,7 +40,7 @@ export default {
   methods: {
   },
   async created() {
-    await this.fillMonstersData(); // monsters
+    await this.fillMonstersData(true);
   }
 }
 </script>

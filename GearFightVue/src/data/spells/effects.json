@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 12
+  },
+  {
+    "id": 2,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 1
+  },
+  {
+    "id": 3,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 23
+  },
+  {
+    "id": 4,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 39
+  },
+  {
+    "id": 5,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 1
+  },
+  {
+    "id": 100,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 21
+  }
+]
