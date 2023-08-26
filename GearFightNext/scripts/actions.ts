@@ -281,11 +281,13 @@ export class Action {
 
   // Execute the rule with the value given on the target
   executeRule(rule: Rule, ruleValue: number, target: Weapon | Monster | null, fluxQuantity: number) {
-    if (target == null)
-      return;
     switch (rule.id) {
       // Gain X fluxes
       case 1:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.addFluxes(ruleValue * fluxQuantity);
         break;
       // Do nothing
@@ -298,18 +300,34 @@ export class Action {
         break;
       // Heal the target from the damage of the ability
       case 4:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.applyHeal(Math.round(ruleValue * fluxQuantity * this.damageInflicted / 100));
         break;
       // Force a combo on the target
       case 5:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.forceComboOnAction = true;
         break;
       // Force a crit on the target
       case 6:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.forceCritOnAction = true;
         break;
       // Buff the target by doesn't letting the target of an action be able to block
       case 7:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.preventBlockingOnAction = true;
         break;
       // Add additional damage to final damage
@@ -323,10 +341,16 @@ export class Action {
         break;
       // Multiply final damage
       case 11:
+        console.log("before: ", this.finalDamage);
         this.finalDamage *= ruleValue * fluxQuantity;
+        console.log("after: ", this.finalDamage);
         break;
       // Cleans the target
       case 12:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         this.modifiersCleansed = target.cleans();
         break;
       // Multiply final damage by the number of negative effect cleansed by this ability
@@ -335,10 +359,18 @@ export class Action {
         break;
       // Add some stack on all debuff on the target
       case 14:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.addDecayingModifierStacks("DEBUFF", ruleValue * fluxQuantity);
         break;
       // Purge the target (remove positive modifiers)
       case 15:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         this.modifiersPurged = target.purge();
         break;
       // Add additional damage for each flux on the target of action
@@ -349,17 +381,33 @@ export class Action {
         this.finalDamage += ruleValue * this.caster.fluxes * fluxQuantity;
       // Remove fluxes on the target and add them to the caster
       case 18:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         this.caster.fluxes += target.removeFluxes(ruleValue * fluxQuantity);
       // Heal % of missing hp
       case 19:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.applyHeal(Math.round(ruleValue * fluxQuantity * (target.stats.healthMax - target.stats.health) / 100));
         break;
       // Heal % of maximum hp
       case 20:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.applyHeal(Math.round(ruleValue * fluxQuantity * target.stats.healthMax / 100));
         break;
       // Removes fluxes
       case 23:
+        if (target == null) {
+          console.log(`target not specified for rule: ${rule} `);
+          break;
+        }
         target.removeFluxes(ruleValue * fluxQuantity);
         break;
       default:
@@ -381,7 +429,7 @@ export class Action {
       case CONDITIONS.ABILITY_BLOCKED_BY_TARGET:
         return this.abilityWasBlocked;
       case CONDITIONS.TARGET_ALREADY_ACTED:
-        return false; // TODO with historic system
+        return true; // TODO with historic system
       case CONDITIONS.TARGET_NOT_ALREADY_ACTED:
         return false; // TODO with historic system
       case CONDITIONS.TARGET_HAS_LESS_HP_THAN_CASTER:
@@ -437,6 +485,7 @@ export class Action {
 
   // Get the value for the effect on effectsValue on ability, -1 if empty
   getAftermathValue(effectId: number, effectsValue: EffectValue[]) {
+    console.log("effectValue-->", typeof effectsValue);
     let effectValue = effectsValue.find((effectValue) => effectValue.id === effectId);
 
     if (effectValue == undefined) {

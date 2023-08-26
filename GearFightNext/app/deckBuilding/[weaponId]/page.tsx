@@ -65,11 +65,13 @@ export default function Page({params}: {params: {weaponId: string}}) {
       <h2 className={styles.pageSubtitle}>{userWeapon.name}</h2>
       <p>Ability list: </p>
       <div style={{display: 'flex', flexDirection: 'column'}}>
-        <ButtonGroup>
+        {/* <ButtonGroup> */}
+        <div style={{display: "flex", flexWrap: 'wrap', gap: "12px"}}>
           {userWeapon.abilities.map(ability => {
             return <Button key={ability.id} onClick={(e) => handleClick(e, ability.extractData())} onContextMenu={(e) => handleClick(e, ability.extractData())}>{ability.name}</Button>;
           })}
-        </ButtonGroup>
+        </div>
+        {/* </ButtonGroup> */}
         <p style={{marginTop: "12px"}}>Actual List: {deck.length}/{DECK_MAX_SIZE}</p>
         <ButtonGroup>
           {list.map((elem, i) => {

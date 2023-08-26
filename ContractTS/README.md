@@ -1,6 +1,6 @@
-# Sample Hardhat Project
+# GearFight Project Contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This is the first part of the backend of the project. It was created with Hardhat. It contains the contracts and libraries used for the project.
 
 Try running some of the following tasks:
 
