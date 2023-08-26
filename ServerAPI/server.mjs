@@ -24,6 +24,10 @@ app.use("/abilities", [abilities, effects, rules, modifiers]);
 app.use("/general", [levels, experiences]);
 app.use("/weapons", [abilitiesWeapons, baseStats, images, statsGrowth]);
 
+app.get('/', (req, res) => {
+  res.json({'message': 'ok'});
+});
+
 // start the Express server
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
