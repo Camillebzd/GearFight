@@ -37,7 +37,7 @@ export default function Page({params}: {params: {weaponId: string}}) {
     return (
       <main className={styles.main}>
         <h1 className={styles.pageTitle}>Deck building</h1>
-        <h2>You're not connected or you don't have this weapon.</h2>
+        <h2>You&apos;re not connected or you don&apos;t have this weapon.</h2>
       </main>
       
     );

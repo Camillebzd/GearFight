@@ -17,10 +17,12 @@ import CreateDeckButton from '@/components/CreateDeckButton';
 export default function Page() {
   const route = useParams();
   let weapon: Weapon | undefined = undefined;
+  const userWeapons = useUserWeapons(false);
+  const starters = useStarter();
   if (route.type === "classic")
-    weapon = useUserWeapons(false).find(weapon => weapon.id === parseInt(route.id as string));
+    weapon = userWeapons.find(weapon => weapon.id === parseInt(route.id as string));
   else if (route.type === "starter")
-    weapon = useStarter().find(weapon => weapon.id === parseInt(route.id as string));
+    weapon = starters.find(weapon => weapon.id === parseInt(route.id as string));
   const address = useAppSelector((state) => state.authReducer.address);
   const dispatch = useAppDispatch();
 
@@ -35,8 +37,8 @@ export default function Page() {
         <p>Loading data...</p>
         <p>If it takes too much time it means:</p>
         <ol type="1" >
-          <li>This is not your weapon / you're not connected</li>
-          <li>The weapon doesn't exist</li>
+          <li>This is not your weapon / you&apos;re not connected</li>
+          <li>The weapon doesn&apos;t exist</li>
           <li>An internal problem happened</li>
         </ol>
       </main>

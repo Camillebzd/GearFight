@@ -17,7 +17,7 @@ export default function Page() {
   if (monster === undefined)
     return (
       <main className={styles.main}>
-        <p>Loading data... If it takes too much time it means the monster doesn't exist.</p>
+        <p>Loading data... If it takes too much time it means the monster doesn&apos;t exist.</p>
       </main>
     );
 

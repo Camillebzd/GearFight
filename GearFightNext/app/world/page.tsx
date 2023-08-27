@@ -4,10 +4,7 @@ import styles from '../page.module.css'
 
 import MonsterList from '@/components/MonsterList';
 import { useMonstersWorld, useUserWeapons } from '@/scripts/customHooks';
-import { Weapon } from '@/scripts/entities';
-import { createContext } from 'react';
-
-export const UserWeaponsContext = createContext<Weapon[]>([]);
+import { UserWeaponsContext } from './context';
 
 export default function Page() {
   const monsters = useMonstersWorld(true);

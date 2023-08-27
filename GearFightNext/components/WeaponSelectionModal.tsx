@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import WeaponCardHorizontal from "./WeaponCardHorizontal";
 import { useRouter } from "next/navigation";
 import { useUserWeapons } from "@/scripts/customHooks";
-import { UserWeaponsContext } from "@/app/world/page";
+import { UserWeaponsContext } from "@/app/world/context";
 
 const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, onClose: () => void, monsterId: number}) => {
   // const userWeapons = useUserWeapons(false);

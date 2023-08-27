@@ -18,7 +18,7 @@ import SelectFluxesModal from '@/components/SelectFluxesModal';
 import { HAND_SIZE } from '@/scripts/systemValues';
 import { useSearchParams } from 'next/navigation'
 
-export enum PHASES {
+enum GAME_PHASES {
   PLAYER_CHOOSE_ABILITY,
   PLAYER_CHOOSE_ABILITY_COMBO,
   RESOLUTION,
@@ -39,7 +39,7 @@ export default function Page() {
   let won = useRef(false);
 
   const [info, setInfo] = useState<string[]>([]);
-  const [phase, setPhase] = useState<PHASES>(PHASES.PLAYER_CHOOSE_ABILITY);
+  const [phase, setPhase] = useState(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
   const [turn, setTurn] = useState(1);
   let isMonsterCombo = useRef(false);
   let isPlayerCombo = useRef(false);
@@ -60,7 +60,7 @@ export default function Page() {
       return;
     if (!weapon) {
       weaponData.setLogger(setInfo);
-      // ------ TEST TO REMOVE ------
+      // ------ GAME_PHASES TO REMOVE ------
       // const deck: Ability[] = [];
       // for (let i = 0; i < weaponData.abilities.length; i++) {
       //   const objectToCopy = weaponData.abilities[i];
@@ -110,27 +110,27 @@ export default function Page() {
     return (
       <main className={styles.main}>
         <h1 className={styles.pageTitle}>Fight local</h1>
-        <p>Monster data is loading, if it take to much time it's because the monster may not exist.</p>
+        <p>Monster data is loading, if it take to much time it&apos;s because the monster may not exist.</p>
       </main>
     );
   else if (weapon === undefined || !isConnected)
     return (
       <main className={styles.main}>
         <h1 className={styles.pageTitle}>Fight local</h1>
-        <p>Weapon data is loading, if it takes to much time it's because the weapon may not exist, you're not connected or you don't own it .</p>
+        <p>Weapon data is loading, if it takes to much time it&apos;s because the weapon may not exist, you&apos;re not connected or you don&apos;t own it .</p>
       </main>
     );
   // #endregion  
 
   const resolveLoop = () => {
     while (actions.current.length > 0) {
-      setPhase(PHASES.RESOLUTION);
+      setPhase(GAME_PHASES.RESOLUTION);
       let ret = resolveActions(actions.current);
       switch (ret) {
         case END_OF_TURN.PLAYER_COMBO:
           isPlayerCombo.current = true;
           actions.current = actions.current.filter((action) => {return action.hasBeenDone === false});
-          setPhase(PHASES.PLAYER_CHOOSE_ABILITY_COMBO);
+          setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY_COMBO);
           return;
         case END_OF_TURN.MONSTER_COMBO:
           let monsterAction = monster!.launchRandomAbility(weapon!, isMonsterCombo.current);
@@ -149,7 +149,7 @@ export default function Page() {
           return;
         case END_OF_TURN.NORMAL:
         default:
-          setPhase(PHASES.PLAYER_CHOOSE_ABILITY);
+          setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
           isMonsterCombo.current = false;
           isPlayerCombo.current = false;
           break;
@@ -175,8 +175,8 @@ export default function Page() {
     setTurn((actualTurn) => actualTurn + 1);
   };
 
-  const useAbility = (ability: Ability, fluxesUsed: number = 0) => {
-    if (phase !== PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
+  const launchAbility = (ability: Ability, fluxesUsed: number = 0) => {
+    if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
       return;
     actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo}));
     weapon?.discardFromHand(ability);
@@ -185,10 +185,10 @@ export default function Page() {
     resolveLoop();
   };
 
-  const useAbilityModal = (fluxeSelected: number) => {
+  const execAbilityModal = (fluxeSelected: number) => {
     if (abilitySelected.current) {
       weapon?.useFluxes(fluxeSelected);
-      useAbility(abilitySelected.current, fluxeSelected);
+      launchAbility(abilitySelected.current, fluxeSelected);
       abilitySelected.current = null;
     }
     fluxeModal.onClose();
@@ -202,16 +202,16 @@ export default function Page() {
       fluxeModal.onOpen();
     }
     else 
-      useAbility(abilityClicked, 0);
+      launchAbility(abilityClicked, 0);
   };
 
   const phasePrinter = () => {
     switch(phase) {
-      case PHASES.PLAYER_CHOOSE_ABILITY:
+      case GAME_PHASES.PLAYER_CHOOSE_ABILITY:
         return "Choose an ability";
-      case PHASES.PLAYER_CHOOSE_ABILITY_COMBO:
+      case GAME_PHASES.PLAYER_CHOOSE_ABILITY_COMBO:
         return "Choose an ability for the COMBO";
-      case PHASES.RESOLUTION:
+      case GAME_PHASES.RESOLUTION:
         return "Wait for the resolve";
       default:
         return "Error";
@@ -253,7 +253,7 @@ export default function Page() {
         </div>
       </div>
       {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current}/>}
-      {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} useAbility={useAbilityModal} fluxesAvailables={weapon.fluxes}/>}
+      {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} launchAbility={execAbilityModal} fluxesAvailables={weapon.fluxes}/>}
     </main>
   );
 };
