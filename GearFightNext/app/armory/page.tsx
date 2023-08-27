@@ -2,7 +2,7 @@
 
 import styles from '../page.module.css';
 import { useAppSelector } from '@/redux/hooks';
-import WeaponList from '@/components/WeaponList';
+import { WeaponList } from '@/components/WeaponList';
 import { useRequestAvailable, useUserWeapons } from '@/scripts/customHooks';
 import { Button } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';

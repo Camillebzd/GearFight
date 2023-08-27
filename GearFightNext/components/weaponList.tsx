@@ -5,7 +5,7 @@ import styles from './List.module.css'
 
 export type WeaponGeneralType = "classic" | "starter";
 
-const WeaponList = ({weapons, type}: {weapons: Weapon[], type: WeaponGeneralType}) => {
+export const WeaponList = ({weapons, type}: {weapons: Weapon[], type: WeaponGeneralType}) => {
   const weaponList = weapons.map(weapon =>
     <WeaponCard weapon={weapon} key={weapon.id} type={type}/>
   );
@@ -16,5 +16,3 @@ const WeaponList = ({weapons, type}: {weapons: Weapon[], type: WeaponGeneralType
     </div>
   );
 }
-
-export default WeaponList;

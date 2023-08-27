@@ -2,7 +2,7 @@
 
 import styles from '../page.module.css';
 import { useAppSelector } from '@/redux/hooks';
-import WeaponList from '@/components/WeaponList';
+import { WeaponList } from '@/components/WeaponList';
 import { useRequestAvailable, useStarter } from '@/scripts/customHooks';
 
 export default function Page() {
