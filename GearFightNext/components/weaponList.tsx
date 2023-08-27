@@ -2,10 +2,9 @@ import { Weapon } from "@/scripts/entities";
 import WeaponCard from "./WeaponCard";
 
 import styles from './List.module.css'
+import { WeaponGeneralType } from "@/scripts/WeaponGeneralType";
 
-export type WeaponGeneralType = "classic" | "starter";
-
-export const WeaponList = ({weapons, type}: {weapons: Weapon[], type: WeaponGeneralType}) => {
+const WeaponList = ({weapons, type}: {weapons: Weapon[], type: WeaponGeneralType}) => {
   const weaponList = weapons.map(weapon =>
     <WeaponCard weapon={weapon} key={weapon.id} type={type}/>
   );
@@ -16,3 +15,5 @@ export const WeaponList = ({weapons, type}: {weapons: Weapon[], type: WeaponGene
     </div>
   );
 }
+
+export default WeaponList;

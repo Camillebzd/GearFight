@@ -7,7 +7,7 @@ import styles from './Card.module.css'
 import { useEffect, useRef, useState } from "react";
 
 import Link from 'next/link'
-import { WeaponGeneralType } from "./WeaponList";
+import { WeaponGeneralType } from "@/scripts/WeaponGeneralType";
 import { createContract } from "@/scripts/utils";
 import { useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
