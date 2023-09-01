@@ -19,6 +19,7 @@ import {
 import { Ability, Modifier, ModifierDirection } from "./abilities";
 import { Action } from "./actions";
 import { Dispatch, SetStateAction } from "react";
+import { HistoricSystem } from "./historic";
 
 export const SPEED_STATE = {"SLOW": -1, "NORMAL": 1, "FAST": 1};
 
@@ -712,7 +713,7 @@ export class Monster extends Entity {
     });
   }
 
-  launchRandomAbility(target: Monster | Weapon, isCombo: boolean) {
+  launchRandomAbility(target: Monster | Weapon, isCombo: boolean, turn: number) {
     let monsterAbility: Ability = this.abilities[getRandomInt(this.abilities.length)];
     let fluxesUsed = 0;
 
@@ -735,6 +736,6 @@ export class Monster extends Entity {
     this.useFluxes(fluxesUsed);
     if (!this.info)
       return undefined;
-    return new Action({caster: this, ability: monsterAbility, target: target, hasBeenDone: false, isCombo: isCombo, fluxesUsed: fluxesUsed, info: this.info});
+    return new Action({caster: this, ability: monsterAbility, target: target, hasBeenDone: false, isCombo: isCombo, fluxesUsed: fluxesUsed, info: this.info, currentTurn: turn});
   }
 }

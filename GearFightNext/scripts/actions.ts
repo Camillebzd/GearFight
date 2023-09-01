@@ -10,6 +10,7 @@ import { SetStateAction, Dispatch } from "react";
 import targets from "../data/abilities/targets.json" // constant
 import conditions from "../data/abilities/conditions.json"; // constant
 import orders from "../data/abilities/orders.json"; // constant
+import { HistoricSystem } from "./historic";
 
 // import effects from "../data/abilities/effects.json";
 // import rules from "../data/abilities/rules.json";
@@ -63,6 +64,7 @@ export type ActionData = {
   hasBeenDone: boolean;
   fluxesUsed: number;
   info: Dispatch<SetStateAction<string[]>>;
+  currentTurn: number;
 };
 
 export class Action {
@@ -80,6 +82,8 @@ export class Action {
   damageInflicted = 0;
   modifiersCleansed = 0;
   modifiersPurged = 0;
+  currentTurn: number = 0;
+  historicSystem: null | HistoricSystem = null;
 
   constructor(data: ActionData) {
     this.caster = data.caster;
@@ -89,6 +93,12 @@ export class Action {
     this.hasBeenDone = data.hasBeenDone || false;
     this.fluxesUsed = data.fluxesUsed || 0;
     this.info = data.info;
+    this.currentTurn = data.currentTurn || 0;
+  }
+
+  // set hystoric system, carefule to not circulare link or too deep copy
+  setHistoricSystem(historicSystem: HistoricSystem) {
+    this.historicSystem = historicSystem;
   }
 
   // Used to add log in log obj
@@ -485,7 +495,6 @@ export class Action {
 
   // Get the value for the effect on effectsValue on ability, -1 if empty
   getAftermathValue(effectId: number, effectsValue: EffectValue[]) {
-    console.log("effectValue-->", typeof effectsValue);
     let effectValue = effectsValue.find((effectValue) => effectValue.id === effectId);
 
     if (effectValue == undefined) {
