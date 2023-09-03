@@ -12,14 +12,13 @@ import conditions from "../data/abilities/conditions.json"; // constant
 import orders from "../data/abilities/orders.json"; // constant
 import { HistoricSystem } from "./historic";
 
-// import effects from "../data/abilities/effects.json";
-// import rules from "../data/abilities/rules.json";
-// import modifiers from "../data/abilities/modifiers.json";
-
 // Unstable...
 let effects: Effect[] = [];
 let rules: Rule[] = [];
 let modifiers: Modifier[] = [];
+// let targets: Target[] = [];
+// let conditions: Condition[] = [];
+// let orders: Order[] = [];
 
 const initData = async () => {
   const effectsData: Effect[] | undefined = await fetchFromDB("abilities/effects");
@@ -37,6 +36,21 @@ const initData = async () => {
     modifiers = modifiersData;
   else
     console.log("Error: can't fetch modifiers for abilities.");
+  // const targetsData: Target[] | undefined = await fetchFromDB("abilities/targets");
+  // if (targetsData)
+  //   targets = targetsData;
+  // else
+  //   console.log("Error: can't fetch targets for abilities.");
+  // const conditionsData: Condition[] | undefined = await fetchFromDB("abilities/conditions");
+  // if (conditionsData)
+  //   conditions = conditionsData;
+  // else
+  //   console.log("Error: can't fetch conditions for abilities.");
+  // const ordersData: Order[] | undefined = await fetchFromDB("abilities/orders");
+  // if (ordersData)
+  //   orders = ordersData;
+  // else
+  //   console.log("Error: can't fetch orders for abilities.");
 }
 initData();
 
@@ -114,6 +128,7 @@ export class Action {
     this.log(`${this.caster.name} launch ${this.ability.name}.`);
     if (this.caster.isConfused()) {
       this.endOfResolve();
+      this.log(`${this.caster.name} is confused!`);
       return END_OF_TURN.NORMAL;
     }
     this.applyRule(RULE_ORDER.BEFORE_SPECIAL_CHECK);

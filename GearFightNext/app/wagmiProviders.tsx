@@ -2,9 +2,6 @@
 
 import * as React from 'react'
 
-import { CacheProvider } from '@chakra-ui/next-js'
-import { ChakraProvider } from '@chakra-ui/react'
-
 import {
   RainbowKitProvider,
   getDefaultWallets,
@@ -62,7 +59,7 @@ const wagmiConfig = createConfig({
   webSocketPublicClient,
 });
 
-export function Providers({ 
+export function WagmiProviders({ 
     children 
   }: { 
   children: React.ReactNode 
@@ -70,14 +67,10 @@ export function Providers({
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   return (
-    <CacheProvider>
-      <ChakraProvider>
-        <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={chains} appInfo={demoAppInfo} initialChain={polygonMumbai}>
-            {mounted && children}
-          </RainbowKitProvider>
-        </WagmiConfig>
-      </ChakraProvider>
-    </CacheProvider>
+    <WagmiConfig config={wagmiConfig}>
+      <RainbowKitProvider chains={chains} appInfo={demoAppInfo} initialChain={polygonMumbai}>
+        {mounted && children}
+      </RainbowKitProvider>
+    </WagmiConfig>
   )
 }

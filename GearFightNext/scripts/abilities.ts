@@ -104,6 +104,7 @@ export type Modifier = {
 
 export type Condition = {
   id: number;
+  description: string;
 };
 
 export type Rule = {
@@ -113,8 +114,10 @@ export type Rule = {
 
 export type Target = {
   id: number;
+  description: string;
 }
 
 export type Order = {
-  
+  id: number;
+  description: string;  
 };

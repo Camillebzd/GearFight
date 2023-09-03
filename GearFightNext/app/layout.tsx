@@ -1,9 +1,10 @@
 import './globals.css'
 import '@rainbow-me/rainbowkit/styles.css';
 import { Inter } from 'next/font/google'
-import { Providers } from "./providers";
+import { WagmiProviders } from "./wagmiProviders";
 import Navbar from '@/components/Navbar'
 import { ReduxProvider } from "@/redux/provider";
+import { ChakraProviders } from './chakraProviders';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,12 +21,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>
+        <ChakraProviders>
           <ReduxProvider>
-            <Navbar/>
+            <WagmiProviders>
+              <Navbar/>
+            </WagmiProviders>
             {children}
           </ReduxProvider>
-        </Providers>
+        </ChakraProviders>
       </body>
     </html>
   )

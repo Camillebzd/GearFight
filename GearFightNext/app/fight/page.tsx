@@ -89,7 +89,6 @@ export default function Page() {
       weapon.refillDeckFromDiscard();
     while (weapon.hand.length < HAND_SIZE) {
       weapon.drawOneRandomFromDeck();
-      setInfo((currentInfo) => [...currentInfo, `player draw 1 ability.`]);
     }
     if (monster.isEntityAbleToPlay()) {
       let monsterAction = monster.launchRandomAbility(weapon, isMonsterCombo.current, turn);
@@ -226,9 +225,9 @@ export default function Page() {
   }
 
   return (
-    <main className={styles.main}>
+    <main className={styles.mainFightContainer}>
       <h1 className={styles.pageTitle}>Fight local</h1>
-      <div className={styles.mainFightContainer}>
+      <div className={styles.principalFightContainer}>
         <div className={styles.fightersContainer}>
           <div>
             <Entity 

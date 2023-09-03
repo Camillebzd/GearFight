@@ -47,10 +47,10 @@ const Navbar = () => {
     <Flex 
       align="center"
       justifyContent="space-between"
-      // position="fixed"
       width="100%"
       paddingLeft="6%"
       paddingRight="6%"
+      className={styles.navbarContainer}
     >
       <p className={styles.logo}>GearFight</p>
         {/* Desktop */}
