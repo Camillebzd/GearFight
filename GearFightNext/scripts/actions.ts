@@ -7,18 +7,15 @@ import { Monster, Weapon } from "./entities";
 import { Ability, AftermathType, Rule, Modifier, Condition, EffectValue, Effect, Target, Order } from "./abilities";
 import { SetStateAction, Dispatch } from "react";
 
-import targets from "../data/abilities/targets.json" // constant
-import conditions from "../data/abilities/conditions.json"; // constant
-import orders from "../data/abilities/orders.json"; // constant
 import { HistoricSystem } from "./historic";
 
 // Unstable...
 let effects: Effect[] = [];
 let rules: Rule[] = [];
 let modifiers: Modifier[] = [];
-// let targets: Target[] = [];
-// let conditions: Condition[] = [];
-// let orders: Order[] = [];
+let targets: Target[] = [];
+let conditions: Condition[] = [];
+let orders: Order[] = [];
 
 const initData = async () => {
   const effectsData: Effect[] | undefined = await fetchFromDB("abilities/effects");
@@ -36,21 +33,21 @@ const initData = async () => {
     modifiers = modifiersData;
   else
     console.log("Error: can't fetch modifiers for abilities.");
-  // const targetsData: Target[] | undefined = await fetchFromDB("abilities/targets");
-  // if (targetsData)
-  //   targets = targetsData;
-  // else
-  //   console.log("Error: can't fetch targets for abilities.");
-  // const conditionsData: Condition[] | undefined = await fetchFromDB("abilities/conditions");
-  // if (conditionsData)
-  //   conditions = conditionsData;
-  // else
-  //   console.log("Error: can't fetch conditions for abilities.");
-  // const ordersData: Order[] | undefined = await fetchFromDB("abilities/orders");
-  // if (ordersData)
-  //   orders = ordersData;
-  // else
-  //   console.log("Error: can't fetch orders for abilities.");
+  const targetsData: Target[] | undefined = await fetchFromDB("abilities/targets");
+  if (targetsData)
+    targets = targetsData;
+  else
+    console.log("Error: can't fetch targets for abilities.");
+  const conditionsData: Condition[] | undefined = await fetchFromDB("abilities/conditions");
+  if (conditionsData)
+    conditions = conditionsData;
+  else
+    console.log("Error: can't fetch conditions for abilities.");
+  const ordersData: Order[] | undefined = await fetchFromDB("abilities/orders");
+  if (ordersData)
+    orders = ordersData;
+  else
+    console.log("Error: can't fetch orders for abilities.");
 }
 initData();
 
