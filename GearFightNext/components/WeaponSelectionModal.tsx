@@ -11,11 +11,13 @@ import { Weapon } from "@/scripts/entities";
 const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, onClose: () => void, monsterId: number}) => {
   const router = useRouter();
   const path = usePathname();
+  const userWeaponsInContext = useContext(UserWeaponsContext);
+  const userWeaponsInRedux = useUserWeapons(false);
   let userWeapons: Weapon[] = [];
   if (path.includes("world")) { // world page contains context
-    userWeapons = useContext(UserWeaponsContext);
+    userWeapons = userWeaponsInContext;
   } else {
-    userWeapons = useUserWeapons(false);
+    userWeapons = userWeaponsInRedux;
   }
 
   const [weaponSelectedID, setWeaponSelectedID] = useState(-1);
