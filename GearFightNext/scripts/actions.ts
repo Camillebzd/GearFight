@@ -180,16 +180,6 @@ export class Action {
       if (effect.aftermathType != "MODIFIER") {
         return;
       }
-      // Condition
-      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
-      if (condition == undefined) {
-        console.log("Error: this condition is not supported");
-        return;
-      }
-      if (!this.checkCondition(condition)) {
-        console.log("Condition not met");
-        return;
-      }
       // ApplyChance
       if (getRandomInt(100) >= effect.applyChance) {
         console.log("failed to apply modifier");
@@ -206,6 +196,17 @@ export class Action {
         console.log("Error: this target type is not supported: ", targetObj.id);
         return;
       }
+      // Condition
+      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
+      if (condition == undefined) {
+        console.log("Error: this condition is not supported");
+        return;
+      }
+      if (!this.checkCondition(condition, target)) {
+        console.log("Condition not met");
+        return;
+      }
+      // Modifier Info
       let modifier = this.getAftermath(effect.aftermathId, "MODIFIER") as Modifier;
       if (modifier == undefined || !Object.keys(modifier).length) {
         console.log("Error: modifier empty or not supported");
@@ -251,16 +252,6 @@ export class Action {
       }
       if (order.id != orderId)
         return;
-      // Condition
-      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
-      if (condition == undefined) {
-        console.log("Error: this condition is not supported on ability ", this.ability.name);
-        return;
-      }
-      if (!this.checkCondition(condition)) {
-        console.log("Condition not met");
-        return;
-      }
       // ApplyChance
       if (getRandomInt(100) >= effect.applyChance) {
         console.log("failed to apply rule");
@@ -275,6 +266,16 @@ export class Action {
       let target = this.getTarget(targetObj);
       if (target === undefined) {
         console.log("Error: this target type is not supported: ", targetObj.id);
+        return;
+      }
+      // Condition
+      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
+      if (condition == undefined) {
+        console.log("Error: this condition is not supported on ability ", this.ability.name);
+        return;
+      }
+      if (!this.checkCondition(condition, target)) {
+        console.log("Condition not met");
         return;
       }
       // Rule value
@@ -427,7 +428,7 @@ export class Action {
   }
 
   // return true or false if the effect condition is valid or not
-  checkCondition(condition: Condition) {
+  checkCondition(condition: Condition, target: Weapon | Monster | null) {
     switch (condition.id) {
       // no condition
       case CONDITIONS.NO_CONDITION:
@@ -439,9 +440,25 @@ export class Action {
       case CONDITIONS.ABILITY_BLOCKED_BY_TARGET:
         return this.abilityWasBlocked;
       case CONDITIONS.TARGET_ALREADY_ACTED:
-        return true; // TODO with historic system
+        if (target === null) {
+          console.log("Error: try to use condition target already acted with a null target.");
+          return false;
+        }
+        if (!this.historicSystem) {
+          console.log("Error: historic system is null in checkCondition for target already acted.");
+          return false;
+        }
+        return this.historicSystem.hasAlreadyActed(target, this.currentTurn - 1);
       case CONDITIONS.TARGET_NOT_ALREADY_ACTED:
-        return false; // TODO with historic system
+        if (target === null) {
+          console.log("Error: try to use condition target not already acted with a null target.");
+          return false;
+        }
+        if (!this.historicSystem) {
+          console.log("Error: historic system is null in checkCondition for target not already acted.");
+          return false;
+        }
+        return !this.historicSystem.hasAlreadyActed(target, this.currentTurn - 1);
       case CONDITIONS.TARGET_HAS_LESS_HP_THAN_CASTER:
         return this.target.stats.health < this.caster.stats.health;
       case CONDITIONS.TARGET_HAS_MORE_HP_THAN_CASTER:
@@ -453,7 +470,15 @@ export class Action {
       case CONDITIONS.TARGET_DOESNT_BEARS_ANY_MODIFIER:
         return this.target.modifiers.length == 0;
       case CONDITIONS.CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN:
-        return false; // TODO with historic system
+        if (target === null) {
+          console.log("Error: try to use CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN with a null target.");
+          return false;
+        }
+        if (!this.historicSystem) {
+          console.log("Error: historic system is null in checkCondition for target CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN.");
+          return false;
+        }
+        return this.historicSystem.hasAlreadyLaunchedAbility(target, this.ability, this.currentTurn - 1);
       case CONDITIONS.CASTER_BEARS_POSITIVE_MODIFIER:
         return this.caster.hasPositiveModifier();
       case CONDITIONS.CASTER_BEARS_NEGATIVE_MODIFIER:
