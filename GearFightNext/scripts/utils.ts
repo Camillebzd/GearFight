@@ -7,6 +7,11 @@ import { Identity, WeaponMintStats } from './entities';
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
+// Create a deep copy of an element (do not copy methods of a classe)
+export function deepCopy<Type>(obj: Type) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 // random num between 0 - max
 export function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);

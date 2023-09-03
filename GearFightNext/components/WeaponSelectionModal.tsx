@@ -3,15 +3,24 @@
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import WeaponCardHorizontal from "./WeaponCardHorizontal";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useUserWeapons } from "@/scripts/customHooks";
 import { UserWeaponsContext } from "@/app/world/context";
+import { Weapon } from "@/scripts/entities";
 
 const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, onClose: () => void, monsterId: number}) => {
-  // const userWeapons = useUserWeapons(false);
-  const userWeapons = useContext(UserWeaponsContext);
-  const [weaponSelectedID, setWeaponSelectedID] = useState(-1);
   const router = useRouter();
+  const path = usePathname();
+  const userWeaponsInContext = useContext(UserWeaponsContext);
+  const userWeaponsInRedux = useUserWeapons(false);
+  let userWeapons: Weapon[] = [];
+  if (path.includes("world")) { // world page contains context
+    userWeapons = userWeaponsInContext;
+  } else {
+    userWeapons = userWeaponsInRedux;
+  }
+
+  const [weaponSelectedID, setWeaponSelectedID] = useState(-1);
 
   useEffect(() => {
     setWeaponSelectedID(-1);

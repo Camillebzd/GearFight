@@ -7,18 +7,15 @@ import { Monster, Weapon } from "./entities";
 import { Ability, AftermathType, Rule, Modifier, Condition, EffectValue, Effect, Target, Order } from "./abilities";
 import { SetStateAction, Dispatch } from "react";
 
-import targets from "../data/abilities/targets.json" // constant
-import conditions from "../data/abilities/conditions.json"; // constant
-import orders from "../data/abilities/orders.json"; // constant
-
-// import effects from "../data/abilities/effects.json";
-// import rules from "../data/abilities/rules.json";
-// import modifiers from "../data/abilities/modifiers.json";
+import { HistoricSystem } from "./historic";
 
 // Unstable...
 let effects: Effect[] = [];
 let rules: Rule[] = [];
 let modifiers: Modifier[] = [];
+let targets: Target[] = [];
+let conditions: Condition[] = [];
+let orders: Order[] = [];
 
 const initData = async () => {
   const effectsData: Effect[] | undefined = await fetchFromDB("abilities/effects");
@@ -36,6 +33,21 @@ const initData = async () => {
     modifiers = modifiersData;
   else
     console.log("Error: can't fetch modifiers for abilities.");
+  const targetsData: Target[] | undefined = await fetchFromDB("abilities/targets");
+  if (targetsData)
+    targets = targetsData;
+  else
+    console.log("Error: can't fetch targets for abilities.");
+  const conditionsData: Condition[] | undefined = await fetchFromDB("abilities/conditions");
+  if (conditionsData)
+    conditions = conditionsData;
+  else
+    console.log("Error: can't fetch conditions for abilities.");
+  const ordersData: Order[] | undefined = await fetchFromDB("abilities/orders");
+  if (ordersData)
+    orders = ordersData;
+  else
+    console.log("Error: can't fetch orders for abilities.");
 }
 initData();
 
@@ -63,6 +75,7 @@ export type ActionData = {
   hasBeenDone: boolean;
   fluxesUsed: number;
   info: Dispatch<SetStateAction<string[]>>;
+  currentTurn: number;
 };
 
 export class Action {
@@ -80,6 +93,8 @@ export class Action {
   damageInflicted = 0;
   modifiersCleansed = 0;
   modifiersPurged = 0;
+  currentTurn: number = 0;
+  historicSystem: null | HistoricSystem = null;
 
   constructor(data: ActionData) {
     this.caster = data.caster;
@@ -89,6 +104,12 @@ export class Action {
     this.hasBeenDone = data.hasBeenDone || false;
     this.fluxesUsed = data.fluxesUsed || 0;
     this.info = data.info;
+    this.currentTurn = data.currentTurn || 0;
+  }
+
+  // set hystoric system, carefule to not circulare link or too deep copy
+  setHistoricSystem(historicSystem: HistoricSystem) {
+    this.historicSystem = historicSystem;
   }
 
   // Used to add log in log obj
@@ -104,6 +125,7 @@ export class Action {
     this.log(`${this.caster.name} launch ${this.ability.name}.`);
     if (this.caster.isConfused()) {
       this.endOfResolve();
+      this.log(`${this.caster.name} is confused!`);
       return END_OF_TURN.NORMAL;
     }
     this.applyRule(RULE_ORDER.BEFORE_SPECIAL_CHECK);
@@ -170,16 +192,6 @@ export class Action {
       if (effect.aftermathType != "MODIFIER") {
         return;
       }
-      // Condition
-      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
-      if (condition == undefined) {
-        console.log("Error: this condition is not supported");
-        return;
-      }
-      if (!this.checkCondition(condition)) {
-        console.log("Condition not met");
-        return;
-      }
       // ApplyChance
       if (getRandomInt(100) >= effect.applyChance) {
         console.log("failed to apply modifier");
@@ -196,6 +208,17 @@ export class Action {
         console.log("Error: this target type is not supported: ", targetObj.id);
         return;
       }
+      // Condition
+      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
+      if (condition == undefined) {
+        console.log("Error: this condition is not supported");
+        return;
+      }
+      if (!this.checkCondition(condition, target)) {
+        console.log("Condition not met");
+        return;
+      }
+      // Modifier Info
       let modifier = this.getAftermath(effect.aftermathId, "MODIFIER") as Modifier;
       if (modifier == undefined || !Object.keys(modifier).length) {
         console.log("Error: modifier empty or not supported");
@@ -241,16 +264,6 @@ export class Action {
       }
       if (order.id != orderId)
         return;
-      // Condition
-      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
-      if (condition == undefined) {
-        console.log("Error: this condition is not supported on ability ", this.ability.name);
-        return;
-      }
-      if (!this.checkCondition(condition)) {
-        console.log("Condition not met");
-        return;
-      }
       // ApplyChance
       if (getRandomInt(100) >= effect.applyChance) {
         console.log("failed to apply rule");
@@ -265,6 +278,16 @@ export class Action {
       let target = this.getTarget(targetObj);
       if (target === undefined) {
         console.log("Error: this target type is not supported: ", targetObj.id);
+        return;
+      }
+      // Condition
+      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
+      if (condition == undefined) {
+        console.log("Error: this condition is not supported on ability ", this.ability.name);
+        return;
+      }
+      if (!this.checkCondition(condition, target)) {
+        console.log("Condition not met");
         return;
       }
       // Rule value
@@ -417,7 +440,7 @@ export class Action {
   }
 
   // return true or false if the effect condition is valid or not
-  checkCondition(condition: Condition) {
+  checkCondition(condition: Condition, target: Weapon | Monster | null) {
     switch (condition.id) {
       // no condition
       case CONDITIONS.NO_CONDITION:
@@ -429,9 +452,25 @@ export class Action {
       case CONDITIONS.ABILITY_BLOCKED_BY_TARGET:
         return this.abilityWasBlocked;
       case CONDITIONS.TARGET_ALREADY_ACTED:
-        return true; // TODO with historic system
+        if (target === null) {
+          console.log("Error: try to use condition target already acted with a null target.");
+          return false;
+        }
+        if (!this.historicSystem) {
+          console.log("Error: historic system is null in checkCondition for target already acted.");
+          return false;
+        }
+        return this.historicSystem.hasAlreadyActed(target, this.currentTurn - 1);
       case CONDITIONS.TARGET_NOT_ALREADY_ACTED:
-        return false; // TODO with historic system
+        if (target === null) {
+          console.log("Error: try to use condition target not already acted with a null target.");
+          return false;
+        }
+        if (!this.historicSystem) {
+          console.log("Error: historic system is null in checkCondition for target not already acted.");
+          return false;
+        }
+        return !this.historicSystem.hasAlreadyActed(target, this.currentTurn - 1);
       case CONDITIONS.TARGET_HAS_LESS_HP_THAN_CASTER:
         return this.target.stats.health < this.caster.stats.health;
       case CONDITIONS.TARGET_HAS_MORE_HP_THAN_CASTER:
@@ -443,7 +482,15 @@ export class Action {
       case CONDITIONS.TARGET_DOESNT_BEARS_ANY_MODIFIER:
         return this.target.modifiers.length == 0;
       case CONDITIONS.CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN:
-        return false; // TODO with historic system
+        if (target === null) {
+          console.log("Error: try to use CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN with a null target.");
+          return false;
+        }
+        if (!this.historicSystem) {
+          console.log("Error: historic system is null in checkCondition for target CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN.");
+          return false;
+        }
+        return this.historicSystem.hasAlreadyLaunchedAbility(target, this.ability, this.currentTurn - 1);
       case CONDITIONS.CASTER_BEARS_POSITIVE_MODIFIER:
         return this.caster.hasPositiveModifier();
       case CONDITIONS.CASTER_BEARS_NEGATIVE_MODIFIER:
@@ -485,7 +532,6 @@ export class Action {
 
   // Get the value for the effect on effectsValue on ability, -1 if empty
   getAftermathValue(effectId: number, effectsValue: EffectValue[]) {
-    console.log("effectValue-->", typeof effectsValue);
     let effectValue = effectsValue.find((effectValue) => effectValue.id === effectId);
 
     if (effectValue == undefined) {

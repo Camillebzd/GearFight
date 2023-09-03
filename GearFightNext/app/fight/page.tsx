@@ -17,6 +17,7 @@ import { useMonstersWorld, useUserWeapons, useWeaponDeck } from '@/scripts/custo
 import SelectFluxesModal from '@/components/SelectFluxesModal';
 import { HAND_SIZE } from '@/scripts/systemValues';
 import { useSearchParams } from 'next/navigation'
+import { HistoricSystem, Turn } from '@/scripts/historic';
 
 enum GAME_PHASES {
   PLAYER_CHOOSE_ABILITY,
@@ -31,6 +32,7 @@ export default function Page() {
   const weaponDeck = useWeaponDeck(parseInt(searchParams.get('weaponid') as string));
   const [monster, setMonster] = useState<Monster | null>(null);
   const [weapon, setWeapon] = useState<Weapon | null>(null);
+  const historic = useRef<HistoricSystem>(new HistoricSystem([]));
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   
   const endOfFightModal = useDisclosure();
@@ -81,15 +83,15 @@ export default function Page() {
       return;
     }
     setInfo((currentInfo) => [...currentInfo, `--------- TURN ${turn} ---------`]);
+    historic.current.createTurn({number: turn, actions: []});
     // draw card if needed
     if (weapon?.deck != null && weapon.deck.length === 0)
       weapon.refillDeckFromDiscard();
     while (weapon.hand.length < HAND_SIZE) {
       weapon.drawOneRandomFromDeck();
-      setInfo((currentInfo) => [...currentInfo, `player draw 1 ability.`]);
     }
     if (monster.isEntityAbleToPlay()) {
-      let monsterAction = monster.launchRandomAbility(weapon, isMonsterCombo.current);
+      let monsterAction = monster.launchRandomAbility(weapon, isMonsterCombo.current, turn);
       if (monsterAction)
         actions.current.push(monsterAction);
     }
@@ -125,7 +127,7 @@ export default function Page() {
   const resolveLoop = () => {
     while (actions.current.length > 0) {
       setPhase(GAME_PHASES.RESOLUTION);
-      let ret = resolveActions(actions.current);
+      let ret = resolveActions(actions.current, historic.current);
       switch (ret) {
         case END_OF_TURN.PLAYER_COMBO:
           isPlayerCombo.current = true;
@@ -133,7 +135,8 @@ export default function Page() {
           setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY_COMBO);
           return;
         case END_OF_TURN.MONSTER_COMBO:
-          let monsterAction = monster!.launchRandomAbility(weapon!, isMonsterCombo.current);
+          isMonsterCombo.current = true;
+          let monsterAction = monster!.launchRandomAbility(weapon!, isMonsterCombo.current, turn);
           if (monsterAction)
             actions.current.push(monsterAction);
           break;
@@ -146,6 +149,9 @@ export default function Page() {
           console.log("MONSTER died");
           won.current = true;
           endOfFightModal.onOpen();
+          return;
+        case undefined:
+          console.log("An error occured in the resolveAction...");
           return;
         case END_OF_TURN.NORMAL:
         default:
@@ -178,7 +184,7 @@ export default function Page() {
   const launchAbility = (ability: Ability, fluxesUsed: number = 0) => {
     if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
       return;
-    actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo}));
+    actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo, currentTurn: turn}));
     weapon?.discardFromHand(ability);
     console.log(actions);
     // resolve
@@ -219,9 +225,9 @@ export default function Page() {
   }
 
   return (
-    <main className={styles.main}>
+    <main className={styles.mainFightContainer}>
       <h1 className={styles.pageTitle}>Fight local</h1>
-      <div className={styles.mainFightContainer}>
+      <div className={styles.principalFightContainer}>
         <div className={styles.fightersContainer}>
           <div>
             <Entity 
