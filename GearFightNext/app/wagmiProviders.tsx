@@ -17,18 +17,19 @@ import {
   polygon,
   polygonMumbai
 } from 'wagmi/chains';
-import { publicProvider } from 'wagmi/providers/public';
+import { alchemyProvider } from 'wagmi/providers/alchemy'
+
+const projectId = (process.env.NEXT_PUBLIC_WALLECTCONNECT_PROJECTID) as string;
+const ALCHEMY_API_KEY_MATIC = (process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_MATIC) as string;
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
-    polygon,
+    // polygon,
     polygonMumbai,
     // ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [polygonMumbai] : []),
   ],
-  [publicProvider()]
+  [alchemyProvider({apiKey: ALCHEMY_API_KEY_MATIC})]
 );
-
-const projectId = (process.env.NEXT_PUBLIC_WALLECTCONNECT_PROJECTID) as string;
 
 const { wallets } = getDefaultWallets({
   appName: 'GearFight',
