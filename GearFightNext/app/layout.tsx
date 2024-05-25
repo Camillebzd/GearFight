@@ -16,19 +16,19 @@ export const metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode,
 }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ChakraProviders>
           <ReduxProvider>
+        <ChakraProviders>
             <WagmiProviders>
               <Navbar/>
             </WagmiProviders>
             {children}
-          </ReduxProvider>
         </ChakraProviders>
+          </ReduxProvider>
       </body>
     </html>
   )

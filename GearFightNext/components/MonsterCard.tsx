@@ -24,9 +24,12 @@ const MonsterCard = ({monster}: {monster: Monster}) => {
 
   return (
     <>
+      <Card colorScheme="red">
+        <p>Test</p>
+      </Card>
       <Link href={`/monster/${monster.id}`}>
         <Card className={styles.card} onMouseEnter={() => setIsOver(true)} onMouseLeave={() => setIsOver(false)}>
-          <CardBody className={styles.cardBody}>
+          <CardBody>
             <Image
               src={`/img/monsters/${monster.image}`}
               alt={`image of a ${monster.name}`}

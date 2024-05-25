@@ -2,7 +2,8 @@
 
 import React from "react";
 import { CacheProvider } from '@chakra-ui/next-js'
-import { ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider, cookieStorageManagerSSR, localStorageManager } from '@chakra-ui/react'
+import theme from "./theme";
 
 export function ChakraProviders({
     children 
@@ -13,7 +14,7 @@ export function ChakraProviders({
   React.useEffect(() => setMounted(true), []);
   return (
     <CacheProvider>
-      <ChakraProvider>
+      <ChakraProvider resetCSS theme={theme}>
         {mounted && children}
       </ChakraProvider>
     </CacheProvider>
