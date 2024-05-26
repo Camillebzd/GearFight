@@ -12,7 +12,7 @@ const projectId = (process.env.NEXT_PUBLIC_WALLECTCONNECT_PROJECTID) as string;
 const queryClient = new QueryClient();
 
 const config = getDefaultConfig({
-  appName: 'RainbowKit demo',
+  appName: 'Gearfight',
   projectId: projectId,
   chains: [polygonAmoy],
   transports: {
