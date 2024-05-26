@@ -5,7 +5,7 @@ import { createContract } from "@/scripts/utils";
 import { RootState } from "../store";
 import { Notify } from "notiflix";
 
-const API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_MATIC;
+const API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_AMOY;
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
 export type AttributeOnNFT = {
@@ -36,14 +36,14 @@ export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, {state: Ro
     try {
       const settings = {
         apiKey: API_KEY,
-        network: Network.MATIC_MUMBAI,
+        network: Network.MATIC_AMOY,
       };
       const alchemy = new Alchemy(settings);
       const nfts = await alchemy.nft.getNftsForOwner(address, {omitMetadata: true});
       const contract = await createContract(address);
       let weapons: WeaponNFT[] = [];
       await Promise.all(nfts.ownedNfts.map(async (nft) => {
-        if (nft.contract.address.toLowerCase() == CONTRACT_ADDRESS) {
+        if (nft.contractAddress.toLowerCase() == CONTRACT_ADDRESS) {
           let weaponURI = await contract.tokenURI(nft.tokenId);
           let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
           weaponObj.tokenId = nft.tokenId;

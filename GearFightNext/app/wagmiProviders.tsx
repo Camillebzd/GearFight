@@ -8,7 +8,6 @@ import { polygonAmoy } from 'viem/chains';
 import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit'
 
 const projectId = (process.env.NEXT_PUBLIC_WALLECTCONNECT_PROJECTID) as string;
-const ALCHEMY_API_KEY_MATIC = (process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_MATIC) as string;
 
 const queryClient = new QueryClient();
 
