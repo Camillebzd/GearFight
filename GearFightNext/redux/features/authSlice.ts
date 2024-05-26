@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Address } from 'wagmi'
+
+type Address = `0x${string}`;
 
 type AuthState = {
     address: Address;

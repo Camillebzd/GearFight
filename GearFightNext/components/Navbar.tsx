@@ -14,7 +14,7 @@ import NavItem from './NavItem'
 import styles from '../app/page.module.css'
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Address, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { connect, disconnect } from "@/redux/features/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
@@ -32,16 +32,28 @@ const Navbar = () => {
 
   {/* Handle user connection and update redux */}
   const dispatch = useAppDispatch();
-  useAccount({
-    onConnect({ address, connector, isReconnected }) {
-      console.log('Connected', { address, connector, isReconnected });
-      dispatch(connect(address!))
-    },
-    onDisconnect() {
+  // useAccount({
+  //   onConnect({ address, connector, isReconnected }) {
+  //     console.log('Connected', { address, connector, isReconnected });
+  //     dispatch(connect(address!))
+  //   },
+  //   onDisconnect() {
+  //     console.log('Disconnected');
+  //     dispatch(disconnect());
+  //   }
+  // });
+  const account = useAccount();
+
+  useEffect(() => {
+    if (account.isConnected) {
+      console.log('Connected', account.address, account.connector, account.isReconnecting );
+      dispatch(connect(account.address!));
+    }
+    if (account.isDisconnected) {
       console.log('Disconnected');
       dispatch(disconnect());
     }
-  });
+  }, [account]);
 
   return (
     <Flex 

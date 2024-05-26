@@ -24,9 +24,9 @@ const MonsterCard = ({monster}: {monster: Monster}) => {
 
   return (
     <>
-      <Card colorScheme="red">
+      {/* <Card colorScheme="red">
         <p>Test</p>
-      </Card>
+      </Card> */}
       <Link href={`/monster/${monster.id}`}>
         <Card className={styles.card} onMouseEnter={() => setIsOver(true)} onMouseLeave={() => setIsOver(false)}>
           <CardBody>

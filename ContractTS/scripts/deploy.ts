@@ -12,7 +12,8 @@ async function main() {
   const gearFight = await GearFight.deploy();
 
   // We only verify on a testnet!
-  if (network.config.chainId === 80001 && process.env.POLYGONSCAN_API_KEY) {
+  if (network.config.chainId === 80002 && process.env.POLYGONSCAN_API_KEY) {
+    console.log("Deployed! Waiting before verification...");
     await gearFight.deploymentTransaction()!.wait(6);
     await verify(await gearFactory.getAddress(), []);
     await verify(await gearFight.getAddress(), []);
