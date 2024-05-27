@@ -1,5 +1,7 @@
 import { ethers, run, network } from "hardhat"
 
+const developmentChains = ["hardhat", "localhost"];
+
 async function main() {
   const GearFactory = await ethers.getContractFactory("GearFactory");
   const gearFactory = await GearFactory.deploy();
@@ -11,15 +13,16 @@ async function main() {
   });
   const gearFight = await GearFight.deploy();
 
+  console.log("GearFactory deployed to:", await gearFactory.getAddress());
+  console.log("GearFight deployed to:", await gearFight.getAddress());
+
   // We only verify on a testnet!
-  if (network.config.chainId === 80002 && process.env.POLYGONSCAN_API_KEY) {
+  if (!developmentChains.includes(network.name)) {
     console.log("Deployed! Waiting before verification...");
     await gearFight.deploymentTransaction()!.wait(6);
     await verify(await gearFactory.getAddress(), []);
     await verify(await gearFight.getAddress(), []);
   }
-  console.log("GearFactory deployed to:", await gearFactory.getAddress());
-  console.log("GearFight deployed to:", await gearFight.getAddress());
 }
 
 const verify = async (contractAddress: string, args: any[]) => {
