@@ -13,11 +13,14 @@ import NextLink from 'next/link'
 import NavItem from './NavItem'
 import styles from '../app/page.module.css'
 
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi'
+// import { ConnectButton } from '@rainbow-me/rainbowkit';
+// import { useAccount } from 'wagmi'
+import { ConnectButton, useActiveWallet } from "thirdweb/react";
+import { createWallet, inAppWallet } from "thirdweb/wallets";
 
 import { connect, disconnect } from "@/redux/features/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
+import { createThirdwebClient, defineChain } from 'thirdweb'
 
 const MENU_LIST = [
   { text: "Home", href: "/" },
@@ -26,37 +29,54 @@ const MENU_LIST = [
   { text: "About Us", href: "/about" },
 ];
 
+const wallets = [
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("me.rainbow"),
+];
+
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
+});
+
+const chain = defineChain({
+  id: 128123,
+  name: "Etherlink Testnet",
+  rpc: "https://node.ghostnet.etherlink.com",
+  nativeCurrency: {
+    name: "Tez",
+    symbol: "XTZ",
+    decimals: 18,
+  },
+  blockExplorers: [{
+    url: "https://testnet-explorer.etherlink.com/",
+    apiUrl: "https://testnet-explorer.etherlink.com/api",
+    name: "Blockscout"
+  }],
+  testnet: true,
+
+});
+
 const Navbar = () => {
   const [display, changeDisplay] = useState('none')
   const [activeSection, setActiveSection] = useState(window.location.pathname);
+  const wallet = useActiveWallet();
 
-  {/* Handle user connection and update redux */}
+  {/* Handle user connection and update redux */ }
   const dispatch = useAppDispatch();
-  // useAccount({
-  //   onConnect({ address, connector, isReconnected }) {
-  //     console.log('Connected', { address, connector, isReconnected });
-  //     dispatch(connect(address!))
-  //   },
-  //   onDisconnect() {
-  //     console.log('Disconnected');
-  //     dispatch(disconnect());
-  //   }
-  // });
-  const account = useAccount();
 
   useEffect(() => {
-    if (account.isConnected) {
-      console.log('Connected', account.address, account.connector, account.isReconnecting );
-      dispatch(connect(account.address!));
-    }
-    if (account.isDisconnected) {
+    if (wallet) {
+      console.log('Connected', wallet );
+      dispatch(connect(wallet.getAccount()?.address!));
+    } else {
       console.log('Disconnected');
       dispatch(disconnect());
     }
-  }, [account]);
+  }, [wallet]);
 
   return (
-    <Flex 
+    <Flex
       align="center"
       justifyContent="space-between"
       width="100%"
@@ -65,28 +85,34 @@ const Navbar = () => {
       className={styles.navbarContainer}
     >
       <p className={styles.logo}>GearFight</p>
-        {/* Desktop */}
-        <Flex
-          display={['none', 'none', 'flex','flex']}
-          gap={'10px'}
-        >
-          {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection}/>)}
-        </Flex>
+      {/* Desktop */}
+      <Flex
+        display={['none', 'none', 'flex', 'flex']}
+        gap={'10px'}
+      >
+        {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection} />)}
+      </Flex>
 
-        <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} />
+      {/* <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} /> */}
 
-        {/* Mobile */}
-        <IconButton
-          aria-label="Open Menu"
-          size="lg"
-          mr={2}
-          mb={2}
-          icon={
-            <HamburgerIcon />
-          }
-          onClick={() => changeDisplay('flex')}
-          display={['flex', 'flex', 'none', 'none']}
-        />
+      <ConnectButton
+        client={client}
+        wallets={wallets}
+        chain={chain}
+      />
+
+      {/* Mobile */}
+      <IconButton
+        aria-label="Open Menu"
+        size="lg"
+        mr={2}
+        mb={2}
+        icon={
+          <HamburgerIcon />
+        }
+        onClick={() => changeDisplay('flex')}
+        display={['flex', 'flex', 'none', 'none']}
+      />
 
       {/* Mobile Content */}
       <Flex
@@ -118,7 +144,7 @@ const Navbar = () => {
           flexDir="column"
           align="center"
         >
-          {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection}/>)}
+          {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection} />)}
         </Flex>
       </Flex>
     </Flex>

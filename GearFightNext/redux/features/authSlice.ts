@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-type Address = `0x${string}`;
+// type Address = `0x${string}`;
 
 type AuthState = {
-    address: Address;
+    address: string;
     isConnected: boolean;
 };
 
@@ -16,7 +16,7 @@ export const auth = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        connect: (state, action: PayloadAction<Address>) => {
+        connect: (state, action: PayloadAction<string>) => {
             state.address = action.payload;
             state.isConnected = true;
         },

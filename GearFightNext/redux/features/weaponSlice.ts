@@ -1,15 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-import { Network, Alchemy } from "alchemy-sdk"; // /!\ Module "buffer" has been externalized /!\
+import axios from "axios";
 import { createContract } from "@/scripts/utils";
 import { RootState } from "../store";
 import { Notify } from "notiflix";
 
-const API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_AMOY;
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
 export type AttributeOnNFT = {
-  trait_type: string; 
+  trait_type: string;
   value: string | string[];
 };
 
@@ -21,7 +20,7 @@ export type WeaponNFT = {
   tokenId: string; // not on the uri so should be added
 };
 
-export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, {state: RootState} >(
+export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, { state: RootState }>(
   'weapons/fillUserWeapons',
   async (forceReaload: boolean, thunkAPI) => {
     if (thunkAPI.getState().weaponReducer.userWeapons.length > 0 && !forceReaload)
@@ -34,19 +33,25 @@ export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, {state: Ro
       return [];
     }
     try {
-      const settings = {
-        apiKey: API_KEY,
-        network: Network.MATIC_AMOY,
-      };
-      const alchemy = new Alchemy(settings);
-      const nfts = await alchemy.nft.getNftsForOwner(address, {omitMetadata: true});
+      const url = `https://testnet-explorer.etherlink.com/api/v2/addresses/${address}/nft?type=ERC-721`;
+      const response = await axios.get(url, {
+        headers: {
+          'accept': 'application/json'
+        }
+      });
+      if (response.status !== 200) {
+        console.log("Bad request to retrieve the weapons!");
+        return [];
+      }
+      const nfts = response.data.items;
       const contract = await createContract(address);
       let weapons: WeaponNFT[] = [];
-      await Promise.all(nfts.ownedNfts.map(async (nft) => {
-        if (nft.contractAddress.toLowerCase() == CONTRACT_ADDRESS) {
-          let weaponURI = await contract.tokenURI(nft.tokenId);
+      console.log("nfts:", nfts);
+      await Promise.all(nfts.map(async (nft: any) => {
+        if (nft.token.address.toLowerCase() == CONTRACT_ADDRESS) {
+          let weaponURI = await contract.tokenURI(nft.id);
           let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
-          weaponObj.tokenId = nft.tokenId;
+          weaponObj.tokenId = nft.id;
           weapons.push(weaponObj);
         }
       }));
@@ -59,13 +64,13 @@ export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, {state: Ro
   }
 );
 
-export const refreshOwnedTokenMetadata = createAsyncThunk<{weaponIndex: number, newWeaponData: WeaponNFT | undefined}, string, {state: RootState} >(
+export const refreshOwnedTokenMetadata = createAsyncThunk<{ weaponIndex: number, newWeaponData: WeaponNFT | undefined }, string, { state: RootState }>(
   'weapons/refreshTokenMetadataManual',
   async (tokenId, thunkAPI) => {
     const weaponIndex = thunkAPI.getState().weaponReducer.userWeapons.findIndex((weapon) => weapon.tokenId == tokenId);
     if (weaponIndex < 0) {
       console.log("Error:can't refresh metadata on non existant or non possessed weapon.");
-      return {weaponIndex, newWeaponData: undefined};
+      return { weaponIndex, newWeaponData: undefined };
     }
     const contract = await createContract(thunkAPI.getState().authReducer.address);
     try {
@@ -74,12 +79,12 @@ export const refreshOwnedTokenMetadata = createAsyncThunk<{weaponIndex: number, 
       weaponObj.tokenId = tokenId;
       console.log(`token with id: ${tokenId} refreshed!`);
       Notify.success('Weapon metadata refreshed.');
-      return {weaponIndex, newWeaponData: weaponObj};
+      return { weaponIndex, newWeaponData: weaponObj };
     }
     catch {
       console.log(`token with id: ${tokenId} refreshed!`);
       Notify.failure('An error occured during the metadata refresh.');
-      return {weaponIndex, newWeaponData: undefined};
+      return { weaponIndex, newWeaponData: undefined };
     }
   }
 );
@@ -104,17 +109,17 @@ export const weapons = createSlice({
     builder.addCase(fillUserWeapons.pending, (state, action) => {
       state.isLoading = true;
     }),
-    builder.addCase(fillUserWeapons.fulfilled, (state, action) => {
-      state.userWeapons = action.payload;
-      state.isLoading = false;
-    }),
-    builder.addCase(fillUserWeapons.rejected, (state, action) => {
-      state.isLoading = false;
-    }),
-    builder.addCase(refreshOwnedTokenMetadata.fulfilled, (state, action) => {
-      if (action.payload.newWeaponData)
-        state.userWeapons[action.payload.weaponIndex] = action.payload.newWeaponData;
-    })
+      builder.addCase(fillUserWeapons.fulfilled, (state, action) => {
+        state.userWeapons = action.payload;
+        state.isLoading = false;
+      }),
+      builder.addCase(fillUserWeapons.rejected, (state, action) => {
+        state.isLoading = false;
+      }),
+      builder.addCase(refreshOwnedTokenMetadata.fulfilled, (state, action) => {
+        if (action.payload.newWeaponData)
+          state.userWeapons[action.payload.weaponIndex] = action.payload.newWeaponData;
+      })
   }
 });
 

@@ -5,7 +5,7 @@ import { Weapon } from '@/scripts/entities';
 
 import { useAbilities, useXpStorage } from '@/scripts/customHooks';
 
-const RetrieveXpButton = ({weapon, address}: {weapon: Weapon, address: `0x${string}`}) => {
+const RetrieveXpButton = ({weapon, address}: {weapon: Weapon, address: string}) => {
   const [xp, setXp] = useXpStorage(weapon.id);
   const abilities = useAbilities();
 

@@ -25,7 +25,7 @@ export function randomIntFromInterval(min: number, max: number) {
 // function to create a contract ethers.js of gearFactory
 export async function createContract(walletAddress: string) {
   const ethereum: any  = window.ethereum;
-  const provider = new ethers.BrowserProvider(ethereum);
+  const provider = new ethers.providers.Web3Provider(ethereum) // new ethers.BrowserProvider(ethereum); // V6
   const signer = await provider.getSigner(walletAddress);
   const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
   return contract;

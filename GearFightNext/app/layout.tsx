@@ -1,7 +1,7 @@
 import './globals.css'
 import '@rainbow-me/rainbowkit/styles.css';
 import { Inter } from 'next/font/google'
-import { WagmiProviders } from "./wagmiProviders";
+import { ThirdwebProvider } from "./thirdwebProvider";
 import Navbar from '@/components/Navbar'
 import { ReduxProvider } from "@/redux/provider";
 import { ChakraProviders } from './chakraProviders';
@@ -21,14 +21,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-          <ReduxProvider>
-        <ChakraProviders>
-            <WagmiProviders>
-              <Navbar/>
-            </WagmiProviders>
+        <ReduxProvider>
+          <ChakraProviders>
+            <ThirdwebProvider>
+              <Navbar />
+            </ThirdwebProvider>
             {children}
-        </ChakraProviders>
-          </ReduxProvider>
+          </ChakraProviders>
+        </ReduxProvider>
       </body>
     </html>
   )
